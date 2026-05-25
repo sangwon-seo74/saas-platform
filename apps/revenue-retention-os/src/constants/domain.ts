@@ -62,10 +62,10 @@ export const CONTRACT_STATUS_LABEL: Record<string, string> = {
 }
 
 export const CONTRACT_STATUS_CLASS: Record<string, string> = {
-  active: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400',
-  expired: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400',
-  cancelled: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
-  renewed: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400',
+  active: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+  expired: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
+  cancelled: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  renewed: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
 }
 
 // ─── 영업 활동 유형 ───────────────────────────────────────
@@ -101,10 +101,10 @@ export const CALL_RESULT_LABEL: Record<string, string> = {
 }
 
 export const CALL_RESULT_CLASS: Record<string, string> = {
-  connected: 'bg-[#0f2d1c] text-[#3FB950]',
-  no_answer: 'bg-[#3d2b0d] text-[#E3B341]',
-  rejected:  'bg-[#3d1a1a] text-[#FF7B72]',
-  scheduled: 'bg-[#1c2d4a] text-[#58A6FF]',
+  connected: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+  no_answer: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400',
+  rejected:  'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
+  scheduled: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
 }
 
 // ─── 방문 목적 ────────────────────────────────────────────
@@ -131,10 +131,10 @@ export const TASK_STATUS_LABEL: Record<string, string> = {
 }
 
 export const TASK_STATUS_CLASS: Record<string, string> = {
-  todo: 'bg-slate-100 text-slate-600',
-  in_progress: 'bg-blue-50 text-blue-600',
-  done: 'bg-green-50 text-green-600',
-  cancelled: 'bg-slate-50 text-slate-400 line-through',
+  todo: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  in_progress: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
+  done: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+  cancelled: 'bg-slate-50 text-slate-400 line-through dark:bg-slate-900 dark:text-slate-500',
 }
 
 // ─── 업무 우선순위 ────────────────────────────────────────
@@ -145,9 +145,9 @@ export const TASK_PRIORITY_LABEL: Record<string, string> = {
 }
 
 export const TASK_PRIORITY_CLASS: Record<string, string> = {
-  high:   'bg-[#3d1a1a] text-[#FF7B72]',
-  medium: 'bg-[#3d2b0d] text-[#E3B341]',
-  low:    'bg-dk-surface2 text-dk-muted',
+  high:   'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
+  medium: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400',
+  low:    'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
 }
 
 // ─── 업무 유형 ────────────────────────────────────────────
@@ -174,10 +174,10 @@ export const MESSAGE_STATUS_LABEL: Record<string, string> = {
 }
 
 export const MESSAGE_STATUS_CLASS: Record<string, string> = {
-  sent: 'bg-blue-50 text-blue-600',
-  delivered: 'bg-green-50 text-green-600',
-  failed: 'bg-red-50 text-red-600',
-  read: 'bg-green-50 text-green-700',
+  sent: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
+  delivered: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+  failed: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
+  read: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
 }
 
 // ─── 고객사 상태 ──────────────────────────────────────────
@@ -189,10 +189,10 @@ export const COMPANY_STATUS_LABEL: Record<string, string> = {
 }
 
 export const COMPANY_STATUS_CLASS: Record<string, string> = {
-  prospect: 'bg-blue-50 text-blue-600',
-  active: 'bg-green-50 text-green-600',
-  dormant: 'bg-slate-100 text-slate-500',
-  churned: 'bg-red-50 text-red-600',
+  prospect: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
+  active: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+  dormant: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  churned: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
 }
 
 // ─── 플랜 ─────────────────────────────────────────────────
@@ -210,10 +210,10 @@ export const SUBSCRIPTION_STATUS_LABEL: Record<string, string> = {
 }
 
 export const SUBSCRIPTION_STATUS_CLASS: Record<string, string> = {
-  trialing: 'bg-blue-50 text-blue-600',
-  active: 'bg-green-50 text-green-600',
-  past_due: 'bg-red-50 text-red-600',
-  cancelled: 'bg-slate-100 text-slate-500',
+  trialing: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
+  active: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+  past_due: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
+  cancelled: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
 }
 
 export const INVOICE_STATUS_LABEL: Record<string, string> = {
@@ -224,8 +224,8 @@ export const INVOICE_STATUS_LABEL: Record<string, string> = {
 }
 
 export const INVOICE_STATUS_CLASS: Record<string, string> = {
-  pending: 'bg-amber-50 text-amber-600',
-  paid: 'bg-green-50 text-green-600',
-  failed: 'bg-red-50 text-red-600',
-  refunded: 'bg-slate-100 text-slate-500',
+  pending: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400',
+  paid: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
+  failed: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400',
+  refunded: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
 }

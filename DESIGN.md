@@ -42,8 +42,10 @@
 - **alias**: `@/components/ui`, `@/lib/utils`, `@/components`, `@/hooks`, `@/lib`.
 - 새 컴포넌트는 shadcn 규약 + 위 토큰을 따른다. 새 UI 라이브러리·아이콘 세트 도입은 사전 합의.
 
-## 5. 정리 필요 항목 (Known Issues — 향후 디자인 수정 시 함께 정돈)
-- Tailwind는 v3가 활성이나 devDeps에 `@tailwindcss/postcss`(v4)가 잔존 → 미사용·혼란 소지, 제거 권장.
-- `constants/domain.ts`의 `*_CLASS`가 혼재: 시맨틱 Tailwind(`bg-red-50 …`), 하드코딩 hex(`bg-[#0f2d1c]`),
-  `dk-*` 토큰을 섞어 씀. 또한 일부 맵(TASK/MESSAGE/COMPANY/SUBSCRIPTION/INVOICE 등)에 `dark:` 변형 누락.
-  → 3절의 배지 권장 패턴으로 통일 권장.
+## 5. 구현 규약 (Consistency Rules)
+- 상태 배지 클래스는 `constants/domain.ts`의 `*_CLASS`에 **3절 패턴으로 통일**되어 있다
+  (하드코딩 hex·`dk-*` 미사용, 모두 `dark:` 변형 포함). 새 상태 추가 시 동일 패턴을 따른다.
+  예외: `RISK_CLASS`만 강조용 `border`를 포함한다.
+- 토큰성 클래스를 담는 디렉토리는 Tailwind `content` 글롭에 포함되어야 purge되지 않는다.
+  현재 `content`에 `src/constants/**` 포함됨. 새 위치에 클래스를 두면 `content`에 추가한다.
+- Tailwind는 **v3 단일 구성**으로 유지한다. v4 도입은 별도 마이그레이션으로 사전 합의(혼용 금지).
