@@ -1,6 +1,6 @@
 // ============================================================
 // Revenue Retention OS — 도메인 타입 정의
-// schema.sql 기반 자동 매핑 (Supabase CLI 대체용)
+// 스키마 SSOT: SCHEMA.md (rros) / ../../core-api/SCHEMA.md (core)
 // ============================================================
 
 export type RiskLevel = 'high' | 'medium' | 'low'

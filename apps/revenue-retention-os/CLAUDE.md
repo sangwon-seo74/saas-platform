@@ -13,7 +13,8 @@ DB 스키마: `rros` (도메인 테이블), 공통 인프라는 `core` 스키마
 ## 미구현 외부 연동 (스키마만 존재)
 Resend 이메일 / SMS / 카카오알림톡 / PG 결제 — 현재 stub. 연동 추가 시 core 경유로 구현.
 
-## 상세 (SSOT)
-API Route / 테이블 / RLS / pg_cron 전체 인벤토리: [../../docs/migration/inventory.md](../../docs/migration/inventory.md)
+## 스키마 (SSOT)
+- 도메인(`rros`) 테이블 / RLS / cron / 연동: [./SCHEMA.md](./SCHEMA.md)
+- 공통(`core`) 스키마: [../../core-api/SCHEMA.md](../../core-api/SCHEMA.md)
 
 @AGENTS.md

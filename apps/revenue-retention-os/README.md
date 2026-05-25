@@ -34,21 +34,11 @@ cp .env.local.example .env.local
 npm install
 ```
 
-### 3. DB 스키마 적용
+### 3. DB 스키마
 
-```bash
-# Supabase CLI 로그인
-npx supabase login
-
-# 프로젝트 연결
-npx supabase link --project-ref $SUPABASE_PROJECT_ID
-
-# 스키마 적용
-npx supabase db push  # 또는 대시보드 SQL 편집기에서 schema.sql 직접 실행
-
-# RLS + pg_cron 마이그레이션 적용
-npx supabase db push --file supabase/migrations/20260516_rls_and_cron.sql
-```
+DB 스키마는 Supabase에서 직접 관리한다. 현재 상태는 [`SCHEMA.md`](./SCHEMA.md)(도메인 `rros`) 및
+[`../../core-api/SCHEMA.md`](../../core-api/SCHEMA.md)(공통 `core`)를 단일 출처로 한다.
+스키마 변경은 Supabase 대시보드 SQL Editor에서 적용하고 해당 문서를 함께 갱신한다.
 
 ### 4. DB 타입 자동생성 (선택)
 
@@ -140,7 +130,8 @@ sales        → 본인 담당만
 
 ## 참조 문서
 
-- `MENU_IA.md` — 메뉴 구조·라우팅·권한 단일 출처
-- `schema.sql` — DB 스키마 단일 출처
-- `DEV_GUIDELINES.md` — 개발 원칙·명명규칙
-- `DESIGN_GUIDELINES.md` — 디자인 토큰·컴포넌트 스펙
+- [`SCHEMA.md`](./SCHEMA.md) — 도메인(`rros`) DB 스키마 현재 상태 SSOT
+- [`../../core-api/SCHEMA.md`](../../core-api/SCHEMA.md) — 공통(`core`) 스키마 SSOT
+- [`CLAUDE.md`](./CLAUDE.md) — 도메인 지침 (역할·핵심 테이블·연동 상태)
+- [`docs/super-admin-roadmap.md`](./docs/super-admin-roadmap.md) — 슈퍼어드민 로드맵
+- 플랫폼 공통 규칙: [`../../CLAUDE.md`](../../CLAUDE.md)

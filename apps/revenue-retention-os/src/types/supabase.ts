@@ -5,7 +5,7 @@
 //   npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID \
 //     > src/types/supabase.ts
 //
-// 현재 파일은 schema.sql v0.2 기반으로 수동 작성됨
+// 현재 파일은 SCHEMA.md(rros/core) 기준으로 수동 작성됨
 // ============================================================
 
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
