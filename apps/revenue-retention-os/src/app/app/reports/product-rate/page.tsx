@@ -96,7 +96,7 @@ export default function ProductRatePage() {
           <button key={s.key} onClick={() => setSort(s.key as typeof sort)}
             className={cn('px-3 py-1.5 text-xs font-medium rounded-lg border transition-all',
               sort === s.key
-                ? 'bg-dk-blue/20 text-dk-blue border-[#2d4a7a]'
+                ? 'bg-dk-blue/20 text-dk-blue border-tint-blue-border'
                 : 'text-dk-muted border-dk-border hover:bg-dk-surface2')}>
             {s.label}
           </button>
@@ -128,8 +128,8 @@ export default function ProductRatePage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className={cn('text-sm font-bold font-mono',
-                        p.rate >= 80 ? 'text-[#3FB950]' :
-                        p.rate >= 50 ? 'text-[#E3B341]' : 'text-[#FF7B72]')}>
+                        p.rate >= 80 ? 'text-dk-green' :
+                        p.rate >= 50 ? 'text-dk-orange' : 'text-dk-red')}>
                         {p.rate}%
                       </span>
                       <span className="text-xs text-dk-dim">{p.won}/{p.total}건</span>
@@ -140,15 +140,15 @@ export default function ProductRatePage() {
                   </div>
                   <div className="h-1.5 bg-dk-surface2 rounded-full overflow-hidden">
                     <div className={cn('h-full rounded-full',
-                      p.rate >= 80 ? 'bg-[#3FB950]' :
-                      p.rate >= 50 ? 'bg-[#E3B341]' : 'bg-[#FF7B72]')}
+                      p.rate >= 80 ? 'bg-dk-green' :
+                      p.rate >= 50 ? 'bg-dk-orange' : 'bg-dk-red')}
                       style={{ width: `${p.rate}%` }} />
                   </div>
                   <div className="flex gap-3 mt-1.5 text-[10px]">
-                    <span className="text-[#3FB950]">재계약 {p.renewed}</span>
-                    {p.upsell > 0    && <span className="text-[#58A6FF]">업셀 {p.upsell}</span>}
-                    {p.downgrade > 0 && <span className="text-[#E3B341]">다운셀 {p.downgrade}</span>}
-                    {p.lost > 0      && <span className="text-[#FF7B72]">이탈 {p.lost}</span>}
+                    <span className="text-dk-green">재계약 {p.renewed}</span>
+                    {p.upsell > 0    && <span className="text-dk-blue">업셀 {p.upsell}</span>}
+                    {p.downgrade > 0 && <span className="text-dk-orange">다운셀 {p.downgrade}</span>}
+                    {p.lost > 0      && <span className="text-dk-red">이탈 {p.lost}</span>}
                   </div>
                 </div>
 

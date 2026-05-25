@@ -13,10 +13,10 @@ type MonthlyRow = {
 type ChurnReason = { reason: string; count: number; pct: number }
 
 const RESULT_CFG = {
-  renewed:   { label: '재계약',  color: 'bg-[#3FB950]', text: 'text-[#3FB950]' },
-  upsell:    { label: '업셀',    color: 'bg-[#58A6FF]', text: 'text-[#58A6FF]' },
-  downgrade: { label: '다운셀',  color: 'bg-[#E3B341]', text: 'text-[#E3B341]' },
-  lost:      { label: '이탈',    color: 'bg-[#FF7B72]/70', text: 'text-[#FF7B72]' },
+  renewed:   { label: '재계약',  color: 'bg-dk-green', text: 'text-dk-green' },
+  upsell:    { label: '업셀',    color: 'bg-dk-blue', text: 'text-dk-blue' },
+  downgrade: { label: '다운셀',  color: 'bg-dk-orange', text: 'text-dk-orange' },
+  lost:      { label: '이탈',    color: 'bg-dk-red/70', text: 'text-dk-red' },
 }
 
 function StackedBar({ row }: { row: MonthlyRow }) {
@@ -24,10 +24,10 @@ function StackedBar({ row }: { row: MonthlyRow }) {
   return (
     <div className="flex-1 flex flex-col items-center gap-0.5">
       <div className="w-full flex flex-col-reverse justify-start gap-px" style={{ height: 72 }}>
-        <div className="w-full bg-[#FF7B72]/70 rounded-sm" style={{ height: `${row.lost / total * 72}px` }} />
-        <div className="w-full bg-[#E3B341]"              style={{ height: `${row.downgrade / total * 72}px` }} />
-        <div className="w-full bg-[#58A6FF]"              style={{ height: `${row.upsell / total * 72}px` }} />
-        <div className="w-full bg-[#3FB950] rounded-sm"   style={{ height: `${row.renewed / total * 72}px` }} />
+        <div className="w-full bg-dk-red/70 rounded-sm" style={{ height: `${row.lost / total * 72}px` }} />
+        <div className="w-full bg-dk-orange"              style={{ height: `${row.downgrade / total * 72}px` }} />
+        <div className="w-full bg-dk-blue"              style={{ height: `${row.upsell / total * 72}px` }} />
+        <div className="w-full bg-dk-green rounded-sm"   style={{ height: `${row.renewed / total * 72}px` }} />
       </div>
       <span className="text-[10px] text-dk-dim font-mono mt-0.5">
         {row.month.slice(2).replace('-', '.')}
@@ -131,7 +131,7 @@ export default function RenewalRatePage() {
           <p className="text-xs text-dk-muted mb-1">최근 월 갱신율</p>
           <div className="flex items-end gap-2">
             <span className="text-2xl font-bold font-mono text-dk-text">{latest!.rate.toFixed(1)}%</span>
-            <span className={cn('text-sm font-mono mb-0.5 flex items-center gap-0.5', isUp ? 'text-[#3FB950]' : 'text-[#FF7B72]')}>
+            <span className={cn('text-sm font-mono mb-0.5 flex items-center gap-0.5', isUp ? 'text-dk-green' : 'text-dk-red')}>
               {isUp ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
               {isUp ? '+' : ''}{rateDelta}%
             </span>
@@ -144,9 +144,9 @@ export default function RenewalRatePage() {
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <p className="text-xs text-dk-muted mb-1">갱신 / 이탈</p>
           <div className="flex items-center gap-1.5">
-            <span className="text-2xl font-bold font-mono text-[#3FB950]">{totalRenewed}</span>
+            <span className="text-2xl font-bold font-mono text-dk-green">{totalRenewed}</span>
             <span className="text-dk-dim">/</span>
-            <span className="text-2xl font-bold font-mono text-[#FF7B72]">{totalLost}</span>
+            <span className="text-2xl font-bold font-mono text-dk-red">{totalLost}</span>
           </div>
           <p className="text-xs text-dk-dim mt-0.5">업셀 {totalUpsell} · 다운셀 {totalDowngrade}</p>
         </div>
@@ -156,7 +156,7 @@ export default function RenewalRatePage() {
             {(totalAmount / 100_000_000).toFixed(1)}억
           </span>
           {totalUpsellAmt > 0 && (
-            <p className="text-xs text-[#58A6FF] mt-0.5">업셀 +{formatAmount(totalUpsellAmt)}</p>
+            <p className="text-xs text-dk-blue mt-0.5">업셀 +{formatAmount(totalUpsellAmt)}</p>
           )}
         </div>
       </div>
@@ -183,10 +183,10 @@ export default function RenewalRatePage() {
             <div className="flex items-center gap-2 text-[10px] text-dk-dim font-medium px-1">
               <span className="w-10">월</span>
               <span className="flex-1">갱신율</span>
-              <span className="w-8 text-right text-[#3FB950]">재계약</span>
-              <span className="w-8 text-right text-[#58A6FF]">업셀</span>
-              <span className="w-8 text-right text-[#E3B341]">다운셀</span>
-              <span className="w-8 text-right text-[#FF7B72]">이탈</span>
+              <span className="w-8 text-right text-dk-green">재계약</span>
+              <span className="w-8 text-right text-dk-blue">업셀</span>
+              <span className="w-8 text-right text-dk-orange">다운셀</span>
+              <span className="w-8 text-right text-dk-red">이탈</span>
             </div>
             {monthly.slice().reverse().map(d => (
               <div key={d.month} className="flex items-center gap-2 text-sm">
@@ -199,10 +199,10 @@ export default function RenewalRatePage() {
                 <span className="font-mono text-xs font-semibold text-dk-text w-12 text-right">
                   {d.rate.toFixed(1)}%
                 </span>
-                <span className="text-xs text-[#3FB950] w-8 text-right">{d.renewed}</span>
-                <span className="text-xs text-[#58A6FF] w-8 text-right">{d.upsell}</span>
-                <span className="text-xs text-[#E3B341] w-8 text-right">{d.downgrade}</span>
-                <span className="text-xs text-[#FF7B72] w-8 text-right">{d.lost}</span>
+                <span className="text-xs text-dk-green w-8 text-right">{d.renewed}</span>
+                <span className="text-xs text-dk-blue w-8 text-right">{d.upsell}</span>
+                <span className="text-xs text-dk-orange w-8 text-right">{d.downgrade}</span>
+                <span className="text-xs text-dk-red w-8 text-right">{d.lost}</span>
               </div>
             ))}
           </div>
@@ -215,10 +215,10 @@ export default function RenewalRatePage() {
             {(() => {
               const total = totalRenewed + totalLost
               const items = [
-                { label: '재계약',  count: monthly.reduce((s, d) => s + d.renewed, 0),  color: 'bg-[#3FB950]', text: 'text-[#3FB950]' },
-                { label: '업셀',    count: totalUpsell,    color: 'bg-[#58A6FF]', text: 'text-[#58A6FF]' },
-                { label: '다운셀',  count: totalDowngrade, color: 'bg-[#E3B341]', text: 'text-[#E3B341]' },
-                { label: '이탈',    count: totalLost,      color: 'bg-[#FF7B72]/70', text: 'text-[#FF7B72]' },
+                { label: '재계약',  count: monthly.reduce((s, d) => s + d.renewed, 0),  color: 'bg-dk-green', text: 'text-dk-green' },
+                { label: '업셀',    count: totalUpsell,    color: 'bg-dk-blue', text: 'text-dk-blue' },
+                { label: '다운셀',  count: totalDowngrade, color: 'bg-dk-orange', text: 'text-dk-orange' },
+                { label: '이탈',    count: totalLost,      color: 'bg-dk-red/70', text: 'text-dk-red' },
               ]
               return (
                 <div className="space-y-3">
@@ -259,7 +259,7 @@ export default function RenewalRatePage() {
                       </div>
                     </div>
                     <div className="h-1.5 bg-dk-surface2 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#FF7B72]/70 rounded-full" style={{ width: `${r.pct}%` }} />
+                      <div className="h-full bg-dk-red/70 rounded-full" style={{ width: `${r.pct}%` }} />
                     </div>
                   </div>
                 ))}

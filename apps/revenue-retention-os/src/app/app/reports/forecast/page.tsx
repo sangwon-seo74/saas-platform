@@ -16,15 +16,15 @@ type Bucket = {
 }
 
 const RISK_CFG: Record<string, { label: string; cls: string; icon: React.ElementType }> = {
-  high:   { label: '위험', cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]',   icon: AlertCircle },
-  medium: { label: '주의', cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]',   icon: AlertTriangle },
-  low:    { label: '안전', cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]',   icon: CheckCircle2 },
+  high:   { label: '위험', cls: 'bg-tint-red text-dk-red border-tint-red-border',   icon: AlertCircle },
+  medium: { label: '주의', cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',   icon: AlertTriangle },
+  low:    { label: '안전', cls: 'bg-tint-green text-dk-green border-tint-green-border',   icon: CheckCircle2 },
 }
 
 const BUCKET_COLOR: Record<string, { bar: string; text: string; bg: string }> = {
-  D7:  { bar: 'bg-[#FF7B72]', text: 'text-[#FF7B72]', bg: 'bg-[#3d1a1a]/50' },
-  D14: { bar: 'bg-[#E3B341]', text: 'text-[#E3B341]', bg: 'bg-[#3d2b0d]/50' },
-  D30: { bar: 'bg-[#58A6FF]', text: 'text-[#58A6FF]', bg: 'bg-[#1c2d4a]/50' },
+  D7:  { bar: 'bg-dk-red', text: 'text-dk-red', bg: 'bg-tint-red/50' },
+  D14: { bar: 'bg-dk-orange', text: 'text-dk-orange', bg: 'bg-tint-amber/50' },
+  D30: { bar: 'bg-dk-blue', text: 'text-dk-blue', bg: 'bg-tint-blue/50' },
   D60: { bar: 'bg-dk-blue',   text: 'text-dk-blue',   bg: 'bg-dk-surface2' },
   D90: { bar: 'bg-dk-muted',  text: 'text-dk-muted',  bg: 'bg-dk-surface2' },
 }
@@ -85,14 +85,14 @@ export default function ForecastPage() {
         </div>
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <p className="text-xs text-dk-muted mb-1">D-14 이내 긴급</p>
-          <p className="text-2xl font-bold font-mono text-[#E3B341]">
+          <p className="text-2xl font-bold font-mono text-dk-orange">
             {(urgentAmount / 100_000_000).toFixed(1)}억
           </p>
-          <p className="text-xs text-[#E3B341]/70 mt-1">즉시 관리 필요</p>
+          <p className="text-xs text-dk-orange/70 mt-1">즉시 관리 필요</p>
         </div>
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <p className="text-xs text-dk-muted mb-1">고위험 갱신 금액</p>
-          <p className="text-2xl font-bold font-mono text-[#FF7B72]">
+          <p className="text-2xl font-bold font-mono text-dk-red">
             {(highRiskAmt / 100_000_000).toFixed(1)}억
           </p>
           <p className="text-xs text-dk-dim mt-1">위험도 high 기준</p>
@@ -128,7 +128,7 @@ export default function ForecastPage() {
                     )}
                   </div>
                   {b.high_risk_count > 0 && (
-                    <span className="text-xs text-[#FF7B72] shrink-0">위험 {b.high_risk_count}건</span>
+                    <span className="text-xs text-dk-red shrink-0">위험 {b.high_risk_count}건</span>
                   )}
                 </div>
               )
@@ -154,7 +154,7 @@ export default function ForecastPage() {
                   {formatAmount(b.total_amount)}
                 </span>
                 {b.high_risk_count > 0 && (
-                  <span className="text-xs text-[#FF7B72] shrink-0">{b.high_risk_count}건 위험</span>
+                  <span className="text-xs text-dk-red shrink-0">{b.high_risk_count}건 위험</span>
                 )}
                 <ChevronRight className={cn('w-4 h-4 text-dk-dim transition-transform shrink-0', isOpen && 'rotate-90')} />
               </button>
@@ -170,7 +170,7 @@ export default function ForecastPage() {
                         className="flex items-center gap-3 px-5 py-3 hover:bg-dk-surface2/50 transition-colors">
                         <span className={cn(
                           'text-xs font-bold font-mono px-2 py-0.5 rounded shrink-0',
-                          dday <= 7 ? 'bg-[#3d1a1a] text-[#FF7B72]' : 'bg-[#3d2b0d] text-[#E3B341]'
+                          dday <= 7 ? 'bg-tint-red text-dk-red' : 'bg-tint-amber text-dk-orange'
                         )}>
                           D-{dday}
                         </span>

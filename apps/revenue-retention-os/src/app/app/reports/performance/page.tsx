@@ -12,9 +12,9 @@ type UserPerf = {
 }
 
 function RankBadge({ rank }: { rank: number }) {
-  const cls = rank === 1 ? 'bg-[#E3B341] text-dk-bg' :
+  const cls = rank === 1 ? 'bg-dk-orange text-dk-bg' :
               rank === 2 ? 'bg-dk-muted text-dk-bg' :
-              rank === 3 ? 'bg-[#BC6C25] text-white' :
+              rank === 3 ? 'bg-dk-bronze text-white' :
               'bg-dk-surface2 text-dk-dim border border-dk-border'
   return (
     <span className={cn('inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold', cls)}>
@@ -108,9 +108,9 @@ export default function PerformancePage() {
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: '팀 평균 갱신율', value: avgRate !== null ? `${avgRate}%` : '—', icon: TrendingUp, cls: 'text-dk-blue' },
-          { label: '갱신 건수',      value: `${teamTotal.won}건`,                     icon: Users,    cls: 'text-[#3FB950]' },
+          { label: '갱신 건수',      value: `${teamTotal.won}건`,                     icon: Users,    cls: 'text-dk-green' },
           { label: '갱신 매출',      value: `${(teamTotal.amount / 100_000_000).toFixed(1)}억`, icon: TrendingUp, cls: 'text-dk-text' },
-          { label: '업셀 건수',      value: `${teamTotal.upsell}건`,                   icon: Phone,    cls: 'text-[#58A6FF]' },
+          { label: '업셀 건수',      value: `${teamTotal.upsell}건`,                   icon: Phone,    cls: 'text-dk-blue' },
         ].map(s => (
           <div key={s.label} className="bg-dk-surface border border-dk-border rounded-xl p-4">
             <div className="flex items-center gap-1.5 mb-1">
@@ -133,7 +133,7 @@ export default function PerformancePage() {
           <button key={s.key} onClick={() => setSort(s.key as typeof sort)}
             className={cn('px-3 py-1.5 text-xs font-medium rounded-lg border transition-all',
               sort === s.key
-                ? 'bg-dk-blue/20 text-dk-blue border-[#2d4a7a]'
+                ? 'bg-dk-blue/20 text-dk-blue border-tint-blue-border'
                 : 'text-dk-muted border-dk-border hover:bg-dk-surface2')}>
             {s.label}
           </button>
@@ -160,8 +160,8 @@ export default function PerformancePage() {
                     <p className="text-sm font-semibold text-dk-text">{person.name}</p>
                     {person.renewal_rate !== null ? (
                       <p className={cn('text-xs font-mono',
-                        person.renewal_rate >= 80 ? 'text-[#3FB950]' :
-                        person.renewal_rate >= 50 ? 'text-[#E3B341]' : 'text-[#FF7B72]')}>
+                        person.renewal_rate >= 80 ? 'text-dk-green' :
+                        person.renewal_rate >= 50 ? 'text-dk-orange' : 'text-dk-red')}>
                         {person.renewal_rate}%
                       </p>
                     ) : (
@@ -180,11 +180,11 @@ export default function PerformancePage() {
                         {person.won_count}/{person.total_count}
                       </span>
                     </div>
-                    <MiniBar value={person.won_count} max={Math.max(...data.map(p => p.total_count), 1)} color="bg-[#3FB950]" />
+                    <MiniBar value={person.won_count} max={Math.max(...data.map(p => p.total_count), 1)} color="bg-dk-green" />
                     <div className="flex gap-2 mt-0.5 text-[10px]">
-                      <span className="text-[#3FB950]">재계약 {person.renewed_count}</span>
-                      <span className="text-[#58A6FF]">업셀 {person.upsell_count}</span>
-                      {person.downgrade_count > 0 && <span className="text-[#E3B341]">다운셀 {person.downgrade_count}</span>}
+                      <span className="text-dk-green">재계약 {person.renewed_count}</span>
+                      <span className="text-dk-blue">업셀 {person.upsell_count}</span>
+                      {person.downgrade_count > 0 && <span className="text-dk-orange">다운셀 {person.downgrade_count}</span>}
                     </div>
                   </div>
 
@@ -220,7 +220,7 @@ export default function PerformancePage() {
                 {/* 이탈 */}
                 {person.lost_count > 0 && (
                   <div className="shrink-0 text-center w-12">
-                    <p className="text-sm font-bold font-mono text-[#FF7B72]">{person.lost_count}</p>
+                    <p className="text-sm font-bold font-mono text-dk-red">{person.lost_count}</p>
                     <p className="text-[10px] text-dk-dim">이탈</p>
                   </div>
                 )}

@@ -53,6 +53,7 @@ const config: Config = {
           danger:       '#da3633',
           dangerHover:  '#f85149',
           dangerDeep:   '#a03030',
+          bronze:       '#bc6c25',
         },
         // 상태 칩 틴트 (배경/테두리/텍스트) — 다크 UI 전용
         tint: {

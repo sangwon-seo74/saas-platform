@@ -13,9 +13,9 @@ type RiskGroup = { count: number; total_amount: number; items: RiskItem[] }
 type Groups = { high: RiskGroup; medium: RiskGroup; low: RiskGroup }
 
 const RISK_CFG = {
-  high:   { label: '고위험', cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]', bar: 'bg-[#FF7B72]',  icon: AlertCircle,   text: 'text-[#FF7B72]' },
-  medium: { label: '주의',   cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]', bar: 'bg-[#E3B341]',  icon: AlertTriangle, text: 'text-[#E3B341]' },
-  low:    { label: '안전',   cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]', bar: 'bg-[#3FB950]',  icon: CheckCircle2,  text: 'text-[#3FB950]' },
+  high:   { label: '고위험', cls: 'bg-tint-red text-dk-red border-tint-red-border', bar: 'bg-dk-red',  icon: AlertCircle,   text: 'text-dk-red' },
+  medium: { label: '주의',   cls: 'bg-tint-amber text-dk-orange border-tint-amber-border', bar: 'bg-dk-orange',  icon: AlertTriangle, text: 'text-dk-orange' },
+  low:    { label: '안전',   cls: 'bg-tint-green text-dk-green border-tint-green-border', bar: 'bg-dk-green',  icon: CheckCircle2,  text: 'text-dk-green' },
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -151,8 +151,8 @@ export default function RiskDashboardPage() {
                       className="flex items-center gap-3 px-5 py-3 hover:bg-dk-surface2/50 transition-colors">
                       <span className={cn(
                         'text-xs font-bold font-mono px-2 py-0.5 rounded shrink-0',
-                        item.days_left <= 7  ? 'bg-[#3d1a1a] text-[#FF7B72]' :
-                        item.days_left <= 14 ? 'bg-[#3d2b0d] text-[#E3B341]' :
+                        item.days_left <= 7  ? 'bg-tint-red text-dk-red' :
+                        item.days_left <= 14 ? 'bg-tint-amber text-dk-orange' :
                                                'bg-dk-surface2 text-dk-muted'
                       )}>
                         D-{item.days_left}
