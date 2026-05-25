@@ -4,7 +4,7 @@
 import { ok, err } from '@/lib/utils'
 import { withAuth, parsePagination } from '@/lib/api'
 import { createRouteHandlerClient } from '@/lib/supabase/client'
-import { sendInvite } from '@/lib/invite'
+import { sendInvite as coreSendInvite } from '@saas/core-client'
 import type { UserRole } from '@/types/domain'
 
 export const GET = withAuth(async (req, ctx) => {
@@ -92,7 +92,7 @@ export const POST = withAuth(async (req, ctx) => {
     }
   }
 
-  // 이미 가입된 이메일 확인
+  // 이미 가입된 이메일 확인 (플랜 한도와 함께 빠른 로컬 검증)
   const { count: existing } = await supabase
     .from('users')
     .select('*', { count: 'exact', head: true })
@@ -100,24 +100,15 @@ export const POST = withAuth(async (req, ctx) => {
     .eq('tenant_id', ctx.tenantId)
   if ((existing ?? 0) > 0) return err('DUPLICATE', '이미 등록된 이메일입니다', 409)
 
-  // 테넌트명 및 초대자명 조회
-  const [{ data: tenant }, { data: inviter }] = await Promise.all([
-    supabase.from('tenants').select('name').eq('id', ctx.tenantId).single(),
-    supabase.from('users').select('name').eq('id', ctx.userId).single(),
-  ])
-  const tenantName  = (tenant  as { name: string } | null)?.name ?? ''
-  const inviterName = (inviter as { name: string } | null)?.name ?? ''
+  // 초대 생성·발송은 공통 기능 — core-api로 위임 (세션 JWT 전달)
+  const { authClient } = createRouteHandlerClient(req)
+  const { data: { session } } = await authClient.auth.getSession()
+  if (!session?.access_token) return err('UNAUTHORIZED', '세션이 만료되었습니다', 401)
 
-  // 초대 토큰 생성 + 이메일 발송 (HTTP 라운드트립 없이 직접 호출)
-  await sendInvite(supabase, {
-    email,
-    name,
-    role,
-    tenantId:    ctx.tenantId,
-    userId:      ctx.userId,
-    tenantName,
-    inviterName,
-  })
+  const res = await coreSendInvite({ email, name, role }, session.access_token)
+  if (!res.ok || res.error) {
+    return err('INVITE_FAILED', res.error?.message ?? '초대 발송에 실패했습니다', 502)
+  }
 
   return ok({ message: `${email}로 초대 이메일을 발송했습니다`, email, role })
 }, { roles: ['admin', 'manager'] })

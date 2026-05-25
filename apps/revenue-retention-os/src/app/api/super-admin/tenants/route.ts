@@ -3,9 +3,9 @@
 
 import { ok, err } from '@/lib/utils'
 import { withSuperAdmin, computeMrr } from '@/lib/super-admin'
-import { createServiceClient } from '@/lib/supabase/client'
+import { createServiceClient, createRouteHandlerClient } from '@/lib/supabase/client'
 import { parsePagination } from '@/lib/api'
-import { sendInvite } from '@/lib/invite'
+import { resendInvite } from '@saas/core-client'
 
 /** 테넌트 목록 조회.
  *  검색어(q), 상태(status), 페이지네이션(page/limit)을 받아 각 테넌트의 활성 구독·플랜·
@@ -130,19 +130,20 @@ export const POST = withSuperAdmin(async (req) => {
     })
   }
 
-  // 초대 메일 발송 (서비스 롤로 직접 sendInvite 호출, invited_by는 null)
-  try {
-    await sendInvite(supabase, {
-      email:       admin_email.trim(),
-      name:        admin_name.trim(),
-      role:        'admin',
-      tenantId:    (tenant as { id: string; name: string }).id,
-      userId:      null,
-      tenantName:  (tenant as { id: string; name: string }).name,
-      inviterName: 'Super Admin',
-    })
-  } catch (e) {
-    console.error('[SuperAdmin] 초대 이메일 발송 실패:', e)
+  // 초대 생성·발송은 공통 기능 — core-api로 위임 (슈퍼어드민 세션 JWT 전달)
+  const { authClient } = createRouteHandlerClient(req)
+  const { data: { session } } = await authClient.auth.getSession()
+  if (session?.access_token) {
+    const inviteRes = await resendInvite(
+      (tenant as { id: string; name: string }).id,
+      session.access_token,
+      { email: admin_email.trim(), name: admin_name.trim() },
+    )
+    if (!inviteRes.ok || inviteRes.error) {
+      console.error('[SuperAdmin] 초대 이메일 발송 실패:', inviteRes.error?.message)
+    }
+  } else {
+    console.error('[SuperAdmin] 세션 토큰 없음 — 초대 발송 건너뜀')
   }
 
   return ok({ tenant_id: (tenant as { id: string; name: string }).id, name: (tenant as { id: string; name: string }).name })
