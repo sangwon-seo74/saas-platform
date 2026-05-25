@@ -1,7 +1,7 @@
 -- ============================================================
 -- Phase 1: DB 스키마 분리 + RLS 정책 재작성
 -- 실행 환경: Supabase SQL Editor (superuser 권한)
--- 대상 DB: revenue-retention-os (PostgreSQL 15)
+-- 대상 DB: revenue-retention-os (PostgreSQL 16)
 -- 작성일: 2026-05-25
 --
 -- 분리 전략:
