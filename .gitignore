@@ -1,0 +1,42 @@
+# Node
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js
+apps/**/.next/
+apps/**/out/
+apps/**/build/
+
+# 환경 변수 — 절대 커밋 금지
+.env
+.env.local
+.env.*.local
+core-api/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 로그
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Claude
+.claude/
