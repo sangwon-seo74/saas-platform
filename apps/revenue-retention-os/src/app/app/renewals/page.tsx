@@ -22,15 +22,15 @@ type RenewalCard = {
 const BUCKETS = [
   { key: 'D-90', label: 'D-90', from: 61, to: 90, color: 'border-dk-border bg-dk-surface2/30' },
   { key: 'D-60', label: 'D-60', from: 31, to: 60, color: 'border-dk-border bg-dk-surface2/30' },
-  { key: 'D-30', label: 'D-30', from: 15, to: 30, color: 'border-[#7a5000] bg-[#3d2b0d]/30' },
-  { key: 'D-14', label: 'D-14', from: 8,  to: 14, color: 'border-[#7a5000] bg-[#3d2b0d]/40' },
-  { key: 'D-7',  label: 'D-7',  from: 0,  to: 7,  color: 'border-[#7f2020] bg-[#3d1a1a]/40' },
+  { key: 'D-30', label: 'D-30', from: 15, to: 30, color: 'border-tint-amber-border bg-tint-amber/30' },
+  { key: 'D-14', label: 'D-14', from: 8,  to: 14, color: 'border-tint-amber-border bg-tint-amber/40' },
+  { key: 'D-7',  label: 'D-7',  from: 0,  to: 7,  color: 'border-tint-red-border bg-tint-red/40' },
 ]
 
 const RISK_CFG: Record<RiskLevel, { cls: string; borderCls: string; icon: React.ElementType }> = {
-  high:   { cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]',   borderCls: 'border-l-[#FF7B72]',  icon: AlertCircle },
-  medium: { cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]',   borderCls: 'border-l-[#E3B341]',  icon: AlertTriangle },
-  low:    { cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]',   borderCls: 'border-l-[#3FB950]',  icon: CheckCircle2 },
+  high:   { cls: 'bg-tint-red text-dk-red border-tint-red-border',   borderCls: 'border-l-dk-red',  icon: AlertCircle },
+  medium: { cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',   borderCls: 'border-l-dk-orange',  icon: AlertTriangle },
+  low:    { cls: 'bg-tint-green text-dk-green border-tint-green-border',   borderCls: 'border-l-dk-green',  icon: CheckCircle2 },
 }
 
 const STATUS_LABEL: Record<RenewalStatus, string> = {
@@ -38,10 +38,10 @@ const STATUS_LABEL: Record<RenewalStatus, string> = {
 }
 const STATUS_CLS: Record<RenewalStatus, string> = {
   pending:     'bg-dk-surface2 text-dk-muted',
-  contacted:   'bg-[#1c2d4a] text-[#58A6FF]',
-  negotiating: 'bg-[#3d2b0d] text-[#E3B341]',
-  won:         'bg-[#0f2d1c] text-[#3FB950]',
-  lost:        'bg-[#3d1a1a] text-[#FF7B72]',
+  contacted:   'bg-tint-blue text-dk-blue',
+  negotiating: 'bg-tint-amber text-dk-orange',
+  won:         'bg-tint-green text-dk-green',
+  lost:        'bg-tint-red text-dk-red',
 }
 
 function RenewalKanbanCard({ renewal }: { renewal: RenewalCard }) {
@@ -74,8 +74,8 @@ function RenewalKanbanCard({ renewal }: { renewal: RenewalCard }) {
         <div className="flex items-center gap-1.5">
           <span className={cn(
             'text-[10px] font-bold font-mono px-1.5 py-0.5 rounded',
-            dday <= 7  ? 'bg-[#3d1a1a] text-[#FF7B72]' :
-            dday <= 14 ? 'bg-[#3d2b0d] text-[#E3B341]' :
+            dday <= 7  ? 'bg-tint-red text-dk-red' :
+            dday <= 14 ? 'bg-tint-amber text-dk-orange' :
                          'bg-dk-surface2 text-dk-muted'
           )}>
             D-{dday}
@@ -159,7 +159,7 @@ export default function RenewalsPage() {
       </div>
 
       {totalCount > renewals.length && (
-        <div className="bg-amber-500/10 border border-[#7a5000] text-[#E3B341] text-xs rounded-lg px-4 py-2.5 shrink-0">
+        <div className="bg-amber-500/10 border border-tint-amber-border text-dk-orange text-xs rounded-lg px-4 py-2.5 shrink-0">
           전체 {totalCount}건 중 상위 100건만 표시됩니다. 나머지 {totalCount - renewals.length}건은 필터를 좁혀 확인하세요.
         </div>
       )}
@@ -177,13 +177,13 @@ export default function RenewalsPage() {
         <div className="flex gap-1.5">
           <button onClick={() => setUserFilter('all')}
             className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',
-              userFilter === 'all' ? 'bg-[#1f6feb] text-white border-[#1f6feb]' : 'text-dk-muted border-dk-border bg-dk-surface')}>
+              userFilter === 'all' ? 'bg-dk-accent text-white border-dk-accent' : 'text-dk-muted border-dk-border bg-dk-surface')}>
             전체
           </button>
           {users.map(u => (
             <button key={u} onClick={() => setUserFilter(u)}
               className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',
-                userFilter === u ? 'bg-[#1f6feb] text-white border-[#1f6feb]' : 'text-dk-muted border-dk-border bg-dk-surface')}>
+                userFilter === u ? 'bg-dk-accent text-white border-dk-accent' : 'text-dk-muted border-dk-border bg-dk-surface')}>
               {u}
             </button>
           ))}
@@ -197,9 +197,9 @@ export default function RenewalsPage() {
               <div className="flex items-center gap-2">
                 <span className={cn(
                   'text-xs font-bold',
-                  bucket.key === 'D-7'  ? 'text-[#FF7B72]' :
-                  bucket.key === 'D-14' ? 'text-[#E3B341]' :
-                  bucket.key === 'D-30' ? 'text-[#E3B341]' : 'text-dk-muted'
+                  bucket.key === 'D-7'  ? 'text-dk-red' :
+                  bucket.key === 'D-14' ? 'text-dk-orange' :
+                  bucket.key === 'D-30' ? 'text-dk-orange' : 'text-dk-muted'
                 )}>
                   {bucket.label}
                 </span>

@@ -44,6 +44,15 @@ const config: Config = {
           accent:      '#1f6feb',
           accentHover: '#388bfd',
           blueHover:   '#79baff',
+          border3:     '#444c56',
+          // solid 액션 버튼 (GitHub 팔레트)
+          success:      '#238636',
+          successHover: '#2ea043',
+          successDeep:  '#1c6b3a',
+          successBright:'#56d364',
+          danger:       '#da3633',
+          dangerHover:  '#f85149',
+          dangerDeep:   '#a03030',
         },
         // 상태 칩 틴트 (배경/테두리/텍스트) — 다크 UI 전용
         tint: {

@@ -57,24 +57,24 @@ type RenewalItem = {
 
 // ─── 상수 ────────────────────────────────────────────────
 const CONTRACT_STATUS_CFG: Record<ContractStatus, { label: string; cls: string }> = {
-  active:    { label: '활성',   cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]' },
-  expired:   { label: '만료',   cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]' },
+  active:    { label: '활성',   cls: 'bg-tint-green text-dk-green border-tint-green-border' },
+  expired:   { label: '만료',   cls: 'bg-tint-red text-dk-red border-tint-red-border' },
   cancelled: { label: '해지',   cls: 'bg-dk-surface2 text-dk-muted border-dk-border' },
-  renewed:   { label: '갱신됨', cls: 'bg-[#1c2d4a] text-[#58A6FF] border-[#2d4a7a]' },
+  renewed:   { label: '갱신됨', cls: 'bg-tint-blue text-dk-blue border-tint-blue-border' },
 }
 
 const RENEWAL_STATUS_CFG: Record<RenewalStatus, { label: string; cls: string }> = {
   pending:     { label: '대기중',   cls: 'bg-dk-surface2 text-dk-muted border-dk-border' },
-  contacted:   { label: '접촉',     cls: 'bg-[#1c2d4a] text-[#58A6FF] border-[#2d4a7a]' },
-  negotiating: { label: '협의중',   cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]' },
-  won:         { label: '갱신완료', cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]' },
-  lost:        { label: '이탈',     cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]' },
+  contacted:   { label: '접촉',     cls: 'bg-tint-blue text-dk-blue border-tint-blue-border' },
+  negotiating: { label: '협의중',   cls: 'bg-tint-amber text-dk-orange border-tint-amber-border' },
+  won:         { label: '갱신완료', cls: 'bg-tint-green text-dk-green border-tint-green-border' },
+  lost:        { label: '이탈',     cls: 'bg-tint-red text-dk-red border-tint-red-border' },
 }
 
 const RISK_CFG: Record<string, { label: string; cls: string }> = {
-  high:   { label: '위험', cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]' },
-  medium: { label: '주의', cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]' },
-  low:    { label: '안전', cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]' },
+  high:   { label: '위험', cls: 'bg-tint-red text-dk-red border-tint-red-border' },
+  medium: { label: '주의', cls: 'bg-tint-amber text-dk-orange border-tint-amber-border' },
+  low:    { label: '안전', cls: 'bg-tint-green text-dk-green border-tint-green-border' },
 }
 
 const TABS = ['개요', '갱신 이력', '발급 계정', '결제']
@@ -198,18 +198,18 @@ function EditContractModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.started_at} onChange={e => set('started_at', e.target.value)} className={INPUT_CLS} />
             </div>
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.expires_at} onChange={e => set('expires_at', e.target.value)} className={INPUT_CLS} />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-dk-red">*</span></label>
               <input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)}
                 className={cn(INPUT_CLS, 'font-mono')} />
             </div>
@@ -225,7 +225,7 @@ function EditContractModal({
               <span className="text-xs text-dk-muted">실계약금액</span>
               <span className="text-sm font-bold text-dk-text font-mono">
                 {previewFinal.toLocaleString('ko-KR')}원
-                {discountPct > 0 && <span className="text-xs text-[#3FB950] ml-1.5">(-{discountPct}%)</span>}
+                {discountPct > 0 && <span className="text-xs text-dk-green ml-1.5">(-{discountPct}%)</span>}
               </span>
             </div>
           )}
@@ -259,7 +259,7 @@ function EditContractModal({
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -268,7 +268,7 @@ function EditContractModal({
               취소
             </button>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting ? '저장 중...' : '수정 완료'}
             </button>
@@ -323,7 +323,7 @@ function DeleteContractModal({
             : '이 작업은 되돌릴 수 없습니다.'}
         </p>
         {error && (
-          <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2 mb-3">{error}</p>
+          <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2 mb-3">{error}</p>
         )}
         <div className="flex gap-2">
           <button onClick={onClose}
@@ -331,7 +331,7 @@ function DeleteContractModal({
             취소
           </button>
           <button onClick={handleDelete} disabled={deleting}
-            className="flex-1 py-2.5 text-sm text-white bg-[#da3633] rounded-lg hover:bg-[#f85149] disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+            className="flex-1 py-2.5 text-sm text-white bg-dk-danger rounded-lg hover:bg-dk-dangerHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
             {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             {deleting ? '처리 중...' : isActive ? '해지 처리' : '삭제'}
           </button>
@@ -357,7 +357,7 @@ function TabOverview({ c }: { c: ContractDetail }) {
           )}
         </div>
         <div className={cn('border rounded-xl px-4 py-3.5',
-          dday <= 7 ? 'bg-[#3d1a1a] border-[#7f2020]' : dday <= 30 ? 'bg-[#3d2b0d] border-[#7a5000]' : 'bg-dk-surface border-dk-border'
+          dday <= 7 ? 'bg-tint-red border-tint-red-border' : dday <= 30 ? 'bg-tint-amber border-tint-amber-border' : 'bg-dk-surface border-dk-border'
         )}>
           <p className="text-xs text-dk-muted">만료까지</p>
           <p className={cn('text-xl font-bold font-mono mt-0.5', ddayCls)}>
@@ -378,7 +378,7 @@ function TabOverview({ c }: { c: ContractDetail }) {
           <InfoRow label="고객사" value={
             c.company ? (
               <Link href={`/app/companies/${c.company.id}`}
-                className="text-dk-blue hover:text-[#79BAFF] flex items-center gap-1 transition-colors">
+                className="text-dk-blue hover:text-dk-blueHover flex items-center gap-1 transition-colors">
                 {c.company.name} <ChevronRight className="w-3 h-3" />
               </Link>
             ) : '—'
@@ -423,12 +423,12 @@ function TabRenewals({ renewals }: { renewals: RenewalItem[] }) {
         return (
           <div key={r.id} className={cn(
             'border rounded-xl p-4',
-            i === 0 ? 'bg-[#1c2d4a]/30 border-[#2d4a7a]' : 'bg-dk-surface border-dk-border'
+            i === 0 ? 'bg-tint-blue/30 border-tint-blue-border' : 'bg-dk-surface border-dk-border'
           )}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
                 {i === 0 && (
-                  <span className="text-[10px] bg-[#1f6feb] text-white px-1.5 py-0.5 rounded font-medium">현재</span>
+                  <span className="text-[10px] bg-dk-accent text-white px-1.5 py-0.5 rounded font-medium">현재</span>
                 )}
                 <div>
                   <p className="text-sm font-semibold text-dk-text">
@@ -452,16 +452,16 @@ function TabRenewals({ renewals }: { renewals: RenewalItem[] }) {
               <div className="mt-3 pt-3 border-t border-dk-border flex items-center gap-1">
                 {r.result === 'churned' ? (
                   <>
-                    <X className="w-3.5 h-3.5 text-[#FF7B72]" />
-                    <span className="text-xs text-[#FF7B72]">이탈</span>
+                    <X className="w-3.5 h-3.5 text-dk-red" />
+                    <span className="text-xs text-dk-red">이탈</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className={cn('w-3.5 h-3.5',
-                      r.result === 'upsell' ? 'text-[#58A6FF]' : r.result === 'downgrade' ? 'text-[#E3B341]' : 'text-[#3FB950]'
+                      r.result === 'upsell' ? 'text-dk-blue' : r.result === 'downgrade' ? 'text-dk-orange' : 'text-dk-green'
                     )} />
                     <span className={cn('text-xs',
-                      r.result === 'upsell' ? 'text-[#58A6FF]' : r.result === 'downgrade' ? 'text-[#E3B341]' : 'text-[#3FB950]'
+                      r.result === 'upsell' ? 'text-dk-blue' : r.result === 'downgrade' ? 'text-dk-orange' : 'text-dk-green'
                     )}>
                       {r.result === 'renewed' ? '재계약' : r.result === 'upsell' ? '업셀' : '다운셀'}
                     </span>
@@ -472,7 +472,7 @@ function TabRenewals({ renewals }: { renewals: RenewalItem[] }) {
             {i === 0 && (
               <div className="mt-3">
                 <Link href={`/app/renewals/${r.id}`}
-                  className="text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-1 transition-colors">
+                  className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-1 transition-colors">
                   갱신 관리로 이동 <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -498,7 +498,7 @@ function TabAccounts({ accounts, accountCount }: { accounts: ContractAccount[]; 
     <div className="bg-dk-surface border border-dk-border rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-dk-border">
         <p className="text-sm font-semibold text-dk-text">발급된 계정 ({accounts.length}/{accountCount})</p>
-        <button className="flex items-center gap-1 text-xs text-dk-blue border border-[#2d4a7a] px-2.5 py-1.5 rounded-lg hover:bg-[#1c2d4a] transition-colors">
+        <button className="flex items-center gap-1 text-xs text-dk-blue border border-tint-blue-border px-2.5 py-1.5 rounded-lg hover:bg-tint-blue transition-colors">
           <Plus className="w-3.5 h-3.5" /> 계정 추가
         </button>
       </div>
@@ -511,7 +511,7 @@ function TabAccounts({ accounts, accountCount }: { accounts: ContractAccount[]; 
         <div className="divide-y divide-dk-border">
           {accounts.map(a => (
             <div key={a.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-dk-surface2/50 transition-colors">
-              <div className="w-7 h-7 rounded-lg bg-[#1c2d4a] flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-tint-blue flex items-center justify-center shrink-0">
                 <Users className="w-3.5 h-3.5 text-dk-blue" />
               </div>
               <div className="flex-1 min-w-0">
@@ -520,7 +520,7 @@ function TabAccounts({ accounts, accountCount }: { accounts: ContractAccount[]; 
                   <button onClick={() => handleCopy(a.account_id)}
                     className="text-dk-dim hover:text-dk-blue transition-colors">
                     {copied === a.account_id
-                      ? <CheckCircle2 className="w-3 h-3 text-[#3FB950]" />
+                      ? <CheckCircle2 className="w-3 h-3 text-dk-green" />
                       : <Copy className="w-3 h-3" />}
                   </button>
                 </div>
@@ -566,32 +566,32 @@ function TabPayment({ c, onPaid }: { c: ContractDetail; onPaid: () => void }) {
 
   return (
     <div className="space-y-4">
-      <div className={cn('border rounded-xl p-5', isPaid ? 'bg-[#0f2d1c] border-[#1c5c35]' : 'bg-[#3d2b0d] border-[#7a5000]')}>
+      <div className={cn('border rounded-xl p-5', isPaid ? 'bg-tint-green border-tint-green-border' : 'bg-tint-amber border-tint-amber-border')}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isPaid
-              ? <CheckCircle2 className="w-5 h-5 text-[#3FB950]" />
-              : <Clock className="w-5 h-5 text-[#E3B341]" />
+              ? <CheckCircle2 className="w-5 h-5 text-dk-green" />
+              : <Clock className="w-5 h-5 text-dk-orange" />
             }
-            <span className={cn('text-sm font-semibold', isPaid ? 'text-[#3FB950]' : 'text-[#E3B341]')}>
+            <span className={cn('text-sm font-semibold', isPaid ? 'text-dk-green' : 'text-dk-orange')}>
               {isPaid ? '결제 완료' : '결제 대기중'}
             </span>
           </div>
           {!isPaid && (
             <button onClick={handleMarkPaid} disabled={saving}
-              className="text-xs text-white bg-[#1f6feb] hover:bg-[#388bfd] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50">
+              className="text-xs text-white bg-dk-accent hover:bg-dk-accentHover px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50">
               {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {saving ? '처리 중...' : '결제 완료 처리'}
             </button>
           )}
         </div>
         {isPaid && paidAt && (
-          <p className="text-xs text-[#3FB950]/70 mt-1.5">{formatDate(paidAt)} 결제 확인</p>
+          <p className="text-xs text-dk-green/70 mt-1.5">{formatDate(paidAt)} 결제 확인</p>
         )}
       </div>
 
       {error && (
-        <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+        <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
       )}
 
       <Section title="결제 정보">
@@ -705,7 +705,7 @@ export default function ContractDetailPage() {
                 </button>
                 <button
                   onClick={() => { setShowDelete(true); setShowMenu(false) }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#FF7B72] hover:bg-[#3d1a1a] transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-dk-red hover:bg-tint-red transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" /> {contract.status === 'active' ? '해지' : '삭제'}
                 </button>

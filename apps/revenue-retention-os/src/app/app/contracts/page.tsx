@@ -29,10 +29,10 @@ type CompanyOption = { id: string; name: string }
 type ProductOption = { id: string; name: string; unit_price: number | null }
 
 const STATUS_CFG: Record<ContractStatus, { label: string; cls: string }> = {
-  active:    { label: '계약중', cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]' },
-  expired:   { label: '만료',   cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]' },
+  active:    { label: '계약중', cls: 'bg-tint-green text-dk-green border-tint-green-border' },
+  expired:   { label: '만료',   cls: 'bg-tint-red text-dk-red border-tint-red-border' },
   cancelled: { label: '해지',   cls: 'bg-dk-surface2 text-dk-muted border-dk-border' },
-  renewed:   { label: '갱신됨', cls: 'bg-[#1c2d4a] text-[#58A6FF] border-[#2d4a7a]' },
+  renewed:   { label: '갱신됨', cls: 'bg-tint-blue text-dk-blue border-tint-blue-border' },
 }
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg focus:outline-none focus:ring-2 focus:ring-dk-blue'
@@ -168,7 +168,7 @@ function NewContractModal({ onClose, onSuccess }: {
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-dk-muted mb-1 block">고객사 <span className="text-[#FF7B72]">*</span></label>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">고객사 <span className="text-dk-red">*</span></label>
             <CompanyPicker
               companies={companies}
               selectedId={form.company_id}
@@ -186,18 +186,18 @@ function NewContractModal({ onClose, onSuccess }: {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.started_at} onChange={e => set('started_at', e.target.value)} className={INPUT_CLS} />
             </div>
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.expires_at} onChange={e => set('expires_at', e.target.value)} className={INPUT_CLS} />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-dk-red">*</span></label>
               <input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)}
                 placeholder="0" className={cn(INPUT_CLS, 'font-mono')} />
             </div>
@@ -213,7 +213,7 @@ function NewContractModal({ onClose, onSuccess }: {
               <span className="text-xs text-dk-muted">실계약금액</span>
               <span className="text-sm font-bold text-dk-text font-mono">
                 {finalAmount.toLocaleString('ko-KR')}원
-                {discountPct > 0 && <span className="text-xs text-[#3FB950] ml-1.5">(-{discountPct}%)</span>}
+                {discountPct > 0 && <span className="text-xs text-dk-green ml-1.5">(-{discountPct}%)</span>}
               </span>
             </div>
           )}
@@ -243,7 +243,7 @@ function NewContractModal({ onClose, onSuccess }: {
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -252,7 +252,7 @@ function NewContractModal({ onClose, onSuccess }: {
               취소
             </button>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting ? '등록 중...' : '계약 등록'}
             </button>
@@ -290,7 +290,7 @@ function ContractRowItem({ contract }: { contract: ContractRow }) {
           {formatAmount(contract.final_amount ?? contract.amount)}
         </span>
         {contract.discount_rate > 0 && (
-          <p className="text-xs text-[#3FB950]">-{contract.discount_rate}%</p>
+          <p className="text-xs text-dk-green">-{contract.discount_rate}%</p>
         )}
       </td>
       <td className="px-4 py-3.5">
@@ -304,13 +304,13 @@ function ContractRowItem({ contract }: { contract: ContractRow }) {
       </td>
       <td className="px-4 py-3.5">
         {contract.is_paid
-          ? <CheckCircle2 className="w-4 h-4 text-[#3FB950]" />
-          : <AlertCircle className="w-4 h-4 text-[#E3B341]" />
+          ? <CheckCircle2 className="w-4 h-4 text-dk-green" />
+          : <AlertCircle className="w-4 h-4 text-dk-orange" />
         }
       </td>
       <td className="px-4 py-3.5">
         <Link href={`/app/contracts/${contract.id}`}
-          className="text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           보기 <ChevronRight className="w-3 h-3" />
         </Link>
       </td>
@@ -361,7 +361,7 @@ export default function ContractsPage() {
           <p className="text-sm text-dk-dim mt-0.5">활성 {active.length}건 · 전체 {contracts.length}건</p>
         </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 bg-[#1f6feb] text-white text-sm px-3.5 py-2 rounded-lg hover:bg-[#388bfd] transition-colors">
+          className="flex items-center gap-1.5 bg-dk-accent text-white text-sm px-3.5 py-2 rounded-lg hover:bg-dk-accentHover transition-colors">
           <Plus className="w-4 h-4" /> 계약 등록
         </button>
       </div>
@@ -370,24 +370,24 @@ export default function ContractsPage() {
       <div className="grid grid-cols-3 gap-3 shrink-0">
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-3.5 h-3.5 text-[#58A6FF]" />
+            <DollarSign className="w-3.5 h-3.5 text-dk-blue" />
             <span className="text-xs text-dk-muted">활성 계약 총액</span>
           </div>
           <p className="text-xl font-bold text-dk-text font-mono">{formatAmount(totalAmount)}</p>
         </div>
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-3.5 h-3.5 text-[#E3B341]" />
+            <Calendar className="w-3.5 h-3.5 text-dk-orange" />
             <span className="text-xs text-dk-muted">30일 내 만료</span>
           </div>
-          <p className={cn('text-xl font-bold font-mono', expiringCnt > 0 ? 'text-[#E3B341]' : 'text-dk-text')}>{expiringCnt}건</p>
+          <p className={cn('text-xl font-bold font-mono', expiringCnt > 0 ? 'text-dk-orange' : 'text-dk-text')}>{expiringCnt}건</p>
         </div>
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <AlertCircle className="w-3.5 h-3.5 text-[#FF7B72]" />
+            <AlertCircle className="w-3.5 h-3.5 text-dk-red" />
             <span className="text-xs text-dk-muted">미납 계약</span>
           </div>
-          <p className={cn('text-xl font-bold font-mono', unpaidCnt > 0 ? 'text-[#FF7B72]' : 'text-dk-text')}>{unpaidCnt}건</p>
+          <p className={cn('text-xl font-bold font-mono', unpaidCnt > 0 ? 'text-dk-red' : 'text-dk-text')}>{unpaidCnt}건</p>
         </div>
       </div>
 

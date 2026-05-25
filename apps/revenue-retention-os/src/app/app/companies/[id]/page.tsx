@@ -54,35 +54,35 @@ type Message = {
 const TABS = ['개요', '담당자', '계약', '활동이력', '발송이력']
 
 const ACTIVITY_ICON_CLS: Record<string, string> = {
-  call:  'bg-[#1c2d4a] text-[#58A6FF]',
-  visit: 'bg-[#1c3528] text-[#3FB950]',
-  email: 'bg-[#2d1c4a] text-[#b07fff]',
-  sms:   'bg-[#2d1c4a] text-[#b07fff]',
-  kakao: 'bg-[#2d1c4a] text-[#b07fff]',
+  call:  'bg-tint-blue text-dk-blue',
+  visit: 'bg-tint-green-hover text-dk-green',
+  email: 'bg-tint-purple text-tint-purple-text',
+  sms:   'bg-tint-purple text-tint-purple-text',
+  kakao: 'bg-tint-purple text-tint-purple-text',
 }
 const CALL_RESULT_CLS: Record<string, string> = {
-  connected: 'text-[#3FB950]', no_answer: 'text-dk-dim', rejected: 'text-[#FF7B72]', scheduled: 'text-dk-blue'
+  connected: 'text-dk-green', no_answer: 'text-dk-dim', rejected: 'text-dk-red', scheduled: 'text-dk-blue'
 }
 const CALL_RESULT_LABEL: Record<string, string> = {
   connected: '연결', no_answer: '부재중', rejected: '거절', scheduled: '예약'
 }
 const RISK_CFG: Record<string, { label: string; cls: string; icon: React.ElementType }> = {
-  high:   { label: '위험', cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]',   icon: AlertCircle },
-  medium: { label: '주의', cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]',   icon: AlertTriangle },
-  low:    { label: '안전', cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]',   icon: CheckCircle2 },
+  high:   { label: '위험', cls: 'bg-tint-red text-dk-red border-tint-red-border',   icon: AlertCircle },
+  medium: { label: '주의', cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',   icon: AlertTriangle },
+  low:    { label: '안전', cls: 'bg-tint-green text-dk-green border-tint-green-border',   icon: CheckCircle2 },
 }
 const CONTRACT_STATUS_CLS: Record<ContractStatus, string> = {
-  active:    'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]',
-  expired:   'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]',
+  active:    'bg-tint-green text-dk-green border-tint-green-border',
+  expired:   'bg-tint-red text-dk-red border-tint-red-border',
   cancelled: 'bg-dk-surface2 text-dk-muted border-dk-border',
-  renewed:   'bg-[#1c2d4a] text-[#58A6FF] border-[#2d4a7a]',
+  renewed:   'bg-tint-blue text-dk-blue border-tint-blue-border',
 }
 const CONTRACT_STATUS_LABEL: Record<ContractStatus, string> = {
   active: '활성', expired: '만료', cancelled: '해지', renewed: '갱신됨'
 }
 const CH_ICON: Record<string, string> = { email: '📧', sms: '💬', kakao: '💛' }
 const MSG_STATUS_CLS: Record<string, string> = {
-  sent: 'text-dk-dim', delivered: 'text-dk-blue', failed: 'text-[#FF7B72]', read: 'text-[#3FB950]'
+  sent: 'text-dk-dim', delivered: 'text-dk-blue', failed: 'text-dk-red', read: 'text-dk-green'
 }
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg focus:outline-none focus:ring-2 focus:ring-dk-blue'
@@ -160,7 +160,7 @@ function AddContactModal({
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-dk-muted mb-1 block">이름 <span className="text-[#FF7B72]">*</span></label>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">이름 <span className="text-dk-red">*</span></label>
             <input autoFocus value={form.name} onChange={e => set('name', e.target.value)}
               placeholder="홍길동" className={INPUT_CLS} />
           </div>
@@ -213,7 +213,7 @@ function AddContactModal({
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -222,7 +222,7 @@ function AddContactModal({
               취소
             </button>
             <button type="submit" disabled={!form.name.trim() || submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {submitting ? '등록 중...' : '담당자 등록'}
             </button>
@@ -298,7 +298,7 @@ function EditContactModal({
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-dk-muted mb-1 block">이름 <span className="text-[#FF7B72]">*</span></label>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">이름 <span className="text-dk-red">*</span></label>
             <input autoFocus value={form.name} onChange={e => set('name', e.target.value)}
               placeholder="홍길동" className={INPUT_CLS} />
           </div>
@@ -351,7 +351,7 @@ function EditContactModal({
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -360,7 +360,7 @@ function EditContactModal({
               취소
             </button>
             <button type="submit" disabled={!form.name.trim() || submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {submitting ? '저장 중...' : '수정 완료'}
             </button>
@@ -410,7 +410,7 @@ function DeleteContactModal({
         </p>
         <p className="text-xs text-dk-dim mb-5">이 작업은 되돌릴 수 없습니다.</p>
         {error && (
-          <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2 mb-3">{error}</p>
+          <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2 mb-3">{error}</p>
         )}
         <div className="flex gap-2">
           <button onClick={onClose}
@@ -418,7 +418,7 @@ function DeleteContactModal({
             취소
           </button>
           <button onClick={handleDelete} disabled={deleting}
-            className="flex-1 py-2.5 text-sm text-white bg-[#da3633] rounded-lg hover:bg-[#f85149] disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+            className="flex-1 py-2.5 text-sm text-white bg-dk-danger rounded-lg hover:bg-dk-dangerHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
             {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             {deleting ? '삭제 중...' : '삭제'}
           </button>
@@ -493,7 +493,7 @@ function EditTaskModal({
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-dk-muted mb-1 block">제목 <span className="text-[#FF7B72]">*</span></label>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">제목 <span className="text-dk-red">*</span></label>
             <input autoFocus value={form.title} onChange={e => set('title', e.target.value)}
               placeholder="업무 내용 입력..." className={INPUT_CLS} />
           </div>
@@ -534,7 +534,7 @@ function EditTaskModal({
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -543,7 +543,7 @@ function EditTaskModal({
               취소
             </button>
             <button type="submit" disabled={!form.title.trim() || submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {submitting ? '수정 중...' : '저장'}
             </button>
@@ -588,7 +588,7 @@ function DeleteTaskModal({
         <p className="text-sm text-dk-muted mb-1">다음 업무를 삭제하시겠습니까?</p>
         <p className="text-sm text-dk-text font-medium mb-4 truncate">{task.title}</p>
         {error && (
-          <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2 mb-3">{error}</p>
+          <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2 mb-3">{error}</p>
         )}
         <div className="flex gap-2">
           <button onClick={onClose}
@@ -596,7 +596,7 @@ function DeleteTaskModal({
             취소
           </button>
           <button onClick={handleDelete} disabled={deleting}
-            className="flex-1 py-2.5 text-sm text-white bg-[#da3633] rounded-lg hover:bg-[#f85149] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            className="flex-1 py-2.5 text-sm text-white bg-dk-danger rounded-lg hover:bg-dk-dangerHover disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             {deleting ? '삭제 중...' : '삭제'}
           </button>
         </div>
@@ -678,16 +678,16 @@ function UnifiedActivityModal({
   }
 
   const TYPE_TABS: { value: ActType; label: string; Icon: React.ElementType; cls: string }[] = [
-    { value: 'call',  label: '통화',   Icon: Phone,       cls: 'border-[#2d4a7a] bg-[#1c2d4a] text-[#58A6FF]' },
-    { value: 'visit', label: '방문',   Icon: Users,       cls: 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]' },
-    { value: 'email', label: '이메일', Icon: Mail,        cls: 'border-[#3d2060] bg-[#2d1c4a] text-[#b07fff]' },
-    { value: 'task',  label: '업무',   Icon: CheckSquare, cls: 'border-[#444c56] bg-dk-surface2 text-dk-text' },
+    { value: 'call',  label: '통화',   Icon: Phone,       cls: 'border-tint-blue-border bg-tint-blue text-dk-blue' },
+    { value: 'visit', label: '방문',   Icon: Users,       cls: 'border-tint-green-border bg-tint-green text-dk-green' },
+    { value: 'email', label: '이메일', Icon: Mail,        cls: 'border-tint-purple-border bg-tint-purple text-tint-purple-text' },
+    { value: 'task',  label: '업무',   Icon: CheckSquare, cls: 'border-dk-border3 bg-dk-surface2 text-dk-text' },
   ]
   const CALL_BTNS = [
-    { value: 'connected', label: '연결됨',   cls: 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]' },
-    { value: 'no_answer', label: '부재중',   cls: 'border-[#7a5000] bg-[#3d2b0d] text-[#E3B341]' },
-    { value: 'rejected',  label: '거절',     cls: 'border-[#7f2020] bg-[#3d1a1a] text-[#FF7B72]' },
-    { value: 'scheduled', label: '예약통화', cls: 'border-[#2d4a7a] bg-[#1c2d4a] text-[#58A6FF]' },
+    { value: 'connected', label: '연결됨',   cls: 'border-tint-green-border bg-tint-green text-dk-green' },
+    { value: 'no_answer', label: '부재중',   cls: 'border-tint-amber-border bg-tint-amber text-dk-orange' },
+    { value: 'rejected',  label: '거절',     cls: 'border-tint-red-border bg-tint-red text-dk-red' },
+    { value: 'scheduled', label: '예약통화', cls: 'border-tint-blue-border bg-tint-blue text-dk-blue' },
   ]
 
   const handleSubmit = async () => {
@@ -790,7 +790,7 @@ function UnifiedActivityModal({
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all',
                     selectedContact?.id === c.id
-                      ? 'border-dk-blue bg-[#111d30] text-dk-blue'
+                      ? 'border-dk-blue bg-tint-blue-deep text-dk-blue'
                       : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2 hover:text-dk-text'
                   )}
                 >
@@ -816,7 +816,7 @@ function UnifiedActivityModal({
                           className={cn(
                             'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors',
                             phoneChoice === 'mobile'
-                              ? 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]'
+                              ? 'border-tint-green-border bg-tint-green text-dk-green'
                               : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                           )}
                         >
@@ -838,7 +838,7 @@ function UnifiedActivityModal({
                           className={cn(
                             'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors',
                             phoneChoice === 'phone'
-                              ? 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]'
+                              ? 'border-tint-green-border bg-tint-green text-dk-green'
                               : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                           )}
                         >
@@ -861,7 +861,7 @@ function UnifiedActivityModal({
                   selectedContact.email ? (
                     <a
                       href={`mailto:${selectedContact.email}`}
-                      className="inline-flex items-center gap-1.5 text-xs text-[#b07fff] border border-[#3d2060] bg-[#2d1c4a] px-3 py-1.5 rounded-lg hover:bg-[#3d2060] transition-colors max-w-full truncate"
+                      className="inline-flex items-center gap-1.5 text-xs text-tint-purple-text border border-tint-purple-border bg-tint-purple px-3 py-1.5 rounded-lg hover:bg-tint-purple-border transition-colors max-w-full truncate"
                       title={selectedContact.email}
                     >
                       <Mail className="w-3 h-3 shrink-0" />
@@ -886,7 +886,7 @@ function UnifiedActivityModal({
             <input type="datetime-local" value={activityAt} onChange={e => setActivityAt(e.target.value)} className={INPUT_CLS} />
           </div>
           <div className="mb-3">
-            <label className="text-xs font-medium text-dk-muted mb-1.5 block">통화 결과 <span className="text-[#FF7B72]">*</span></label>
+            <label className="text-xs font-medium text-dk-muted mb-1.5 block">통화 결과 <span className="text-dk-red">*</span></label>
             <div className="grid grid-cols-2 gap-2">
               {CALL_BTNS.map(btn => (
                 <button key={btn.value} onClick={() => setCallResult(btn.value)}
@@ -917,8 +917,8 @@ function UnifiedActivityModal({
             </div>
           </>)}
           {callResult === 'scheduled' && (
-            <div className="mb-3 p-3 rounded-xl border border-[#2d4a7a] bg-[#111d30]">
-              <label className="text-xs font-medium text-[#58A6FF] mb-1.5 block">약속 일시 <span className="text-[#FF7B72]">*</span></label>
+            <div className="mb-3 p-3 rounded-xl border border-tint-blue-border bg-tint-blue-deep">
+              <label className="text-xs font-medium text-dk-blue mb-1.5 block">약속 일시 <span className="text-dk-red">*</span></label>
               <input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} className={INPUT_CLS} />
               <p className="text-[10px] text-dk-dim mt-1.5">약속 시간에 맞춰 업무가 자동 등록됩니다</p>
             </div>
@@ -978,16 +978,16 @@ function UnifiedActivityModal({
         {/* ── 업무 ── */}
         {type === 'task' && (<>
           <div className="mb-3">
-            <label className="text-xs font-medium text-dk-muted mb-1 block">업무 제목 <span className="text-[#FF7B72]">*</span></label>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">업무 제목 <span className="text-dk-red">*</span></label>
             <input value={taskTitle} onChange={e => setTaskTitle(e.target.value)} placeholder="업무 내용을 입력하세요" className={INPUT_CLS} />
           </div>
           <div className="mb-3">
             <label className="text-xs font-medium text-dk-muted mb-1.5 block">우선순위</label>
             <div className="flex gap-2">
               {([
-                { v: 'high',   l: '높음', cls: 'border-[#7f2020] bg-[#3d1a1a] text-[#FF7B72]' },
-                { v: 'medium', l: '보통', cls: 'border-[#7a5000] bg-[#3d2b0d] text-[#E3B341]' },
-                { v: 'low',    l: '낮음', cls: 'border-[#444c56] bg-dk-surface2 text-dk-muted' },
+                { v: 'high',   l: '높음', cls: 'border-tint-red-border bg-tint-red text-dk-red' },
+                { v: 'medium', l: '보통', cls: 'border-tint-amber-border bg-tint-amber text-dk-orange' },
+                { v: 'low',    l: '낮음', cls: 'border-dk-border3 bg-dk-surface2 text-dk-muted' },
               ] as const).map(({ v, l, cls }) => (
                 <button key={v} onClick={() => setPriority(v)}
                   className={cn(
@@ -1010,7 +1010,7 @@ function UnifiedActivityModal({
           </div>
         </>)}
 
-        {error && <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2 mb-3">{error}</p>}
+        {error && <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2 mb-3">{error}</p>}
 
         <div className="flex gap-2">
           <button onClick={onClose}
@@ -1018,7 +1018,7 @@ function UnifiedActivityModal({
             취소
           </button>
           <button onClick={handleSubmit} disabled={submitting}
-            className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
+            className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {submitting ? '저장 중...' : '저장'}
           </button>
@@ -1075,9 +1075,9 @@ function TabOverview({ company, contracts }: { company: Company; contracts: Cont
             !activeContract
               ? 'bg-dk-surface border-dk-border'
               : dday !== null && dday <= 14
-                ? 'bg-[#3d1a1a] border-[#7f2020]'
+                ? 'bg-tint-red border-tint-red-border'
                 : dday !== null && dday <= 30
-                  ? 'bg-[#3d2b0d] border-[#7a5000]'
+                  ? 'bg-tint-amber border-tint-amber-border'
                   : 'bg-dk-surface2 border-dk-border'
           )}>
             <p className="text-xs text-dk-muted mb-1">현재 계약</p>
@@ -1153,7 +1153,7 @@ function TabContacts({ contacts: initialContacts, companyId }: { contacts: Conta
       <div className="flex justify-end">
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 text-xs text-dk-blue border border-[#2d4a7a] px-3 py-1.5 rounded-lg hover:bg-[#1c2d4a] transition-colors"
+          className="flex items-center gap-1.5 text-xs text-dk-blue border border-tint-blue-border px-3 py-1.5 rounded-lg hover:bg-tint-blue transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> 담당자 추가
         </button>
@@ -1166,14 +1166,14 @@ function TabContacts({ contacts: initialContacts, companyId }: { contacts: Conta
         <div key={ct.id} className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#1c2d4a] flex items-center justify-center text-dk-blue font-bold text-sm shrink-0">
+              <div className="w-9 h-9 rounded-full bg-tint-blue flex items-center justify-center text-dk-blue font-bold text-sm shrink-0">
                 {ct.name[0]}
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-semibold text-dk-text">{ct.name}</p>
-                  {ct.is_primary && <span className="text-[10px] bg-[#1c2d4a] text-dk-blue px-1.5 py-0.5 rounded-full">대표담당</span>}
-                  {ct.is_decision_maker && <span className="text-[10px] bg-[#2d1c4a] text-dk-purple px-1.5 py-0.5 rounded-full">결정권자</span>}
+                  {ct.is_primary && <span className="text-[10px] bg-tint-blue text-dk-blue px-1.5 py-0.5 rounded-full">대표담당</span>}
+                  {ct.is_decision_maker && <span className="text-[10px] bg-tint-purple text-dk-purple px-1.5 py-0.5 rounded-full">결정권자</span>}
                 </div>
                 <p className="text-xs text-dk-dim mt-0.5">{[ct.title, ct.department].filter(Boolean).join(' · ')}</p>
               </div>
@@ -1197,7 +1197,7 @@ function TabContacts({ contacts: initialContacts, companyId }: { contacts: Conta
                     </button>
                     <button
                       onClick={() => { setDeleteContact(ct); setOpenMenu(null) }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#FF7B72] hover:bg-[#3d1a1a] transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-dk-red hover:bg-tint-red transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> 삭제
                     </button>
@@ -1333,18 +1333,18 @@ function AddContractModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.started_at} onChange={e => set('started_at', e.target.value)} className={INPUT_CLS} />
             </div>
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.expires_at} onChange={e => set('expires_at', e.target.value)} className={INPUT_CLS} />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-dk-red">*</span></label>
               <input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)}
                 placeholder="0" className={cn(INPUT_CLS, 'font-mono')} />
             </div>
@@ -1360,7 +1360,7 @@ function AddContractModal({
               <span className="text-xs text-dk-muted">실계약금액</span>
               <span className="text-sm font-bold text-dk-text font-mono">
                 {finalAmount.toLocaleString('ko-KR')}원
-                {discountPct > 0 && <span className="text-xs text-[#3FB950] ml-1.5">(-{discountPct}%)</span>}
+                {discountPct > 0 && <span className="text-xs text-dk-green ml-1.5">(-{discountPct}%)</span>}
               </span>
             </div>
           )}
@@ -1390,7 +1390,7 @@ function AddContractModal({
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -1399,7 +1399,7 @@ function AddContractModal({
               취소
             </button>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting ? '등록 중...' : '계약 등록'}
             </button>
@@ -1429,7 +1429,7 @@ function TabContracts({ contracts: initialContracts, companyId }: { contracts: C
       <div className="flex justify-end">
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 text-xs text-dk-blue border border-[#2d4a7a] px-3 py-1.5 rounded-lg hover:bg-[#1c2d4a] transition-colors"
+          className="flex items-center gap-1.5 text-xs text-dk-blue border border-tint-blue-border px-3 py-1.5 rounded-lg hover:bg-tint-blue transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> 계약 등록
         </button>
@@ -1506,10 +1506,10 @@ function EditActivityModal({
   const [error, setError]           = useState<string | null>(null)
 
   const RESULT_BTNS = [
-    { value: 'connected', label: '연결됨',  cls: 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]' },
-    { value: 'no_answer', label: '부재중',  cls: 'border-[#7a5000] bg-[#3d2b0d] text-[#E3B341]' },
-    { value: 'rejected',  label: '거절',    cls: 'border-[#7f2020] bg-[#3d1a1a] text-[#FF7B72]' },
-    { value: 'scheduled', label: '예약통화', cls: 'border-[#2d4a7a] bg-[#1c2d4a] text-[#58A6FF]' },
+    { value: 'connected', label: '연결됨',  cls: 'border-tint-green-border bg-tint-green text-dk-green' },
+    { value: 'no_answer', label: '부재중',  cls: 'border-tint-amber-border bg-tint-amber text-dk-orange' },
+    { value: 'rejected',  label: '거절',    cls: 'border-tint-red-border bg-tint-red text-dk-red' },
+    { value: 'scheduled', label: '예약통화', cls: 'border-tint-blue-border bg-tint-blue text-dk-blue' },
   ]
 
   const handleSubmit = async () => {
@@ -1588,9 +1588,9 @@ function EditActivityModal({
           </div>
 
           {callResult === 'scheduled' ? (
-            <div className="p-3 rounded-xl border border-[#2d4a7a] bg-[#111d30]">
-              <label className="text-xs font-medium text-[#58A6FF] mb-1.5 block">
-                약속 일시 <span className="text-[#FF7B72]">*</span>
+            <div className="p-3 rounded-xl border border-tint-blue-border bg-tint-blue-deep">
+              <label className="text-xs font-medium text-dk-blue mb-1.5 block">
+                약속 일시 <span className="text-dk-red">*</span>
               </label>
               <input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)}
                 className={INPUT_CLS} />
@@ -1612,7 +1612,7 @@ function EditActivityModal({
           )}
         </div>
 
-        {error && <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2 mt-3">{error}</p>}
+        {error && <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2 mt-3">{error}</p>}
 
         <div className="flex gap-2 mt-4">
           <button onClick={onClose}
@@ -1620,7 +1620,7 @@ function EditActivityModal({
             취소
           </button>
           <button onClick={handleSubmit} disabled={submitting}
-            className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
+            className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {submitting ? '저장 중...' : '저장'}
           </button>
@@ -1719,7 +1719,7 @@ function TabActivityHistory({
         )}
         <div className="flex-1" />
         <button onClick={() => setShowUnified(true)}
-          className="flex items-center gap-1.5 text-xs text-dk-blue border border-[#2d4a7a] px-3 py-1.5 rounded-lg hover:bg-[#1c2d4a] transition-colors">
+          className="flex items-center gap-1.5 text-xs text-dk-blue border border-tint-blue-border px-3 py-1.5 rounded-lg hover:bg-tint-blue transition-colors">
           <Plus className="w-3.5 h-3.5" /> 활동 추가
         </button>
       </div>
@@ -1765,11 +1765,11 @@ function TabActivityHistory({
                   {a.contact_value && (a.type === 'call' || a.type === 'email') && (
                     <div className="mt-1 flex items-center gap-1 text-[10px]">
                       {a.type === 'call'
-                        ? <span className="inline-flex items-center gap-1 text-[#3FB950] border border-[#1c5c35] bg-[#0f2d1c] px-1.5 py-0.5 rounded">
+                        ? <span className="inline-flex items-center gap-1 text-dk-green border border-tint-green-border bg-tint-green px-1.5 py-0.5 rounded">
                             <Phone className="w-2.5 h-2.5" />
                             {a.contact_value}
                           </span>
-                        : <span className="inline-flex items-center gap-1 text-[#b07fff] border border-[#3d2060] bg-[#2d1c4a] px-1.5 py-0.5 rounded max-w-full">
+                        : <span className="inline-flex items-center gap-1 text-tint-purple-text border border-tint-purple-border bg-tint-purple px-1.5 py-0.5 rounded max-w-full">
                             <Mail className="w-2.5 h-2.5 shrink-0" />
                             <span className="truncate">{a.contact_value}</span>
                           </span>
@@ -1814,7 +1814,7 @@ function TabActivityHistory({
               <span className={cn('text-[10px] px-1.5 py-0.5 rounded border shrink-0', TASK_STATUS_CLS[t.status] ?? 'text-dk-dim border-dk-border')}>
                 {TASK_STATUS_LABEL[t.status] ?? t.status}
               </span>
-              {t.is_auto && <span className="text-[9px] border border-[#2d4a7a] text-dk-blue px-1 py-0.5 rounded shrink-0">자동</span>}
+              {t.is_auto && <span className="text-[9px] border border-tint-blue-border text-dk-blue px-1 py-0.5 rounded shrink-0">자동</span>}
               {t.type && (
                 <span className="text-[10px] text-dk-dim px-1.5 py-0.5 bg-dk-surface2 rounded border border-dk-border shrink-0">
                   {t.type === 'call' ? '통화' : t.type === 'visit' ? '방문' : t.type === 'email' ? '이메일' : t.type === 'renewal' ? '갱신' : t.type}
@@ -1857,7 +1857,7 @@ function TabActivityHistory({
               <button onClick={() => { setEditTask(t); setOpenMenu(null); setMenuPos(null) }}
                 className="w-full text-left px-3 py-2 text-xs text-dk-text hover:bg-dk-surface2 transition-colors">수정</button>
               <button onClick={() => { setDeleteTask(t); setOpenMenu(null); setMenuPos(null) }}
-                className="w-full text-left px-3 py-2 text-xs text-[#FF7B72] hover:bg-dk-surface2 transition-colors">삭제</button>
+                className="w-full text-left px-3 py-2 text-xs text-dk-red hover:bg-dk-surface2 transition-colors">삭제</button>
             </div>
           </>
         )
@@ -1916,9 +1916,9 @@ function TabMessages({ messages }: { messages: Message[] }) {
 
 const TASK_STATUS_CLS: Record<string, string> = {
   todo:       'text-dk-muted  bg-dk-surface2  border-dk-border',
-  in_progress:'text-[#58A6FF] bg-[#1c2d4a]   border-[#2d4a7a]',
-  done:       'text-[#3fb950] bg-[#0f2d17]   border-[#2d6a3f]',
-  cancelled:  'text-[#8B949E] bg-dk-surface2  border-dk-border',
+  in_progress:'text-dk-blue bg-tint-blue   border-tint-blue-border',
+  done:       'text-dk-green bg-tint-green   border-tint-green-border',
+  cancelled:  'text-dk-muted bg-dk-surface2  border-dk-border',
 }
 const TASK_STATUS_LABEL: Record<string, string> = {
   todo: '미완료', in_progress: '진행중', done: '완료', cancelled: '취소',
@@ -1982,7 +1982,7 @@ export default function CompanyDetailPage() {
           <Link href="/app/companies" className="p-1.5 rounded-lg text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <div className="w-10 h-10 rounded-xl bg-[#1c2d4a] flex items-center justify-center text-dk-blue font-bold text-base shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-tint-blue flex items-center justify-center text-dk-blue font-bold text-base shrink-0">
             {company.name[0]}
           </div>
           <div className="flex-1 min-w-0">

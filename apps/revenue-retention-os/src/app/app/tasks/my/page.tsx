@@ -13,9 +13,9 @@ import type { Task } from '@/types/domain'
 
 const TASK_STATUS_CLS: Record<string, string> = {
   todo:        'text-dk-muted  bg-dk-surface2 border-dk-border',
-  in_progress: 'text-[#58A6FF] bg-[#1c2d4a]  border-[#2d4a7a]',
-  done:        'text-[#3fb950] bg-[#0f2d17]  border-[#2d6a3f]',
-  cancelled:   'text-[#8B949E] bg-dk-surface2 border-dk-border',
+  in_progress: 'text-dk-blue bg-tint-blue  border-tint-blue-border',
+  done:        'text-dk-green bg-tint-green  border-tint-green-border',
+  cancelled:   'text-dk-muted bg-dk-surface2 border-dk-border',
 }
 const TASK_STATUS_LABEL: Record<string, string> = {
   todo: '미완료', in_progress: '진행중', done: '완료', cancelled: '취소',
@@ -24,9 +24,9 @@ const TASK_STATUS_LABEL: Record<string, string> = {
 function TaskTypeIcon({ type }: { type: string | null }) {
   switch (type) {
     case 'renewal': return <RefreshCw className="w-3.5 h-3.5 text-dk-blue" />
-    case 'call':    return <Phone     className="w-3.5 h-3.5 text-[#3FB950]" />
+    case 'call':    return <Phone     className="w-3.5 h-3.5 text-dk-green" />
     case 'email':   return <Mail      className="w-3.5 h-3.5 text-dk-purple" />
-    case 'visit':   return <MapPin    className="w-3.5 h-3.5 text-[#D2A8FF]" />
+    case 'visit':   return <MapPin    className="w-3.5 h-3.5 text-dk-purple" />
     default:        return <Star      className="w-3.5 h-3.5 text-dk-dim" />
   }
 }
@@ -50,11 +50,11 @@ function TaskCard({
       className={cn(
         'flex items-center gap-3 px-4 py-3 rounded-xl border transition-all cursor-pointer',
         selected
-          ? 'border-dk-blue bg-[#111d30]'
+          ? 'border-dk-blue bg-tint-blue-deep'
           : isDone || isCancelled
             ? 'bg-dk-surface2/50 border-dk-border opacity-60 hover:opacity-80'
             : isOverdue
-              ? 'bg-[#3d1a1a]/30 border-[#7f2020] hover:border-[#a03030]'
+              ? 'bg-tint-red/30 border-tint-red-border hover:border-dk-dangerDeep'
               : 'bg-dk-surface border-dk-border hover:border-dk-border2'
       )}
     >
@@ -68,7 +68,7 @@ function TaskCard({
       {isDone && (
         <button
           onClick={e => { e.stopPropagation(); onToggle(task.id) }}
-          className="flex-shrink-0 w-5 h-5 rounded-md border-2 border-[#3FB950] bg-[#3FB950] flex items-center justify-center transition-all"
+          className="flex-shrink-0 w-5 h-5 rounded-md border-2 border-dk-green bg-dk-green flex items-center justify-center transition-all"
         >
           <Check className="w-3 h-3 text-white" />
         </button>
@@ -87,7 +87,7 @@ function TaskCard({
             {task.title}
           </span>
           {task.is_auto && (
-            <span className="flex-shrink-0 text-[10px] bg-[#1c2d4a] text-dk-blue border border-[#2d4a7a] px-1.5 py-0.5 rounded">
+            <span className="flex-shrink-0 text-[10px] bg-tint-blue text-dk-blue border border-tint-blue-border px-1.5 py-0.5 rounded">
               자동
             </span>
           )}
@@ -105,12 +105,12 @@ function TaskCard({
           {task.priority === 'high' ? '높음' : task.priority === 'medium' ? '보통' : '낮음'}
         </span>
         {task.due_at && (
-          <span className={cn('text-xs font-mono', isOverdue && !isDone ? 'text-[#FF7B72] font-semibold' : 'text-dk-dim')}>
+          <span className={cn('text-xs font-mono', isOverdue && !isDone ? 'text-dk-red font-semibold' : 'text-dk-dim')}>
             {isOverdue && !isDone ? '⚠ ' : ''}{formatDate(task.due_at)}
           </span>
         )}
         {isDone && task.done_at && (
-          <span className="text-[10px] text-[#3FB950] font-mono">{formatDate(task.done_at)} 완료</span>
+          <span className="text-[10px] text-dk-green font-mono">{formatDate(task.done_at)} 완료</span>
         )}
       </div>
       <ChevronRight className="w-3.5 h-3.5 text-dk-dim shrink-0" />
@@ -169,7 +169,7 @@ function TaskDetail({ task, onClose, onToggle }: { task: Task; onClose: () => vo
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors',
                 isDone
-                  ? 'border-[#2d6a3f] text-[#3fb950] bg-[#0f2d17] hover:bg-[#1a4a26]'
+                  ? 'border-tint-green-border text-dk-green bg-tint-green hover:bg-tint-green-hover'
                   : 'border-dk-border text-dk-muted bg-dk-surface2 hover:text-dk-text hover:bg-dk-surface'
               )}
             >
@@ -194,7 +194,7 @@ function TaskDetail({ task, onClose, onToggle }: { task: Task; onClose: () => vo
         {task.company && (
           <div>
             <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">고객사</p>
-            <Link href={`/app/companies/${task.company.id}`} className="flex items-center gap-2 text-sm text-dk-blue hover:text-[#79BAFF] transition-colors">
+            <Link href={`/app/companies/${task.company.id}`} className="flex items-center gap-2 text-sm text-dk-blue hover:text-dk-blueHover transition-colors">
               <Building2 className="w-3.5 h-3.5" />
               {task.company.name}
               <ChevronRight className="w-3.5 h-3.5" />
@@ -230,7 +230,7 @@ function TaskDetail({ task, onClose, onToggle }: { task: Task; onClose: () => vo
         {task.done_at && (
           <div>
             <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">완료일</p>
-            <div className="flex items-center gap-1.5 text-sm text-[#3FB950]">
+            <div className="flex items-center gap-1.5 text-sm text-dk-green">
               <Check className="w-3.5 h-3.5" />
               {formatDateTime(task.done_at)}
             </div>
@@ -258,8 +258,8 @@ function TaskDetail({ task, onClose, onToggle }: { task: Task; onClose: () => vo
         )}
 
         {task.is_auto && (
-          <div className="flex items-center gap-2 bg-[#111d30] border border-[#2d4a7a] rounded-xl px-3 py-2">
-            <span className="text-[10px] border border-[#2d4a7a] text-dk-blue px-1.5 py-0.5 rounded font-medium">자동</span>
+          <div className="flex items-center gap-2 bg-tint-blue-deep border border-tint-blue-border rounded-xl px-3 py-2">
+            <span className="text-[10px] border border-tint-blue-border text-dk-blue px-1.5 py-0.5 rounded font-medium">자동</span>
             <span className="text-xs text-dk-dim">예약 통화에서 자동 생성된 업무입니다</span>
           </div>
         )}
@@ -319,7 +319,7 @@ function AddTaskModal({ onClose }: { onClose: () => void }) {
         </div>
         <div className="flex gap-2 mt-5">
           <button onClick={onClose} className="flex-1 px-4 py-2.5 text-sm font-medium text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors">취소</button>
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] transition-colors">저장</button>
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover transition-colors">저장</button>
         </div>
       </div>
     </div>
@@ -402,13 +402,13 @@ export default function MyTasksPage() {
               <p className="text-sm text-dk-muted mt-0.5">
                 오늘 {todayList.length}개 남음 · {completedToday}개 완료
                 {overdue.length > 0 && (
-                  <span className="ml-2 text-[#FF7B72] font-medium">⚠ 기한초과 {overdue.length}개</span>
+                  <span className="ml-2 text-dk-red font-medium">⚠ 기한초과 {overdue.length}개</span>
                 )}
               </p>
             </div>
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-[#1f6feb] text-white text-sm font-medium rounded-lg hover:bg-[#388bfd] transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-dk-accent text-white text-sm font-medium rounded-lg hover:bg-dk-accentHover transition-colors"
             >
               <Plus className="w-4 h-4" />
               {!selected && <span>업무 추가</span>}
@@ -466,7 +466,7 @@ export default function MyTasksPage() {
           {/* 활성 탭 */}
           {tab === 'active' && (
             <>
-              <TaskGroup title="기한 초과" tasks={overdue}   icon={<AlertCircle className="w-4 h-4 text-[#FF7B72]" />} {...commonProps} />
+              <TaskGroup title="기한 초과" tasks={overdue}   icon={<AlertCircle className="w-4 h-4 text-dk-red" />} {...commonProps} />
               <TaskGroup title="오늘"      tasks={todayList} icon={<Clock       className="w-4 h-4 text-dk-blue"   />} {...commonProps} />
               <TaskGroup title="예정"      tasks={upcoming}  icon={<CheckSquare className="w-4 h-4 text-dk-muted"  />} {...commonProps} />
               <TaskGroup title="기한 없음" tasks={noDue}     icon={<Star        className="w-4 h-4 text-dk-dim"    />} {...commonProps} defaultOpen={false} />

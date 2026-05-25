@@ -27,15 +27,15 @@ type CompanyRow = {
 }
 
 const STATUS_CFG: Record<CompanyStatus, { label: string; cls: string }> = {
-  prospect: { label: '발굴',   cls: 'bg-[#1c2d4a] text-[#58A6FF] border-[#2d4a7a]' },
-  active:   { label: '계약',   cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]' },
+  prospect: { label: '발굴',   cls: 'bg-tint-blue text-dk-blue border-tint-blue-border' },
+  active:   { label: '계약',   cls: 'bg-tint-green text-dk-green border-tint-green-border' },
   dormant:  { label: '미접촉', cls: 'bg-dk-surface2 text-dk-muted border-dk-border' },
-  churned:  { label: '해지',   cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]' },
+  churned:  { label: '해지',   cls: 'bg-tint-red text-dk-red border-tint-red-border' },
 }
 const RISK_CFG: Record<string, { label: string; cls: string; icon: React.ElementType }> = {
-  high:   { label: '위험', cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]',       icon: AlertCircle },
-  medium: { label: '주의', cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]',       icon: AlertTriangle },
-  low:    { label: '안전', cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]',       icon: CheckCircle2 },
+  high:   { label: '위험', cls: 'bg-tint-red text-dk-red border-tint-red-border',       icon: AlertCircle },
+  medium: { label: '주의', cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',       icon: AlertTriangle },
+  low:    { label: '안전', cls: 'bg-tint-green text-dk-green border-tint-green-border',       icon: CheckCircle2 },
 }
 
 type ActivityCompany = { id: string; name: string }
@@ -130,10 +130,10 @@ function QuickActivityModal({
   ]
 
   const CALL_RESULTS = [
-    { value: 'connected', label: '연결됨',   icon: CheckCircle2,  cls: 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]' },
-    { value: 'no_answer', label: '부재중',   icon: PhoneMissed,   cls: 'border-[#7a5000] bg-[#3d2b0d] text-[#E3B341]' },
-    { value: 'rejected',  label: '거절',     icon: PhoneOff,      cls: 'border-[#7f2020] bg-[#3d1a1a] text-[#FF7B72]' },
-    { value: 'scheduled', label: '예약통화', icon: CalendarClock, cls: 'border-[#2d4a7a] bg-[#1c2d4a] text-[#58A6FF]' },
+    { value: 'connected', label: '연결됨',   icon: CheckCircle2,  cls: 'border-tint-green-border bg-tint-green text-dk-green' },
+    { value: 'no_answer', label: '부재중',   icon: PhoneMissed,   cls: 'border-tint-amber-border bg-tint-amber text-dk-orange' },
+    { value: 'rejected',  label: '거절',     icon: PhoneOff,      cls: 'border-tint-red-border bg-tint-red text-dk-red' },
+    { value: 'scheduled', label: '예약통화', icon: CalendarClock, cls: 'border-tint-blue-border bg-tint-blue text-dk-blue' },
   ]
 
   const canSave = (type !== 'call' || !!callResult) && !submitting
@@ -184,7 +184,7 @@ function QuickActivityModal({
                   className={cn(
                     'flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors',
                     selectedContact?.id === c.id
-                      ? 'border-dk-blue bg-[#111d30] text-dk-text'
+                      ? 'border-dk-blue bg-tint-blue-deep text-dk-text'
                       : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                   )}>
                   <span className="font-medium">{c.name}</span>
@@ -201,7 +201,7 @@ function QuickActivityModal({
               {selectedContact.mobile ? (
                 <a href={`tel:${selectedContact.mobile}`} onClick={() => setPhoneChoice('mobile')}
                   className={cn('flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors',
-                    phoneChoice === 'mobile' ? 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]' : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
+                    phoneChoice === 'mobile' ? 'border-tint-green-border bg-tint-green text-dk-green' : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                   )}>
                   <Phone className="w-3 h-3" />{selectedContact.mobile}
                   <span className="text-[9px] opacity-70">휴대폰</span>
@@ -214,7 +214,7 @@ function QuickActivityModal({
               {selectedContact.phone ? (
                 <a href={`tel:${selectedContact.phone}`} onClick={() => setPhoneChoice('phone')}
                   className={cn('flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors',
-                    phoneChoice === 'phone' ? 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]' : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
+                    phoneChoice === 'phone' ? 'border-tint-green-border bg-tint-green text-dk-green' : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                   )}>
                   <Phone className="w-3 h-3" />{selectedContact.phone}
                   <span className="text-[9px] opacity-70">유선</span>
@@ -232,7 +232,7 @@ function QuickActivityModal({
             <div className="mt-2">
               {selectedContact.email ? (
                 <a href={`mailto:${selectedContact.email}`}
-                  className="inline-flex items-center gap-1.5 text-xs text-[#b07fff] border border-[#3d2060] bg-[#2d1c4a] px-2.5 py-1 rounded-lg hover:bg-[#3d2060] transition-colors">
+                  className="inline-flex items-center gap-1.5 text-xs text-tint-purple-text border border-tint-purple-border bg-tint-purple px-2.5 py-1 rounded-lg hover:bg-tint-purple-border transition-colors">
                   <Mail className="w-3 h-3" />{selectedContact.email}
                 </a>
               ) : (
@@ -248,7 +248,7 @@ function QuickActivityModal({
         {type === 'call' && (
           <div className="mb-4">
             <label className="text-xs font-medium text-dk-muted mb-1.5 block">
-              통화 결과 <span className="text-[#FF7B72]">*</span>
+              통화 결과 <span className="text-dk-red">*</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {CALL_RESULTS.map(btn => (
@@ -311,7 +311,7 @@ function QuickActivityModal({
             취소
           </button>
           <button type="button" onClick={handleSave} disabled={!canSave}
-            className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
+            className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors">
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {submitting ? '저장 중...' : '저장'}
           </button>
@@ -412,18 +412,18 @@ function QuickContractModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.started_at} onChange={e => set('started_at', e.target.value)} className={INPUT_CLS} />
             </div>
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.expires_at} onChange={e => set('expires_at', e.target.value)} className={INPUT_CLS} />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-dk-red">*</span></label>
               <input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)}
                 placeholder="0" className={cn(INPUT_CLS, 'font-mono')} />
             </div>
@@ -439,7 +439,7 @@ function QuickContractModal({
               <span className="text-xs text-dk-muted">실계약금액</span>
               <span className="text-sm font-bold text-dk-text font-mono">
                 {finalAmount.toLocaleString('ko-KR')}원
-                {discountPct > 0 && <span className="text-xs text-[#3FB950] ml-1.5">(-{discountPct}%)</span>}
+                {discountPct > 0 && <span className="text-xs text-dk-green ml-1.5">(-{discountPct}%)</span>}
               </span>
             </div>
           )}
@@ -469,7 +469,7 @@ function QuickContractModal({
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -478,7 +478,7 @@ function QuickContractModal({
               취소
             </button>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting ? '등록 중...' : '계약 등록'}
             </button>
@@ -507,7 +507,7 @@ function CompanyRowItem({
     <tr className="hover:bg-dk-surface2/50 transition-colors group">
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#1c2d4a] flex items-center justify-center text-dk-blue text-xs font-bold shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-tint-blue flex items-center justify-center text-dk-blue text-xs font-bold shrink-0">
             {company.name[0]}
           </div>
           <div>
@@ -543,7 +543,7 @@ function CompanyRowItem({
       <td className="px-4 py-3.5">
         {company.assigned_user && (
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-full bg-[#1c2d4a] flex items-center justify-center text-[9px] text-dk-blue font-bold">
+            <div className="w-5 h-5 rounded-full bg-tint-blue flex items-center justify-center text-[9px] text-dk-blue font-bold">
               {company.assigned_user.name[0]}
             </div>
             <span className="text-xs text-dk-muted">{company.assigned_user.name}</span>
@@ -575,13 +575,13 @@ function CompanyRowItem({
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onAddActivity({ id: company.id, name: company.name })}
-            className="text-xs text-[#58A6FF] hover:text-[#79BAFF] flex items-center gap-0.5 whitespace-nowrap"
+            className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5 whitespace-nowrap"
           >
             <Plus className="w-3 h-3" /> 활동
           </button>
           <button
             onClick={() => onAddContract({ id: company.id, name: company.name })}
-            className="text-xs text-[#3FB950] hover:text-[#56d364] flex items-center gap-0.5 whitespace-nowrap"
+            className="text-xs text-dk-green hover:text-dk-successBright flex items-center gap-0.5 whitespace-nowrap"
           >
             <Plus className="w-3 h-3" /> 계약
           </button>
@@ -641,7 +641,7 @@ export default function CompaniesPage() {
           </p>
         </div>
         <Link href="/app/companies/new"
-          className="flex items-center gap-1.5 bg-[#1f6feb] text-white text-sm px-3.5 py-2 rounded-lg hover:bg-[#388bfd] transition-colors">
+          className="flex items-center gap-1.5 bg-dk-accent text-white text-sm px-3.5 py-2 rounded-lg hover:bg-dk-accentHover transition-colors">
           <Plus className="w-4 h-4" /> 고객사 등록
         </Link>
       </div>
@@ -674,7 +674,7 @@ export default function CompaniesPage() {
       </div>
 
       {totalCount > companies.length && (
-        <div className="bg-amber-500/10 border border-[#7a5000] text-[#E3B341] text-xs rounded-lg px-4 py-2.5 shrink-0">
+        <div className="bg-amber-500/10 border border-tint-amber-border text-dk-orange text-xs rounded-lg px-4 py-2.5 shrink-0">
           전체 {totalCount}개 중 상위 100개만 표시됩니다. 나머지 {totalCount - companies.length}개는 검색·필터를 활용해 확인하세요.
         </div>
       )}

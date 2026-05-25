@@ -74,7 +74,7 @@ export default function NewCompanyPage() {
           <h3 className="text-xs font-semibold text-dk-muted uppercase tracking-wide">필수 정보</h3>
           <div>
             <label className={LABEL_CLS}>
-              회사명 <span className="text-[#FF7B72]">*</span>
+              회사명 <span className="text-dk-red">*</span>
             </label>
             <input
               autoFocus
@@ -166,7 +166,7 @@ export default function NewCompanyPage() {
         </div>
 
         {error && (
-          <div className="px-4 py-3 bg-[#3d1a1a] border border-[#7f2020] rounded-xl text-sm text-[#FF7B72]">
+          <div className="px-4 py-3 bg-tint-red border border-tint-red-border rounded-xl text-sm text-dk-red">
             {error}
           </div>
         )}
@@ -179,7 +179,7 @@ export default function NewCompanyPage() {
           <button
             type="submit"
             disabled={!form.name.trim() || submitting}
-            className="flex-1 py-2.5 text-sm text-white bg-[#1f6feb] rounded-xl hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium transition-colors"
+            className="flex-1 py-2.5 text-sm text-white bg-dk-accent rounded-xl hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium transition-colors"
           >
             {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />등록 중...</> : '고객사 등록'}
           </button>

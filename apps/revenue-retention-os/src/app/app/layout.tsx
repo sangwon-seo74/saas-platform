@@ -59,7 +59,7 @@ function NavItem({
         collapsed ? 'justify-center' : '',
         active
           ? highlight
-            ? 'bg-[#1f6feb] text-white'
+            ? 'bg-dk-accent text-white'
             : 'bg-dk-surface2 text-dk-blue font-medium'
           : highlight
             ? 'text-dk-blue hover:bg-dk-surface2 font-medium'
@@ -147,7 +147,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             collapsed ? 'justify-center' : '',
             signingOut ? 'opacity-50 cursor-wait' : 'cursor-pointer'
           )}>
-          <div className="w-7 h-7 rounded-full bg-[#1c2d4a] flex items-center justify-center text-dk-blue text-xs font-bold shrink-0">
+          <div className="w-7 h-7 rounded-full bg-tint-blue flex items-center justify-center text-dk-blue text-xs font-bold shrink-0">
             K
           </div>
           {!collapsed && (
@@ -170,8 +170,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)} />
           <div className="relative bg-dk-surface border border-dk-border rounded-2xl p-6 w-80 shadow-xl">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#3d1a1a] mx-auto mb-4">
-              <LogOut className="w-5 h-5 text-[#FF7B72]" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-tint-red mx-auto mb-4">
+              <LogOut className="w-5 h-5 text-dk-red" />
             </div>
             <h2 className="text-base font-semibold text-dk-text text-center mb-1">로그아웃</h2>
             <p className="text-sm text-dk-muted text-center mb-6">정말 로그아웃 하시겠습니까?</p>
@@ -184,7 +184,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <button
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#FF7B72]/80 hover:bg-[#FF7B72] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-wait">
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-dk-red/80 hover:bg-dk-red rounded-lg transition-colors disabled:opacity-50 disabled:cursor-wait">
                 {signingOut ? '처리 중...' : '로그아웃'}
               </button>
             </div>

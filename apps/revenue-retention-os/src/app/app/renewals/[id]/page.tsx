@@ -42,9 +42,9 @@ type ActivityItem = {
 }
 
 const RISK_CFG: Record<RiskLevel, { label: string; cls: string; icon: React.ElementType }> = {
-  high:   { label: '위험', cls: 'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]',   icon: AlertCircle },
-  medium: { label: '주의', cls: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]',   icon: AlertTriangle },
-  low:    { label: '안전', cls: 'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]',   icon: CheckCircle2 },
+  high:   { label: '위험', cls: 'bg-tint-red text-dk-red border-tint-red-border',   icon: AlertCircle },
+  medium: { label: '주의', cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',   icon: AlertTriangle },
+  low:    { label: '안전', cls: 'bg-tint-green text-dk-green border-tint-green-border',   icon: CheckCircle2 },
 }
 const STATUS_STEPS: { key: RenewalStatus; label: string }[] = [
   { key: 'pending',     label: '대기' },
@@ -59,10 +59,10 @@ const RESULT_LABEL: Record<string, string> = {
   renewed: '재계약', upsell: '업셀', downgrade: '다운셀', churned: '이탈'
 }
 const RESULT_CLS: Record<string, string> = {
-  renewed:   'text-[#3FB950]',
-  upsell:    'text-[#58A6FF]',
-  downgrade: 'text-[#E3B341]',
-  churned:   'text-[#FF7B72]',
+  renewed:   'text-dk-green',
+  upsell:    'text-dk-blue',
+  downgrade: 'text-dk-orange',
+  churned:   'text-dk-red',
 }
 
 // ─── 재계약 등록 모달 ─────────────────────────────────────
@@ -156,18 +156,18 @@ function RenewalCompleteModal({ renewal, onClose, onSuccess }: {
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">시작일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.started_at} onChange={e => set('started_at', e.target.value)} className={INPUT_CLS} />
             </div>
             <div>
-              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">만료일 <span className="text-dk-red">*</span></label>
               <input type="date" value={form.expires_at} onChange={e => set('expires_at', e.target.value)} className={INPUT_CLS} />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-[#FF7B72]">*</span></label>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">계약금액 <span className="text-dk-red">*</span></label>
               <input type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)}
                 placeholder="0" className={cn(INPUT_CLS, 'font-mono')} />
             </div>
@@ -204,7 +204,7 @@ function RenewalCompleteModal({ renewal, onClose, onSuccess }: {
           </div>
 
           {error && (
-            <p className="text-xs text-[#FF7B72] bg-[#3d1a1a] border border-[#7f2020] rounded-lg px-3 py-2">{error}</p>
+            <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
@@ -213,7 +213,7 @@ function RenewalCompleteModal({ renewal, onClose, onSuccess }: {
               취소
             </button>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-2.5 text-sm text-white bg-[#238636] rounded-lg hover:bg-[#2ea043] disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+              className="flex-1 py-2.5 text-sm text-white bg-dk-success rounded-lg hover:bg-dk-successHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting ? '처리 중...' : '재계약 완료'}
             </button>
@@ -318,7 +318,7 @@ export default function RenewalDetailPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className={cn('border rounded-xl px-4 py-3', dday <= 7 ? 'bg-[#3d1a1a] border-[#7f2020]' : 'bg-dk-surface2 border-dk-border')}>
+        <div className={cn('border rounded-xl px-4 py-3', dday <= 7 ? 'bg-tint-red border-tint-red-border' : 'bg-dk-surface2 border-dk-border')}>
           <p className="text-xs text-dk-muted">만료까지</p>
           <p className={cn('text-2xl font-bold font-mono', getDdayClass(dday))}>D-{dday}</p>
           <p className="text-[10px] text-dk-dim mt-0.5">{formatDate(renewal.contract_expires_at)}</p>
@@ -336,8 +336,8 @@ export default function RenewalDetailPage() {
           <p className="text-xs text-dk-muted">위험도 점수</p>
           <p className={cn(
             'text-2xl font-bold',
-            (renewal.risk_score ?? 0) >= 70 ? 'text-[#FF7B72]' :
-            (renewal.risk_score ?? 0) >= 40 ? 'text-[#E3B341]' : 'text-[#3FB950]'
+            (renewal.risk_score ?? 0) >= 70 ? 'text-dk-red' :
+            (renewal.risk_score ?? 0) >= 40 ? 'text-dk-orange' : 'text-dk-green'
           )}>
             {renewal.risk_score ?? '—'}
           </p>
@@ -358,8 +358,8 @@ export default function RenewalDetailPage() {
                     onClick={() => handleStatusChange(step.key)}
                     className={cn(
                       'flex-1 py-2 text-xs font-medium text-center rounded-lg transition-all',
-                      isCurrent ? 'bg-[#1f6feb] text-white shadow-sm shadow-[#1f6feb]/30' :
-                      isPast    ? 'bg-[#0f2d1c] text-[#3FB950]' :
+                      isCurrent ? 'bg-dk-accent text-white shadow-sm shadow-dk-accent/30' :
+                      isPast    ? 'bg-tint-green text-dk-green' :
                                   'bg-dk-surface2 text-dk-muted hover:bg-dk-border'
                     )}
                   >
@@ -367,7 +367,7 @@ export default function RenewalDetailPage() {
                     {step.label}
                   </button>
                   {idx < STATUS_STEPS.length - 1 && (
-                    <div className={cn('w-3 h-0.5 mx-0.5', isPast ? 'bg-[#3FB950]/50' : 'bg-dk-border')} />
+                    <div className={cn('w-3 h-0.5 mx-0.5', isPast ? 'bg-dk-green/50' : 'bg-dk-border')} />
                   )}
                 </div>
               )
@@ -379,23 +379,23 @@ export default function RenewalDetailPage() {
       {renewal.status !== 'won' && renewal.status !== 'lost' && !showLostForm && (
         <div className="flex gap-2">
           <button onClick={() => setShowCompleteModal(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-white bg-[#1c6b3a] hover:bg-[#238636] rounded-xl transition-colors border border-[#1c5c35]">
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-white bg-dk-successDeep hover:bg-dk-success rounded-xl transition-colors border border-tint-green-border">
             <TrendingUp className="w-4 h-4" /> 갱신 완료
           </button>
           <button onClick={() => setShowLostForm(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-[#FF7B72] border border-[#7f2020] hover:bg-[#3d1a1a] rounded-xl transition-colors">
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-dk-red border border-tint-red-border hover:bg-tint-red rounded-xl transition-colors">
             <TrendingDown className="w-4 h-4" /> 이탈 처리
           </button>
         </div>
       )}
 
       {showLostForm && (
-        <div className="bg-[#3d1a1a] border border-[#7f2020] rounded-xl p-4 space-y-3">
+        <div className="bg-tint-red border border-tint-red-border rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-dk-text">❌ 이탈 처리</p>
           <div>
             <label className="text-xs text-dk-muted mb-1 block">이탈 사유</label>
             <select value={lostReason} onChange={e => setLostReason(e.target.value)}
-              className="w-full px-3 py-2 border border-dk-border bg-dk-surface2 text-dk-text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7B72]">
+              className="w-full px-3 py-2 border border-dk-border bg-dk-surface2 text-dk-text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-dk-red">
               <option value="">선택하세요</option>
               {['가격', '경쟁사 전환', '서비스 불만', '예산 삭감', '사업 축소', '기타'].map(r => (
                 <option key={r} value={r}>{r}</option>
@@ -408,7 +408,7 @@ export default function RenewalDetailPage() {
               취소
             </button>
             <button onClick={handleLost} disabled={processing}
-              className="flex-1 py-2 text-sm text-white bg-[#da3633] hover:bg-[#f85149] rounded-lg flex items-center justify-center gap-1.5 font-medium transition-colors disabled:opacity-50">
+              className="flex-1 py-2 text-sm text-white bg-dk-danger hover:bg-dk-dangerHover rounded-lg flex items-center justify-center gap-1.5 font-medium transition-colors disabled:opacity-50">
               {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               확인
             </button>
@@ -419,12 +419,12 @@ export default function RenewalDetailPage() {
       {(renewal.status === 'won' || renewal.status === 'lost') && (
         <div className={cn(
           'border rounded-xl p-4',
-          renewal.status === 'won' ? 'bg-[#0f2d1c] border-[#1c5c35]' : 'bg-[#3d1a1a] border-[#7f2020]'
+          renewal.status === 'won' ? 'bg-tint-green border-tint-green-border' : 'bg-tint-red border-tint-red-border'
         )}>
           <div className="flex items-center gap-3">
             {renewal.status === 'won'
-              ? <CheckCircle2 className="w-5 h-5 text-[#3FB950] shrink-0" />
-              : <X className="w-5 h-5 text-[#FF7B72] shrink-0" />
+              ? <CheckCircle2 className="w-5 h-5 text-dk-green shrink-0" />
+              : <X className="w-5 h-5 text-dk-red shrink-0" />
             }
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-dk-text">
@@ -435,7 +435,7 @@ export default function RenewalDetailPage() {
               </p>
               {renewal.status === 'won' && renewal.result_contract_id && (
                 <Link href={`/app/contracts/${renewal.result_contract_id}`}
-                  className="text-xs text-dk-blue hover:text-[#79BAFF] mt-0.5 inline-block">
+                  className="text-xs text-dk-blue hover:text-dk-blueHover mt-0.5 inline-block">
                   신규 계약 보기 →
                 </Link>
               )}
@@ -474,7 +474,7 @@ export default function RenewalDetailPage() {
             </div>
             {renewal.contract?.id && (
               <Link href={`/app/contracts/${renewal.contract.id}`}
-                className="mt-3 text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-0.5 transition-colors">
+                className="mt-3 text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5 transition-colors">
                 전체 계약 정보 보기 <ChevronRight className="w-3 h-3" />
               </Link>
             )}
@@ -508,7 +508,7 @@ export default function RenewalDetailPage() {
             </div>
             {renewal.company?.id && (
               <Link href={`/app/companies/${renewal.company.id}`}
-                className="mt-3 text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-0.5 transition-colors">
+                className="mt-3 text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5 transition-colors">
                 전체 업체 정보 보기 <ChevronRight className="w-3 h-3" />
               </Link>
             )}
@@ -529,7 +529,7 @@ export default function RenewalDetailPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-dk-muted">{a.user?.name ?? '—'}</span>
-                  {a.call_result === 'connected'  && <span className="text-[10px] text-[#3FB950]">연결됨</span>}
+                  {a.call_result === 'connected'  && <span className="text-[10px] text-dk-green">연결됨</span>}
                   {a.call_result === 'no_answer'  && <span className="text-[10px] text-dk-dim">부재중</span>}
                 </div>
                 {a.summary && <p className="text-xs text-dk-dim mt-0.5 leading-relaxed">{a.summary}</p>}
@@ -541,9 +541,9 @@ export default function RenewalDetailPage() {
       </div>
 
       {renewal.memo && (
-        <div className="bg-[#3d2b0d]/50 border border-[#7a5000] rounded-xl px-4 py-3">
-          <p className="text-xs font-semibold text-[#E3B341] mb-1">메모</p>
-          <p className="text-sm text-[#E3B341]/80">{renewal.memo}</p>
+        <div className="bg-tint-amber/50 border border-tint-amber-border rounded-xl px-4 py-3">
+          <p className="text-xs font-semibold text-dk-orange mb-1">메모</p>
+          <p className="text-sm text-dk-orange/80">{renewal.memo}</p>
         </div>
       )}
 

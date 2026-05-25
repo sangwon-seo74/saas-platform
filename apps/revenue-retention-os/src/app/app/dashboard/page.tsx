@@ -10,13 +10,13 @@ import {
 import { cn, formatAmount, formatDate, calcDday } from '@/lib/utils'
 
 const RISK_CLS: Record<string, string> = {
-  high:   'bg-[#3d1a1a] text-[#FF7B72] border-[#7f2020]',
-  medium: 'bg-[#3d2b0d] text-[#E3B341] border-[#7a5000]',
-  low:    'bg-[#0f2d1c] text-[#3FB950] border-[#1c5c35]',
+  high:   'bg-tint-red text-dk-red border-tint-red-border',
+  medium: 'bg-tint-amber text-dk-orange border-tint-amber-border',
+  low:    'bg-tint-green text-dk-green border-tint-green-border',
 }
 const RISK_LABEL: Record<string, string> = { high: '위험', medium: '주의', low: '안전' }
 const ACTIVITY_ICON: Record<string, string> = { call: '📞', visit: '🤝', email: '📧', sms: '💬', kakao: '💛' }
-const PRIORITY_CLS: Record<string, string> = { high: 'bg-[#FF7B72]', medium: 'bg-[#E3B341]', low: 'bg-dk-dim' }
+const PRIORITY_CLS: Record<string, string> = { high: 'bg-dk-red', medium: 'bg-dk-orange', low: 'bg-dk-dim' }
 
 function MetricCard({ label, value, sub, icon: Icon, color, href }: {
   label: string; value: string | number; sub?: string
@@ -93,7 +93,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex gap-2">
           <Link href="/app/activities"
-            className="flex items-center gap-1.5 text-sm bg-[#1f6feb] text-white px-3.5 py-2 rounded-lg hover:bg-[#388bfd] transition-colors">
+            className="flex items-center gap-1.5 text-sm bg-dk-accent text-white px-3.5 py-2 rounded-lg hover:bg-dk-accentHover transition-colors">
             <Plus className="w-4 h-4" /> 활동이력
           </Link>
           <Link href="/app/companies/new"
@@ -104,10 +104,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-4 gap-3 items-stretch">
-        <MetricCard label="오늘 통화" value={s.calls_today} icon={Phone} color="bg-blue-500/20 text-[#58A6FF]" href="/app/activities" />
-        <MetricCard label="갱신 임박 (D-7)" value={s.renewals_d7} sub={`D-30 기준 ${s.renewals_d30}건`} icon={RefreshCw} color="bg-red-500/20 text-[#FF7B72]" href="/app/renewals" />
-        <MetricCard label="기한 초과 할일" value={s.overdue_tasks} sub="미처리" icon={CheckSquare} color={s.overdue_tasks > 0 ? 'bg-amber-500/20 text-[#E3B341]' : 'bg-green-500/20 text-[#3FB950]'} href="/app/tasks/my" />
-        <MetricCard label="갱신 임박 (D-30)" value={`${s.renewals_d30}건`} icon={TrendingUp} color="bg-green-500/20 text-[#3FB950]" href="/app/reports/renewal-rate" />
+        <MetricCard label="오늘 통화" value={s.calls_today} icon={Phone} color="bg-blue-500/20 text-dk-blue" href="/app/activities" />
+        <MetricCard label="갱신 임박 (D-7)" value={s.renewals_d7} sub={`D-30 기준 ${s.renewals_d30}건`} icon={RefreshCw} color="bg-red-500/20 text-dk-red" href="/app/renewals" />
+        <MetricCard label="기한 초과 할일" value={s.overdue_tasks} sub="미처리" icon={CheckSquare} color={s.overdue_tasks > 0 ? 'bg-amber-500/20 text-dk-orange' : 'bg-green-500/20 text-dk-green'} href="/app/tasks/my" />
+        <MetricCard label="갱신 임박 (D-30)" value={`${s.renewals_d30}건`} icon={TrendingUp} color="bg-green-500/20 text-dk-green" href="/app/reports/renewal-rate" />
       </div>
 
       {/* 업무 달성율 */}
@@ -122,14 +122,14 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 px-5 py-3.5 border-b border-dk-border">
               <Target className="w-4 h-4 text-dk-muted" />
               <h3 className="text-sm font-semibold text-dk-text">내 업무 달성율</h3>
-              <Link href="/app/tasks/my" className="ml-auto text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-0.5">
+              <Link href="/app/tasks/my" className="ml-auto text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5">
                 내 업무 <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <div className="grid grid-cols-3 divide-x divide-dk-border">
               {stats.map(({ label, done, total, rate }) => {
-                const color = rate === null ? 'text-dk-dim' : rate >= 80 ? 'text-[#3FB950]' : rate >= 50 ? 'text-[#E3B341]' : 'text-[#FF7B72]'
-                const barColor = rate === null ? 'bg-dk-surface2' : rate >= 80 ? 'bg-[#3FB950]' : rate >= 50 ? 'bg-[#E3B341]' : 'bg-[#FF7B72]'
+                const color = rate === null ? 'text-dk-dim' : rate >= 80 ? 'text-dk-green' : rate >= 50 ? 'text-dk-orange' : 'text-dk-red'
+                const barColor = rate === null ? 'bg-dk-surface2' : rate >= 80 ? 'bg-dk-green' : rate >= 50 ? 'bg-dk-orange' : 'bg-dk-red'
                 return (
                   <div key={label} className="px-6 py-4">
                     <p className="text-xs text-dk-dim font-medium mb-1.5">{label}</p>
@@ -151,21 +151,21 @@ export default function DashboardPage() {
       <div className="bg-dk-surface border border-dk-border rounded-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-dk-border">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-[#E3B341]" />
+            <AlertTriangle className="w-4 h-4 text-dk-orange" />
             <h3 className="text-sm font-semibold text-dk-text">갱신 위험 알림판</h3>
           </div>
-          <Link href="/app/renewals" className="text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-0.5">
+          <Link href="/app/renewals" className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5">
             전체 보기 <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         <div className="grid grid-cols-2 divide-x divide-dk-border border-b border-dk-border">
           <div className="px-5 py-4 text-center bg-red-500/10">
-            <p className="text-3xl font-bold text-[#FF7B72] font-mono">{s.renewals_d7}</p>
-            <p className="text-xs font-medium text-[#FF7B72]/70 mt-1">D-7 이내</p>
+            <p className="text-3xl font-bold text-dk-red font-mono">{s.renewals_d7}</p>
+            <p className="text-xs font-medium text-dk-red/70 mt-1">D-7 이내</p>
           </div>
           <div className="px-5 py-4 text-center bg-amber-500/10">
-            <p className="text-3xl font-bold text-[#E3B341] font-mono">{s.renewals_d30}</p>
-            <p className="text-xs font-medium text-[#E3B341]/70 mt-1">D-30 이내</p>
+            <p className="text-3xl font-bold text-dk-orange font-mono">{s.renewals_d30}</p>
+            <p className="text-xs font-medium text-dk-orange/70 mt-1">D-30 이내</p>
           </div>
         </div>
         <div className="divide-y divide-dk-border">
@@ -182,7 +182,7 @@ export default function DashboardPage() {
               <Link key={r.id as string} href={`/app/renewals/${r.id}`}
                 className="flex items-center gap-3 px-5 py-3.5 hover:bg-dk-surface2/50 transition-colors">
                 <span className={cn('text-xs font-bold font-mono px-2 py-0.5 rounded shrink-0',
-                  dday <= 7 ? 'bg-[#3d1a1a] text-[#FF7B72]' : 'bg-[#3d2b0d] text-[#E3B341]')}>
+                  dday <= 7 ? 'bg-tint-red text-dk-red' : 'bg-tint-amber text-dk-orange')}>
                   D-{dday}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -206,7 +206,7 @@ export default function DashboardPage() {
             <h3 className="text-sm font-semibold text-dk-text flex items-center gap-2">
               <CheckSquare className="w-4 h-4 text-dk-muted" /> 할일
             </h3>
-            <Link href="/app/tasks/my" className="text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-0.5">
+            <Link href="/app/tasks/my" className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5">
               전체 <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -220,11 +220,11 @@ export default function DashboardPage() {
               return (
                 <div key={t.id as string} className="flex items-center gap-3 px-5 py-3 hover:bg-dk-surface2/50 transition-colors">
                   <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', PRIORITY_CLS[t.priority as string] ?? 'bg-dk-dim')} />
-                  <p className={cn('flex-1 text-sm truncate', isOverdue ? 'text-[#FF7B72] font-medium' : 'text-dk-text')}>
+                  <p className={cn('flex-1 text-sm truncate', isOverdue ? 'text-dk-red font-medium' : 'text-dk-text')}>
                     {t.title as string}
                   </p>
                   {dueAt && (
-                    <span className={cn('text-[10px] font-mono shrink-0', isOverdue ? 'text-[#FF7B72] font-bold' : 'text-dk-dim')}>
+                    <span className={cn('text-[10px] font-mono shrink-0', isOverdue ? 'text-dk-red font-bold' : 'text-dk-dim')}>
                       {isOverdue ? `D+${Math.abs(dday)}` : dday === 0 ? '오늘' : `D-${dday}`}
                     </span>
                   )}
@@ -239,7 +239,7 @@ export default function DashboardPage() {
             <h3 className="text-sm font-semibold text-dk-text flex items-center gap-2">
               <Clock className="w-4 h-4 text-dk-muted" /> 최근 활동
             </h3>
-            <Link href="/app/activities" className="text-xs text-dk-blue hover:text-[#79BAFF] flex items-center gap-0.5">
+            <Link href="/app/activities" className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5">
               전체 <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
