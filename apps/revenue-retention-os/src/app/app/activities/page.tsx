@@ -24,23 +24,23 @@ const ACTIVITY_ICON: Record<string, React.ElementType> = {
   kakao: Mail,
 }
 const ACTIVITY_ICON_CLS: Record<string, string> = {
-  call:  'bg-[#1c2d4a] text-[#58A6FF]',
-  visit: 'bg-[#1c3528] text-[#3FB950]',
-  email: 'bg-[#2d1c4a] text-[#b07fff]',
-  sms:   'bg-[#2d1c4a] text-[#b07fff]',
-  kakao: 'bg-[#2d1c4a] text-[#b07fff]',
+  call:  'bg-tint-blue text-dk-blue',
+  visit: 'bg-tint-green-hover text-dk-green',
+  email: 'bg-tint-purple text-tint-purple-text',
+  sms:   'bg-tint-purple text-tint-purple-text',
+  kakao: 'bg-tint-purple text-tint-purple-text',
 }
 const ACTIVITY_LABEL: Record<string, string> = {
   call: '통화', visit: '방문', email: '이메일', sms: 'SMS', kakao: '카카오',
 }
 const PRIORITY_DOT: Record<string, string> = {
-  high: 'bg-[#FF7B72]', medium: 'bg-[#E3B341]', low: 'bg-dk-dim',
+  high: 'bg-dk-red', medium: 'bg-dk-orange', low: 'bg-dk-dim',
 }
 const TASK_STATUS_CLS: Record<string, string> = {
   todo:        'text-dk-muted  bg-dk-surface2 border-dk-border',
-  in_progress: 'text-[#58A6FF] bg-[#1c2d4a]  border-[#2d4a7a]',
-  done:        'text-[#3fb950] bg-[#0f2d17]  border-[#2d6a3f]',
-  cancelled:   'text-[#8B949E] bg-dk-surface2 border-dk-border',
+  in_progress: 'text-dk-blue bg-tint-blue  border-tint-blue-border',
+  done:        'text-dk-green bg-tint-green  border-tint-green-border',
+  cancelled:   'text-dk-muted bg-dk-surface2 border-dk-border',
 }
 const TASK_STATUS_LABEL: Record<string, string> = {
   todo: '미완료', in_progress: '진행중', done: '완료', cancelled: '취소',
@@ -72,10 +72,10 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 function ActivityRow({ a, selected, onClick }: { a: Activity; selected: boolean; onClick: () => void }) {
   const Icon = ACTIVITY_ICON[a.type] ?? Phone
   const resultIcon =
-    a.call_result === 'connected' ? <CheckCircle  className="w-3.5 h-3.5 text-[#3FB950]" /> :
-    a.call_result === 'no_answer' ? <PhoneMissed  className="w-3.5 h-3.5 text-[#E3B341]" /> :
-    a.call_result === 'rejected'  ? <PhoneOff     className="w-3.5 h-3.5 text-[#FF7B72]" /> :
-    a.call_result === 'scheduled' ? <CalendarClock className="w-3.5 h-3.5 text-[#58A6FF]" /> :
+    a.call_result === 'connected' ? <CheckCircle  className="w-3.5 h-3.5 text-dk-green" /> :
+    a.call_result === 'no_answer' ? <PhoneMissed  className="w-3.5 h-3.5 text-dk-orange" /> :
+    a.call_result === 'rejected'  ? <PhoneOff     className="w-3.5 h-3.5 text-dk-red" /> :
+    a.call_result === 'scheduled' ? <CalendarClock className="w-3.5 h-3.5 text-dk-blue" /> :
     null
 
   return (
@@ -84,7 +84,7 @@ function ActivityRow({ a, selected, onClick }: { a: Activity; selected: boolean;
       className={cn(
         'bg-dk-surface border rounded-xl px-4 py-3 cursor-pointer transition-colors',
         selected
-          ? 'border-dk-blue bg-[#111d30]'
+          ? 'border-dk-blue bg-tint-blue-deep'
           : 'border-dk-border hover:border-dk-border2 hover:bg-dk-surface2/30'
       )}
     >
@@ -116,8 +116,8 @@ function ActivityRow({ a, selected, onClick }: { a: Activity; selected: boolean;
               <span className={cn(
                 'ml-2 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border max-w-[200px] truncate',
                 a.type === 'call'
-                  ? 'text-[#3FB950] border-[#1c5c35] bg-[#0f2d1c]'
-                  : 'text-[#b07fff] border-[#3d2060] bg-[#2d1c4a]'
+                  ? 'text-dk-green border-tint-green-border bg-tint-green'
+                  : 'text-tint-purple-text border-tint-purple-border bg-tint-purple'
               )}>
                 {a.type === 'call' ? <Phone className="w-2.5 h-2.5 shrink-0" /> : <Mail className="w-2.5 h-2.5 shrink-0" />}
                 <span className="truncate">{a.contact_value}</span>
@@ -148,7 +148,7 @@ function TaskRow({ t, selected, onClick }: { t: Task; selected: boolean; onClick
       className={cn(
         'bg-dk-surface border rounded-xl px-4 py-3 flex items-center gap-3 cursor-pointer transition-colors',
         selected
-          ? 'border-dk-blue bg-[#111d30]'
+          ? 'border-dk-blue bg-tint-blue-deep'
           : 'border-dk-border hover:border-dk-border2 hover:bg-dk-surface2/30'
       )}
     >
@@ -205,7 +205,7 @@ function ActivityDetail({ a, onClose }: { a: Activity; onClose: () => void }) {
             <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">고객사</p>
             <Link
               href={`/app/companies/${a.company.id}`}
-              className="flex items-center gap-2 text-sm text-dk-blue hover:text-[#79BAFF] transition-colors"
+              className="flex items-center gap-2 text-sm text-dk-blue hover:text-dk-blueHover transition-colors"
             >
               <Building2 className="w-3.5 h-3.5" />
               {a.company.name}
@@ -219,10 +219,10 @@ function ActivityDetail({ a, onClose }: { a: Activity; onClose: () => void }) {
           <div>
             <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">통화 결과</p>
             <div className="flex items-center gap-2">
-              {a.call_result === 'connected' ? <CheckCircle  className="w-4 h-4 text-[#3FB950]" /> :
-               a.call_result === 'no_answer' ? <PhoneMissed  className="w-4 h-4 text-[#E3B341]" /> :
-               a.call_result === 'rejected'  ? <PhoneOff     className="w-4 h-4 text-[#FF7B72]" /> :
-               a.call_result === 'scheduled' ? <CalendarClock className="w-4 h-4 text-[#58A6FF]" /> : null}
+              {a.call_result === 'connected' ? <CheckCircle  className="w-4 h-4 text-dk-green" /> :
+               a.call_result === 'no_answer' ? <PhoneMissed  className="w-4 h-4 text-dk-orange" /> :
+               a.call_result === 'rejected'  ? <PhoneOff     className="w-4 h-4 text-dk-red" /> :
+               a.call_result === 'scheduled' ? <CalendarClock className="w-4 h-4 text-dk-blue" /> : null}
               <span className={cn('text-sm font-medium px-2 py-0.5 rounded-full text-xs', CALL_RESULT_CLASS[a.call_result])}>
                 {CALL_RESULT_LABEL[a.call_result]}
               </span>
@@ -260,13 +260,13 @@ function ActivityDetail({ a, onClose }: { a: Activity; onClose: () => void }) {
             </p>
             {a.type === 'call' ? (
               <a href={`tel:${a.contact_value}`}
-                className="inline-flex items-center gap-1.5 text-sm text-[#3FB950] border border-[#1c5c35] bg-[#0f2d1c] px-2.5 py-1 rounded-lg hover:bg-[#1c3528] transition-colors">
+                className="inline-flex items-center gap-1.5 text-sm text-dk-green border border-tint-green-border bg-tint-green px-2.5 py-1 rounded-lg hover:bg-tint-green-hover transition-colors">
                 <Phone className="w-3.5 h-3.5" />
                 {a.contact_value}
               </a>
             ) : (
               <a href={`mailto:${a.contact_value}`}
-                className="inline-flex items-center gap-1.5 text-sm text-[#b07fff] border border-[#3d2060] bg-[#2d1c4a] px-2.5 py-1 rounded-lg hover:bg-[#3d2060] transition-colors max-w-full">
+                className="inline-flex items-center gap-1.5 text-sm text-tint-purple-text border border-tint-purple-border bg-tint-purple px-2.5 py-1 rounded-lg hover:bg-tint-purple-border transition-colors max-w-full">
                 <Mail className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{a.contact_value}</span>
               </a>
@@ -299,7 +299,7 @@ function ActivityDetail({ a, onClose }: { a: Activity; onClose: () => void }) {
         {a.next_action && (
           <div>
             <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">다음 액션</p>
-            <div className="flex items-center gap-2 bg-[#111d30] border border-[#2d4a7a] rounded-xl p-3">
+            <div className="flex items-center gap-2 bg-tint-blue-deep border border-tint-blue-border rounded-xl p-3">
               <CalendarClock className="w-4 h-4 text-dk-blue shrink-0" />
               <div>
                 <p className="text-sm text-dk-text">{a.next_action}</p>
@@ -349,7 +349,7 @@ function TaskDetail({ t, onClose }: { t: Task; onClose: () => void }) {
             <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">고객사</p>
             <Link
               href={`/app/companies/${t.company.id}`}
-              className="flex items-center gap-2 text-sm text-dk-blue hover:text-[#79BAFF] transition-colors"
+              className="flex items-center gap-2 text-sm text-dk-blue hover:text-dk-blueHover transition-colors"
             >
               <Building2 className="w-3.5 h-3.5" />
               {t.company.name}
@@ -408,8 +408,8 @@ function TaskDetail({ t, onClose }: { t: Task; onClose: () => void }) {
 
         {/* 자동 생성 */}
         {t.is_auto && (
-          <div className="flex items-center gap-2 bg-[#111d30] border border-[#2d4a7a] rounded-xl px-3 py-2">
-            <span className="text-[10px] border border-[#2d4a7a] text-dk-blue px-1.5 py-0.5 rounded font-medium">자동</span>
+          <div className="flex items-center gap-2 bg-tint-blue-deep border border-tint-blue-border rounded-xl px-3 py-2">
+            <span className="text-[10px] border border-tint-blue-border text-dk-blue px-1.5 py-0.5 rounded font-medium">자동</span>
             <span className="text-xs text-dk-dim">예약 통화에서 자동 생성된 업무입니다</span>
           </div>
         )}
@@ -519,12 +519,12 @@ export default function ActivitiesPage() {
           {/* 집계 카드 */}
           <div className={cn('grid gap-3', selected ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4')}>
             <StatCard icon={Phone}       label="통화"  value={calls.length}
-              sub={`연결 ${connected}건`}  color="bg-[#1c2d4a] text-[#58A6FF]" />
+              sub={`연결 ${connected}건`}  color="bg-tint-blue text-dk-blue" />
             <StatCard icon={Users}       label="방문"  value={visits.length}
-              color="bg-[#1c3528] text-[#3FB950]" />
+              color="bg-tint-green-hover text-dk-green" />
             {!selected && <>
               <StatCard icon={Mail}        label="이메일" value={emails.length}
-                color="bg-[#2d1c4a] text-[#b07fff]" />
+                color="bg-tint-purple text-tint-purple-text" />
               <StatCard icon={CheckSquare} label="업무"  value={tasks.length}
                 sub={`미완료 ${pendingTasks}건`} color="bg-dk-surface2 text-dk-muted" />
             </>}

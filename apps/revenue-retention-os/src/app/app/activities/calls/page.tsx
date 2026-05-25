@@ -18,10 +18,10 @@ type ContactOption = { id: string; name: string; title: string | null; phone: st
 
 function CallResultIcon({ result }: { result: string | null }) {
   switch (result) {
-    case 'connected': return <CheckCircle   className="w-4 h-4 text-[#3FB950]" />
-    case 'no_answer': return <PhoneMissed   className="w-4 h-4 text-[#E3B341]" />
-    case 'rejected':  return <PhoneOff      className="w-4 h-4 text-[#FF7B72]" />
-    case 'scheduled': return <CalendarClock className="w-4 h-4 text-[#58A6FF]" />
+    case 'connected': return <CheckCircle   className="w-4 h-4 text-dk-green" />
+    case 'no_answer': return <PhoneMissed   className="w-4 h-4 text-dk-orange" />
+    case 'rejected':  return <PhoneOff      className="w-4 h-4 text-dk-red" />
+    case 'scheduled': return <CalendarClock className="w-4 h-4 text-dk-blue" />
     default:          return <Phone         className="w-4 h-4 text-dk-dim" />
   }
 }
@@ -124,10 +124,10 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
   }
 
   const resultButtons = [
-    { value: 'connected', label: '연결됨',  icon: CheckCircle,   cls: 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]' },
-    { value: 'no_answer', label: '부재중',  icon: PhoneMissed,   cls: 'border-[#7a5000] bg-[#3d2b0d] text-[#E3B341]' },
-    { value: 'rejected',  label: '거절',    icon: PhoneOff,      cls: 'border-[#7f2020] bg-[#3d1a1a] text-[#FF7B72]' },
-    { value: 'scheduled', label: '예약통화', icon: CalendarClock, cls: 'border-[#2d4a7a] bg-[#1c2d4a] text-[#58A6FF]' },
+    { value: 'connected', label: '연결됨',  icon: CheckCircle,   cls: 'border-tint-green-border bg-tint-green text-dk-green' },
+    { value: 'no_answer', label: '부재중',  icon: PhoneMissed,   cls: 'border-tint-amber-border bg-tint-amber text-dk-orange' },
+    { value: 'rejected',  label: '거절',    icon: PhoneOff,      cls: 'border-tint-red-border bg-tint-red text-dk-red' },
+    { value: 'scheduled', label: '예약통화', icon: CalendarClock, cls: 'border-tint-blue-border bg-tint-blue text-dk-blue' },
   ]
 
   const canSave = !!selectedCompany && !!result && !submitting
@@ -138,7 +138,7 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
       <div className="relative bg-dk-surface border border-dk-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg mx-0 sm:mx-4 p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#1c2d4a] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-tint-blue flex items-center justify-center">
               <Phone className="w-4 h-4 text-dk-blue" />
             </div>
             <h3 className="text-base font-semibold text-dk-text">통화 기록</h3>
@@ -150,7 +150,7 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
 
         {/* 고객사 검색 */}
         <div className="mb-4" ref={companyRef}>
-          <label className="text-xs font-medium text-dk-muted mb-1.5 block">고객사 <span className="text-[#FF7B72]">*</span></label>
+          <label className="text-xs font-medium text-dk-muted mb-1.5 block">고객사 <span className="text-dk-red">*</span></label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dk-dim" />
             {companyLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-dk-dim" />}
@@ -200,7 +200,7 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
                     }}
                     className={`w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg border text-sm transition-all ${
                       selectedContact?.id === c.id
-                        ? 'border-dk-blue bg-[#111d30] text-dk-text'
+                        ? 'border-dk-blue bg-tint-blue-deep text-dk-text'
                         : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                     }`}
                   >
@@ -224,7 +224,7 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
                     onClick={() => setPhoneChoice('mobile')}
                     className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors ${
                       phoneChoice === 'mobile'
-                        ? 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]'
+                        ? 'border-tint-green-border bg-tint-green text-dk-green'
                         : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                     }`}
                   >
@@ -245,7 +245,7 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
                     onClick={() => setPhoneChoice('phone')}
                     className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors ${
                       phoneChoice === 'phone'
-                        ? 'border-[#1c5c35] bg-[#0f2d1c] text-[#3FB950]'
+                        ? 'border-tint-green-border bg-tint-green text-dk-green'
                         : 'border-dk-border bg-dk-surface2 text-dk-muted hover:border-dk-border2'
                     }`}
                   >
@@ -267,7 +267,7 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
 
         {/* 통화 결과 */}
         <div className="mb-4">
-          <label className="text-xs font-medium text-dk-muted mb-1.5 block">통화 결과 <span className="text-[#FF7B72]">*</span></label>
+          <label className="text-xs font-medium text-dk-muted mb-1.5 block">통화 결과 <span className="text-dk-red">*</span></label>
           <div className="grid grid-cols-2 gap-2">
             {resultButtons.map(btn => (
               <button
@@ -319,7 +319,7 @@ function QuickCallModal({ onClose, onSaved }: { onClose: () => void; onSaved: ()
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#1f6feb] rounded-lg hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {submitting ? '저장 중...' : '저장'}
@@ -338,10 +338,10 @@ function CallCard({ activity }: { activity: Activity }) {
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center
-            ${activity.call_result === 'connected' ? 'bg-[#0f2d1c]' :
-              activity.call_result === 'no_answer' ? 'bg-[#3d2b0d]' :
-              activity.call_result === 'rejected'  ? 'bg-[#3d1a1a]' :
-              'bg-[#1c2d4a]'}`}
+            ${activity.call_result === 'connected' ? 'bg-tint-green' :
+              activity.call_result === 'no_answer' ? 'bg-tint-amber' :
+              activity.call_result === 'rejected'  ? 'bg-tint-red' :
+              'bg-tint-blue'}`}
           >
             <CallResultIcon result={activity.call_result} />
           </div>
@@ -372,7 +372,7 @@ function CallCard({ activity }: { activity: Activity }) {
               )}
               {activity.contact_value && (
                 <a href={`tel:${activity.contact_value}`}
-                  className="inline-flex items-center gap-1 text-[#3FB950] border border-[#1c5c35] bg-[#0f2d1c] px-1.5 py-0.5 rounded hover:bg-[#1c3528] transition-colors">
+                  className="inline-flex items-center gap-1 text-dk-green border border-tint-green-border bg-tint-green px-1.5 py-0.5 rounded hover:bg-tint-green-hover transition-colors">
                   <Phone className="w-2.5 h-2.5" />
                   {activity.contact_value}
                 </a>
@@ -454,9 +454,9 @@ export default function CallsPage() {
 
   const stats = [
     { label: '전체',   count: activities.length,                                               cls: 'text-dk-text',     val: '' },
-    { label: '연결됨', count: activities.filter(a => a.call_result === 'connected').length, cls: 'text-[#3FB950]',   val: 'connected' },
-    { label: '부재중', count: activities.filter(a => a.call_result === 'no_answer').length, cls: 'text-[#E3B341]',   val: 'no_answer' },
-    { label: '거절',   count: activities.filter(a => a.call_result === 'rejected').length,  cls: 'text-[#FF7B72]',   val: 'rejected' },
+    { label: '연결됨', count: activities.filter(a => a.call_result === 'connected').length, cls: 'text-dk-green',   val: 'connected' },
+    { label: '부재중', count: activities.filter(a => a.call_result === 'no_answer').length, cls: 'text-dk-orange',   val: 'no_answer' },
+    { label: '거절',   count: activities.filter(a => a.call_result === 'rejected').length,  cls: 'text-dk-red',   val: 'rejected' },
   ]
 
   return (
@@ -468,7 +468,7 @@ export default function CallsPage() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#1f6feb] text-white text-sm font-medium rounded-lg hover:bg-[#388bfd] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-dk-accent text-white text-sm font-medium rounded-lg hover:bg-dk-accentHover transition-colors"
         >
           <Plus className="w-4 h-4" />
           통화 기록
