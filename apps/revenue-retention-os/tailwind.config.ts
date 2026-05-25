@@ -41,6 +41,17 @@ const config: Config = {
           purple:   '#D2A8FF',
           red:      '#FF7B72',
           orange:   '#E3B341',
+          accent:      '#1f6feb',
+          accentHover: '#388bfd',
+          blueHover:   '#79baff',
+        },
+        // 상태 칩 틴트 (배경/테두리/텍스트) — 다크 UI 전용
+        tint: {
+          green:  { DEFAULT: '#0f2d1c', border: '#1c5c35', hover: '#1c3528' },
+          amber:  { DEFAULT: '#3d2b0d', border: '#7a5000' },
+          red:    { DEFAULT: '#3d1a1a', border: '#7f2020' },
+          blue:   { DEFAULT: '#1c2d4a', border: '#2d4a7a', deep: '#111d30' },
+          purple: { DEFAULT: '#2d1c4a', border: '#3d2060', text: '#b07fff' },
         },
       },
       ringWidth: { '3': '3px' },

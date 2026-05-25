@@ -24,8 +24,15 @@
 - **dk.* (GitHub 다크 계열)** — 다크 UI 표면/경계/텍스트.
   `bg #0D1117 · surface #161B22 · surface2 #1C2128 · border #21262D · border2 #30363D ·`
   `text #E6EDF3 · muted #8B949E · dim #6E7681 · blue #58A6FF · green #3FB950 · purple #D2A8FF · red #FF7B72 · orange #E3B341`.
+  추가 액센트: `dk.accent #1f6feb`(주요 버튼) · `dk.accentHover #388bfd` · `dk.blueHover #79baff`.
+- **tint.* (상태 칩 틴트)** — 칩/뱃지의 배경·테두리·텍스트. `bg-tint-green`, `border-tint-green-border` 형태로 사용.
+  `green {#0f2d1c, border #1c5c35, hover #1c3528}` · `amber {#3d2b0d, border #7a5000}` ·
+  `red {#3d1a1a, border #7f2020}` · `blue {#1c2d4a, border #2d4a7a, deep #111d30}` ·
+  `purple {#2d1c4a, border #3d2060, text #b07fff}`.
 - **CSS 변수** (`:root` 라이트 / `.dark` 다크): `--bg-*`, `--text-*`, `--border-*`, `--interactive-*`, `--risk-*`.
-  컴포넌트는 가능한 한 토큰/변수를 사용하고 **하드코딩 hex를 지양**한다.
+- **차트·외부 브랜드 색** — Tailwind 클래스가 아닌 값(recharts fill/stroke, SVG, style)으로 쓰는 색은
+  `src/constants/colors.ts`의 `CHART` / `BRAND` 상수를 사용한다(구글 OAuth 등 브랜드 색은 원본 유지).
+- 컴포넌트는 위 토큰/상수를 사용하고 **인라인 하드코딩 hex를 지양**한다.
 
 ## 3. 시맨틱 상태 색상 (배지·태그)
 - 색의 **의미 표준**: 성공/완료 = green, 진행/정보 = blue, 주의/대기 = amber, 위험/실패/이탈 = red, 중립/비활성 = slate.
