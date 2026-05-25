@@ -58,6 +58,8 @@ core-api에 집중, 각 제품은 apps/* 아래에 독립 Next.js 앱.
 - TypeScript: strict 모드. `any` 및 `@ts-ignore` 금지. 외부 데이터는 zod로 파싱.
 - 커밋: Conventional Commits (feat:, fix:, refactor:, docs:, test:)
 - API 응답: { data, error } 형태로 통일. HTTP 상태 코드는 표준 준수.
+- UI/디자인: 공통 디자인 정책 **DESIGN.md**를 따른다 (다크 기본, Pretendard, brand/dk 토큰,
+  시맨틱 상태색, shadcn/ui). 임의 색·폰트·컴포넌트 스타일 도입 금지.
 
 ## 디렉토리 책임 & 네이밍
 - core-api/              공통 API (인증/알림/결제/테넌트). 공통 스키마는 core-api/SCHEMA.md

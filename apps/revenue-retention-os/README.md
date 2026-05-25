@@ -133,5 +133,6 @@ sales        → 본인 담당만
 - [`SCHEMA.md`](./SCHEMA.md) — 도메인(`rros`) DB 스키마 현재 상태 SSOT
 - [`../../core-api/SCHEMA.md`](../../core-api/SCHEMA.md) — 공통(`core`) 스키마 SSOT
 - [`CLAUDE.md`](./CLAUDE.md) — 도메인 지침 (역할·핵심 테이블·연동 상태)
+- [`../../DESIGN.md`](../../DESIGN.md) — 공통 디자인 정책 (토큰·테마·컴포넌트)
 - [`docs/super-admin-roadmap.md`](./docs/super-admin-roadmap.md) — 슈퍼어드민 로드맵
 - 플랫폼 공통 규칙: [`../../CLAUDE.md`](../../CLAUDE.md)
