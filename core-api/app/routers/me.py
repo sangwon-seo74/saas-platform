@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
+from app.core.envelope import EnvelopeRoute
 from app.dependencies import AuthContext, get_current_user
 
-router = APIRouter(prefix="/v1")
+router = APIRouter(prefix="/v1", route_class=EnvelopeRoute)
 
 
 @router.get("/me")

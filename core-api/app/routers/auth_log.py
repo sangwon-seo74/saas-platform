@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 from app.core import supabase as db
+from app.core.envelope import EnvelopeRoute
 
-router = APIRouter(prefix="/v1/auth")
+router = APIRouter(prefix="/v1/auth", route_class=EnvelopeRoute)
 
 
 class LogAccessRequest(BaseModel):

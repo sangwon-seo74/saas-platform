@@ -4,9 +4,10 @@ from pydantic import BaseModel
 from typing import Optional
 from app.core import supabase as db
 from app.core.config import get_settings
+from app.core.envelope import EnvelopeRoute
 from app.dependencies import SuperAdminContext, get_super_admin
 
-router = APIRouter(prefix="/v1/admin")
+router = APIRouter(prefix="/v1/admin", route_class=EnvelopeRoute)
 
 _TEMP_PW_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"
 

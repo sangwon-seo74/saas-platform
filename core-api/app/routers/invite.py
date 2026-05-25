@@ -5,9 +5,10 @@ from typing import Optional
 from app.core import supabase as db
 from app.core.invite_token import create_invite_token, verify_invite_token
 from app.core.config import get_settings
+from app.core.envelope import EnvelopeRoute
 from app.dependencies import AuthContext, get_current_user
 
-router = APIRouter(prefix="/v1")
+router = APIRouter(prefix="/v1", route_class=EnvelopeRoute)
 
 VALID_ROLES = ("admin", "manager", "sales")
 
