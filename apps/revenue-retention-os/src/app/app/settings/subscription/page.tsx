@@ -209,7 +209,7 @@ export default function SubscriptionPage() {
         </div>
       )}
 
-      <div className="bg-gradient-to-br from-[#1f6feb] to-[#1a4a8a] rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-dk-accent to-dk-accentDeep rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">

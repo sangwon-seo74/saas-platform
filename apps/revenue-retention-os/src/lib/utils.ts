@@ -43,10 +43,10 @@ export function formatDday(days: number): string {
 }
 
 export function getDdayClass(days: number): string {
-  if (days < 0)  return 'text-[#FF7B72]'
-  if (days <= 7)  return 'text-[#FF7B72]'
-  if (days <= 14) return 'text-[#E3B341]'
-  if (days <= 30) return 'text-[#E3B341]'
+  if (days < 0)  return 'text-dk-red'
+  if (days <= 7)  return 'text-dk-red'
+  if (days <= 14) return 'text-dk-orange'
+  if (days <= 30) return 'text-dk-orange'
   return 'text-dk-muted'
 }
 

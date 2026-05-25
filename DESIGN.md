@@ -30,8 +30,8 @@
   `red {#3d1a1a, border #7f2020}` · `blue {#1c2d4a, border #2d4a7a, deep #111d30}` ·
   `purple {#2d1c4a, border #3d2060, text #b07fff}`.
 - **CSS 변수** (`:root` 라이트 / `.dark` 다크): `--bg-*`, `--text-*`, `--border-*`, `--interactive-*`, `--risk-*`.
-- **차트·외부 브랜드 색** — Tailwind 클래스가 아닌 값(recharts fill/stroke, SVG, style)으로 쓰는 색은
-  `src/constants/colors.ts`의 `CHART` / `BRAND` 상수를 사용한다(구글 OAuth 등 브랜드 색은 원본 유지).
+- **외부 브랜드 색** — SVG fill 등 "값"으로 쓰는 브랜드 색(구글 OAuth 등)은 `src/constants/colors.ts`의 `BRAND` 상수 사용.
+  차트(recharts)는 컴포넌트에 토큰 클래스명(`color="bg-dk-green"`)을 전달한다.
 - 컴포넌트는 위 토큰/상수를 사용하고 **인라인 하드코딩 hex를 지양**한다.
 
 ## 3. 시맨틱 상태 색상 (배지·태그)
@@ -56,3 +56,5 @@
 - 토큰성 클래스를 담는 디렉토리는 Tailwind `content` 글롭에 포함되어야 purge되지 않는다.
   현재 `content`에 `src/constants/**` 포함됨. 새 위치에 클래스를 두면 `content`에 추가한다.
 - Tailwind는 **v3 단일 구성**으로 유지한다. v4 도입은 별도 마이그레이션으로 사전 합의(혼용 금지).
+- **예외 — 에러 바운더리**: `app/global-error.tsx`, `pages/_error.tsx`는 앱 CSS가 로드되지 않은
+  상황에서도 렌더돼야 하므로 인라인 `style`에 raw hex를 그대로 둔다(토큰/클래스 의존 금지).

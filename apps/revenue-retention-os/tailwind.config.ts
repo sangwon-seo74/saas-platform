@@ -43,6 +43,7 @@ const config: Config = {
           orange:   '#E3B341',
           accent:      '#1f6feb',
           accentHover: '#388bfd',
+          accentDeep:  '#1a4a8a',
           blueHover:   '#79baff',
           border3:     '#444c56',
           // solid 액션 버튼 (GitHub 팔레트)
