@@ -18,7 +18,7 @@ export const GET = withAuth(async (req, ctx, params) => {
     .select(`
       *,
       contract:contracts!contract_id(id, contract_no, started_at, expires_at, final_amount, amount, is_paid, payment_method, account_count, status, product:products!product_id(id, name)),
-      company:companies!company_id(id, name, biz_no, industry, address_city, status),
+      company:companies!company_id(id, name, biz_no, industry, status),
       assigned_user:users!assigned_user_id(id, name)
     `)
     .eq('id', params!.id)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Users, Plus, Mail, CheckCircle, XCircle, MoreHorizontal, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -101,8 +101,10 @@ export default function UsersSettingPage() {
   const [loading, setLoading]     = useState(true)
   const [users, setUsers]         = useState<User[]>([])
   const [planLimit, setPlanLimit] = useState<PlanLimit>({ max_users: null, current_users: 0 })
-  const [showInvite, setShowInvite] = useState(false)
-  const [menuOpen, setMenuOpen]   = useState<string | null>(null)
+  const [showInvite, setShowInvite]   = useState(false)
+  const [menuOpen, setMenuOpen]       = useState<string | null>(null)
+  const [confirmId, setConfirmId]     = useState<string | null>(null)
+  const menuRef                        = useRef<HTMLDivElement>(null)
 
   function loadUsers() {
     setLoading(true)
@@ -118,9 +120,18 @@ export default function UsersSettingPage() {
 
   useEffect(() => { loadUsers() }, [])
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(null); setConfirmId(null)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
   const handleDeactivate = async (id: string) => {
-    setMenuOpen(null)
-    if (!confirm('해당 사용자를 비활성화하시겠습니까?')) return
+    setMenuOpen(null); setConfirmId(null)
     await fetch(`/api/settings/users/${id}`, { method: 'DELETE' }).catch(() => {})
     loadUsers()
   }
@@ -205,20 +216,38 @@ export default function UsersSettingPage() {
                     }
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="relative">
+                    <div className="relative" ref={menuOpen === user.id || confirmId === user.id ? menuRef : undefined}>
                       <button
-                        onClick={() => setMenuOpen(menuOpen === user.id ? null : user.id)}
+                        onClick={() => { setMenuOpen(menuOpen === user.id ? null : user.id); setConfirmId(null) }}
                         className="w-7 h-7 rounded-md hover:bg-dk-surface2 flex items-center justify-center ml-auto">
                         <MoreHorizontal className="w-4 h-4 text-dk-dim" />
                       </button>
                       {menuOpen === user.id && (
                         <div className="absolute right-0 top-8 z-10 bg-dk-surface border border-dk-border rounded-xl shadow-lg py-1 w-32">
                           {user.is_active && (
-                            <button
-                              onClick={() => handleDeactivate(user.id)}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-dk-red hover:bg-dk-surface2">
-                              <XCircle className="w-3.5 h-3.5" /> 비활성화
-                            </button>
+                            confirmId === user.id ? (
+                              <div className="px-3 py-2 space-y-1.5">
+                                <p className="text-[11px] text-dk-muted leading-tight">비활성화할까요?</p>
+                                <div className="flex gap-1.5">
+                                  <button
+                                    onClick={() => handleDeactivate(user.id)}
+                                    className="flex-1 text-[11px] font-medium text-white bg-dk-red rounded-md py-1 hover:bg-dk-red/80">
+                                    확인
+                                  </button>
+                                  <button
+                                    onClick={() => { setConfirmId(null); setMenuOpen(null) }}
+                                    className="flex-1 text-[11px] font-medium text-dk-muted border border-dk-border rounded-md py-1 hover:bg-dk-surface2">
+                                    취소
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setConfirmId(user.id)}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-dk-red hover:bg-dk-surface2">
+                                <XCircle className="w-3.5 h-3.5" /> 비활성화
+                              </button>
+                            )
                           )}
                         </div>
                       )}

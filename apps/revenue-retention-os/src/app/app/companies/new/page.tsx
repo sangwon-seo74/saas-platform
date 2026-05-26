@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import Script from 'next/script'
+import { ArrowLeft, Loader2, MapPin } from 'lucide-react'
+
+declare global { interface Window { daum: { Postcode: new (opts: { oncomplete: (d: { zonecode: string; roadAddress: string; jibunAddress: string; userSelectedType: 'R' | 'J' }) => void }) => { open: () => void } } } }
 
 const INDUSTRY_OPTIONS = [
   'IT서비스', '자동차IT', '금융IT', '통신', '제조', '유통/물류', '의료/바이오', '건설/부동산', '교육', '기타',
@@ -17,7 +20,7 @@ export default function NewCompanyPage() {
   const router = useRouter()
   const [form, setForm] = useState({
     name: '', biz_no: '', industry: '', company_size: '',
-    website: '', address_city: '', address_district: '', address_road: '', memo: '',
+    website: '', address_zip: '', address_road: '', address_detail: '', memo: '',
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -34,15 +37,15 @@ export default function NewCompanyPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name:             form.name.trim(),
-        biz_no:           form.biz_no.trim()           || null,
-        industry:         form.industry                || null,
-        company_size:     form.company_size            || null,
-        website:          form.website.trim()          || null,
-        address_city:     form.address_city.trim()     || null,
-        address_district: form.address_district.trim() || null,
-        address_road:     form.address_road.trim()     || null,
-        memo:             form.memo.trim()             || null,
+        name:           form.name.trim(),
+        biz_no:         form.biz_no.trim()     || null,
+        industry:       form.industry          || null,
+        company_size:   form.company_size      || null,
+        website:        form.website.trim()    || null,
+        address_zip:    form.address_zip       || null,
+        address_road:   form.address_road      || null,
+        address_detail: form.address_detail.trim() || null,
+        memo:           form.memo.trim()       || null,
       }),
     })
     const json = await res.json().catch(() => null)
@@ -58,6 +61,7 @@ export default function NewCompanyPage() {
 
   return (
     <div className="p-6 max-w-lg">
+      <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="lazyOnload" />
       <div className="flex items-center gap-3 mb-6">
         <Link href="/app/companies"
           className="p-1.5 rounded-lg text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
@@ -124,25 +128,26 @@ export default function NewCompanyPage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={LABEL_CLS}>시/도</label>
-              <input
-                value={form.address_city}
-                onChange={e => set('address_city', e.target.value)}
-                placeholder="서울"
-                className={INPUT_CLS}
-              />
+          <div>
+            <label className={LABEL_CLS}>주소</label>
+            <div className="flex gap-2 mb-2">
+              <input readOnly value={form.address_zip} placeholder="우편번호"
+                className={INPUT_CLS + ' w-24 bg-dk-surface cursor-default'} />
+              <button type="button"
+                onClick={() => new window.daum.Postcode({
+                  oncomplete: d => {
+                    set('address_zip', d.zonecode)
+                    set('address_road', d.userSelectedType === 'J' ? d.jibunAddress : d.roadAddress)
+                  }
+                }).open()}
+                className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-white bg-dk-accent rounded-xl hover:bg-dk-accentHover shrink-0">
+                <MapPin className="w-3.5 h-3.5" /> 주소 검색
+              </button>
             </div>
-            <div>
-              <label className={LABEL_CLS}>구/군</label>
-              <input
-                value={form.address_district}
-                onChange={e => set('address_district', e.target.value)}
-                placeholder="강남구"
-                className={INPUT_CLS}
-              />
-            </div>
+            <input readOnly value={form.address_road} placeholder="도로명주소 (검색 후 자동 입력)"
+              className={INPUT_CLS + ' mb-2 bg-dk-surface cursor-default'} />
+            <input value={form.address_detail} onChange={e => set('address_detail', e.target.value)}
+              placeholder="상세주소 (동/호수, 층 등)" className={INPUT_CLS} />
           </div>
           <div>
             <label className={LABEL_CLS}>웹사이트</label>

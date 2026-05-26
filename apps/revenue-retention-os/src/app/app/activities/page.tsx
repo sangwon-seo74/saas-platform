@@ -6,7 +6,7 @@ import {
   Phone, Mail, Users, CheckSquare,
   CheckCircle, PhoneMissed, PhoneOff, CalendarClock,
   Search, Loader2, Clock, User, X,
-  ChevronRight, Building2,
+  ChevronRight, Building2, BarChart2,
 } from 'lucide-react'
 import { cn, formatDate, formatDateTime, formatDuration } from '@/lib/utils'
 import {
@@ -71,12 +71,6 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 // ─── 활동 행 ──────────────────────────────────────────────
 function ActivityRow({ a, selected, onClick }: { a: Activity; selected: boolean; onClick: () => void }) {
   const Icon = ACTIVITY_ICON[a.type] ?? Phone
-  const resultIcon =
-    a.call_result === 'connected' ? <CheckCircle  className="w-3.5 h-3.5 text-dk-green" /> :
-    a.call_result === 'no_answer' ? <PhoneMissed  className="w-3.5 h-3.5 text-dk-orange" /> :
-    a.call_result === 'rejected'  ? <PhoneOff     className="w-3.5 h-3.5 text-dk-red" /> :
-    a.call_result === 'scheduled' ? <CalendarClock className="w-3.5 h-3.5 text-dk-blue" /> :
-    null
 
   return (
     <div
@@ -93,46 +87,34 @@ function ActivityRow({ a, selected, onClick }: { a: Activity; selected: boolean;
           <Icon className="w-3.5 h-3.5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-dk-text">{a.company?.name ?? '—'}</span>
-            <span className="text-[10px] text-dk-dim">{ACTIVITY_LABEL[a.type]}</span>
-            {resultIcon && (
-              <span className="flex items-center gap-1">
-                {resultIcon}
-                <span className={cn('text-xs', CALL_RESULT_CLASS[a.call_result ?? ''] ?? '')}>
-                  {CALL_RESULT_LABEL[a.call_result ?? ''] ?? ''}
-                </span>
-              </span>
-            )}
-            {a.call_duration ? <span className="text-[10px] text-dk-dim">{formatDuration(a.call_duration)}</span> : null}
-            <span className="flex items-center gap-1 text-[10px] text-dk-dim ml-auto">
-              <User className="w-3 h-3" />{a.user?.name}
-            </span>
-          </div>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Clock className="w-3 h-3 text-dk-dim" />
-            <span className="text-[10px] text-dk-dim">{formatDateTime(a.activity_at)}</span>
-            {a.contact_value && (a.type === 'call' || a.type === 'email') && (
-              <span className={cn(
-                'ml-2 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border max-w-[200px] truncate',
-                a.type === 'call'
-                  ? 'text-dk-green border-tint-green-border bg-tint-green'
-                  : 'text-tint-purple-text border-tint-purple-border bg-tint-purple'
-              )}>
-                {a.type === 'call' ? <Phone className="w-2.5 h-2.5 shrink-0" /> : <Mail className="w-2.5 h-2.5 shrink-0" />}
-                <span className="truncate">{a.contact_value}</span>
-              </span>
-            )}
-          </div>
-          {a.summary && (
-            <p className="text-xs text-dk-muted mt-1.5 leading-relaxed line-clamp-2">{a.summary}</p>
-          )}
-          {a.next_action_at && (
-            <div className="mt-1.5 flex items-center gap-1 text-[10px] text-dk-blue">
-              <CalendarClock className="w-3 h-3" />
-              다음: {a.next_action} ({formatDate(a.next_action_at)})
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-semibold text-dk-text truncate">{a.company?.name ?? '—'}</span>
+              <span className="text-[10px] text-dk-dim shrink-0">{ACTIVITY_LABEL[a.type]}</span>
             </div>
-          )}
+            {a.call_result && (
+              <span className={cn('text-[10px] shrink-0', CALL_RESULT_CLASS[a.call_result] ?? '')}>
+                {CALL_RESULT_LABEL[a.call_result]}
+              </span>
+            )}
+            {a.visit_purpose && !a.call_result && (
+              <span className="text-[10px] text-dk-dim shrink-0">
+                {VISIT_PURPOSE_LABEL[a.visit_purpose] ?? a.visit_purpose}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-dk-muted mt-1 truncate">{a.summary || '—'}</p>
+          <div className="flex items-center gap-3 mt-1 text-[10px] text-dk-dim">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />{formatDateTime(a.activity_at)}
+            </span>
+            {a.user && (
+              <span className="flex items-center gap-1">
+                <User className="w-3 h-3" />{a.user.name}
+              </span>
+            )}
+            {a.call_duration && <span>{formatDuration(a.call_duration)}</span>}
+          </div>
         </div>
         <ChevronRight className="w-3.5 h-3.5 text-dk-dim shrink-0 mt-1" />
       </div>
@@ -146,31 +128,37 @@ function TaskRow({ t, selected, onClick }: { t: Task; selected: boolean; onClick
     <div
       onClick={onClick}
       className={cn(
-        'bg-dk-surface border rounded-xl px-4 py-3 flex items-center gap-3 cursor-pointer transition-colors',
+        'bg-dk-surface border rounded-xl px-4 py-3 cursor-pointer transition-colors',
         selected
           ? 'border-dk-blue bg-tint-blue-deep'
           : 'border-dk-border hover:border-dk-border2 hover:bg-dk-surface2/30'
       )}
     >
-      <div className="w-8 h-8 rounded-lg bg-dk-surface2 border border-dk-border flex items-center justify-center shrink-0">
-        <CheckSquare className="w-3.5 h-3.5 text-dk-muted" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-semibold text-dk-text">{t.company?.name ?? '—'}</span>
-          <span className="text-[10px] text-dk-dim">업무</span>
+      <div className="flex items-start gap-3">
+        <div className="w-8 h-8 rounded-lg bg-dk-surface2 border border-dk-border flex items-center justify-center shrink-0 mt-0.5">
+          <CheckSquare className="w-3.5 h-3.5 text-dk-muted" />
         </div>
-        <p className="text-xs text-dk-muted mt-0.5 truncate">{t.title}</p>
-        <span className="flex items-center gap-1 text-[10px] text-dk-dim mt-0.5">
-          <Clock className="w-3 h-3" />{formatDateTime(t.created_at)}
-        </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-semibold text-dk-text truncate">{t.company?.name ?? '—'}</span>
+              <span className="text-[10px] text-dk-dim shrink-0">업무</span>
+            </div>
+            <span className={cn('text-[10px] px-1.5 py-0.5 rounded border shrink-0', TASK_STATUS_CLS[t.status] ?? '')}>
+              {TASK_STATUS_LABEL[t.status] ?? t.status}
+            </span>
+          </div>
+          <p className="text-xs text-dk-muted mt-1 truncate">{t.title}</p>
+          <div className="flex items-center gap-3 mt-1 text-[10px] text-dk-dim">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />{formatDateTime(t.created_at)}
+            </span>
+            {t.due_at && <span>마감 {formatDate(t.due_at)}</span>}
+            <span className={cn('w-1.5 h-1.5 rounded-full ml-auto shrink-0', PRIORITY_DOT[t.priority] ?? 'bg-dk-dim')} />
+          </div>
+        </div>
+        <ChevronRight className="w-3.5 h-3.5 text-dk-dim shrink-0 mt-1" />
       </div>
-      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', PRIORITY_DOT[t.priority] ?? 'bg-dk-dim')} />
-      <span className={cn('text-[10px] px-1.5 py-0.5 rounded border shrink-0', TASK_STATUS_CLS[t.status] ?? '')}>
-        {TASK_STATUS_LABEL[t.status] ?? t.status}
-      </span>
-      {t.due_at && <p className="text-[10px] text-dk-dim shrink-0">마감 {formatDate(t.due_at)}</p>}
-      <ChevronRight className="w-3.5 h-3.5 text-dk-dim shrink-0" />
     </div>
   )
 }
@@ -285,6 +273,12 @@ function ActivityDetail({ a, onClose }: { a: Activity; onClose: () => void }) {
           </div>
         )}
 
+        {/* 등록일자 */}
+        <div>
+          <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">등록일자</p>
+          <p className="text-sm text-dk-text">{formatDateTime(a.created_at)}</p>
+        </div>
+
         {/* 상담 내용 */}
         {a.summary && (
           <div>
@@ -374,6 +368,12 @@ function TaskDetail({ t, onClose }: { t: Task; onClose: () => void }) {
           </div>
         </div>
 
+        {/* 등록일자 */}
+        <div>
+          <p className="text-[10px] text-dk-dim mb-1.5 font-medium uppercase tracking-wide">등록일자</p>
+          <p className="text-sm text-dk-text">{formatDateTime(t.created_at)}</p>
+        </div>
+
         {/* 마감일 */}
         {t.due_at && (
           <div>
@@ -430,14 +430,18 @@ function TaskDetail({ t, onClose }: { t: Task; onClose: () => void }) {
 
 // ─── 메인 페이지 ──────────────────────────────────────────
 export default function ActivitiesPage() {
+  const fmtDate  = (d: Date) => d.toISOString().slice(0, 10)
+  const todayStr = fmtDate(new Date())
+  const weekAgo  = fmtDate(new Date(Date.now() - 6 * 864e5))
+
   const [activities, setActivities] = useState<Activity[]>([])
   const [tasks, setTasks]           = useState<Task[]>([])
   const [loading, setLoading]       = useState(true)
   const [search, setSearch]               = useState('')
   const [typeFilter, setTypeFilter]       = useState('')
   const [taskStatusFilter, setTaskStatusFilter] = useState('')
-  const [dateFrom, setDateFrom]           = useState('')
-  const [dateTo, setDateTo]               = useState('')
+  const [dateFrom, setDateFrom]           = useState(weekAgo)
+  const [dateTo, setDateTo]               = useState(todayStr)
   const [selected, setSelected]           = useState<MixedItem | null>(null)
 
   useEffect(() => {
@@ -451,20 +455,12 @@ export default function ActivitiesPage() {
     }).catch(() => setLoading(false))
   }, [])
 
-  // ── 집계 ──────────────────────────────────────────────
-  const calls      = activities.filter(a => a.type === 'call')
-  const visits     = activities.filter(a => a.type === 'visit')
-  const emails     = activities.filter(a => a.type === 'email')
-  const connected  = calls.filter(a => a.call_result === 'connected').length
-  const pendingTasks = tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled').length
-
   // ── 혼합 목록 ──────────────────────────────────────────
   const allItems: MixedItem[] = [
     ...activities.map(a => ({ kind: 'activity' as const, data: a, date: a.activity_at })),
     ...tasks.map(t => ({
       kind: 'task' as const,
       data: t,
-      // 완료 상태 필터링 시 done_at 기준으로 정렬
       date: (taskStatusFilter === 'done' && t.done_at) ? t.done_at : t.created_at,
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -483,7 +479,6 @@ export default function ActivitiesPage() {
       const name = item.data.company?.name
       if (!name?.includes(search)) return false
     }
-    // 완료 업무는 done_at 기준, 그 외는 item.date(activity_at / created_at) 기준
     const filterDate = (taskStatusFilter === 'done' && item.kind === 'task' && item.data.done_at)
       ? item.data.done_at
       : item.date
@@ -491,6 +486,14 @@ export default function ActivitiesPage() {
     if (dateTo   && new Date(filterDate) > new Date(dateTo + 'T23:59:59')) return false
     return true
   })
+
+  // ── 집계 (filtered 기준) ───────────────────────────────
+  const filteredActs   = filtered.filter(i => i.kind === 'activity').map(i => i.data as Activity)
+  const filteredTasks  = filtered.filter(i => i.kind === 'task').map(i => i.data as Task)
+  const calls          = filteredActs.filter(a => a.type === 'call')
+  const visits         = filteredActs.filter(a => a.type === 'visit')
+  const emails         = filteredActs.filter(a => a.type === 'email')
+  const pendingTasks   = filteredTasks.filter(t => t.status !== 'done' && t.status !== 'cancelled').length
 
   const handleSelect = (item: MixedItem) => {
     setSelected(prev => {
@@ -517,16 +520,18 @@ export default function ActivitiesPage() {
           <h1 className="text-xl font-semibold text-dk-text">활동이력</h1>
 
           {/* 집계 카드 */}
-          <div className={cn('grid gap-3', selected ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4')}>
-            <StatCard icon={Phone}       label="통화"  value={calls.length}
-              sub={`연결 ${connected}건`}  color="bg-tint-blue text-dk-blue" />
-            <StatCard icon={Users}       label="방문"  value={visits.length}
+          <div className={cn('grid gap-3', selected ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-5')}>
+            <StatCard icon={Phone}       label="통화"   value={calls.length}
+              color="bg-tint-blue text-dk-blue" />
+            <StatCard icon={Users}       label="방문"   value={visits.length}
               color="bg-tint-green-hover text-dk-green" />
             {!selected && <>
               <StatCard icon={Mail}        label="이메일" value={emails.length}
                 color="bg-tint-purple text-tint-purple-text" />
-              <StatCard icon={CheckSquare} label="업무"  value={tasks.length}
-                sub={`미완료 ${pendingTasks}건`} color="bg-dk-surface2 text-dk-muted" />
+              <StatCard icon={CheckSquare} label="업무"   value={filteredTasks.length}
+                color="bg-dk-surface2 text-dk-muted" />
+              <StatCard icon={BarChart2}   label="합계"   value={filtered.length}
+                color="bg-tint-blue text-dk-blue" />
             </>}
           </div>
 
@@ -566,16 +571,13 @@ export default function ActivitiesPage() {
             <span className="self-center text-xs text-dk-dim">~</span>
             <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
               className="px-3 py-2 text-sm border border-dk-border bg-dk-surface text-dk-text rounded-lg focus:outline-none focus:ring-1 focus:ring-dk-blue" />
-            {(search || typeFilter || taskStatusFilter || dateFrom || dateTo) && (
-              <button
-                onClick={() => { setSearch(''); setTypeFilter(''); setTaskStatusFilter(''); setDateFrom(''); setDateTo('') }}
-                className="px-3 py-2 text-sm text-dk-muted hover:text-dk-text border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors"
-              >
-                초기화
-              </button>
-            )}
+            <button
+              onClick={() => { setSearch(''); setTypeFilter(''); setTaskStatusFilter(''); setDateFrom(weekAgo); setDateTo(todayStr) }}
+              className="px-3 py-2 text-sm text-dk-muted hover:text-dk-text border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors"
+            >
+              최근 7일
+            </button>
           </div>
-          <p className="text-[11px] text-dk-dim">{filtered.length}건</p>
         </div>
 
         {/* 목록 */}

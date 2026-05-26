@@ -10,6 +10,10 @@ type TeamWithMeta = {
   id: string; name: string; created_at: string
   member_count: number; manager_name: string | null
 }
+type Member = {
+  id: string; name: string; email: string; role: string
+  team: { id: string; name: string } | null
+}
 
 const ROLE_LABEL: Record<string, string> = { admin: '관리자', manager: '팀장', sales: '영업' }
 const ROLE_CLASS: Record<string, string> = {
@@ -44,6 +48,78 @@ function TeamModal({ team, onClose, onSave }: {
             {team ? '저장' : '추가'}
           </button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function AddMemberModal({ teamId, currentMemberIds, onClose, onAdded }: {
+  teamId: string; currentMemberIds: string[]
+  onClose: () => void; onAdded: () => void
+}) {
+  const [users, setUsers]   = useState<Member[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/settings/users?active=true&limit=200')
+      .then(r => r.json())
+      .then(json => setUsers((json.data?.data ?? []) as Member[]))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const candidates = users.filter(u => !currentMemberIds.includes(u.id) && u.team === null)
+
+  const handleAdd = async (userId: string) => {
+    setSaving(userId)
+    await fetch(`/api/settings/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team_id: teamId }),
+    })
+    setSaving(null)
+    onAdded()
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-dk-surface border border-dk-border rounded-2xl shadow-xl w-full max-w-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-dk-text">멤버 추가</h2>
+          <button onClick={onClose} className="text-dk-dim hover:text-dk-text">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-5 h-5 animate-spin text-dk-muted" />
+          </div>
+        ) : candidates.length === 0 ? (
+          <p className="text-sm text-dk-muted text-center py-8">추가 가능한 사용자가 없습니다</p>
+        ) : (
+          <div className="space-y-1 max-h-72 overflow-y-auto">
+            {candidates.map(u => (
+              <div key={u.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dk-surface2">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-dk-blue to-dk-purple flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {u.name[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-dk-text">{u.name}</p>
+                  <p className="text-xs text-dk-dim truncate">{u.email}</p>
+                </div>
+                <button
+                  onClick={() => handleAdd(u.id)}
+                  disabled={saving === u.id}
+                  className="text-xs text-dk-blue border border-dk-blue/30 px-2.5 py-1 rounded-lg hover:bg-dk-blue/10 disabled:opacity-50"
+                >
+                  {saving === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : '추가'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -106,11 +182,13 @@ function TeamCard({ team, selected, onSelect, onEdit, onDelete }: {
 }
 
 export default function TeamsSettingsPage() {
-  const [teams, setTeams]           = useState<TeamWithMeta[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [selectedTeam, setSelected] = useState<string>('')
-  const [showModal, setShowModal]   = useState(false)
-  const [editingTeam, setEditing]   = useState<TeamWithMeta | null>(null)
+  const [teams, setTeams]             = useState<TeamWithMeta[]>([])
+  const [loading, setLoading]         = useState(true)
+  const [selectedTeam, setSelected]   = useState<string>('')
+  const [showModal, setShowModal]     = useState(false)
+  const [editingTeam, setEditing]     = useState<TeamWithMeta | null>(null)
+  const [members, setMembers]         = useState<Member[]>([])
+  const [showAddMember, setAddMember] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -126,8 +204,18 @@ export default function TeamsSettingsPage() {
   }
   useEffect(() => { load() }, [])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 멤버는 별도 API가 없어 useState로 빈 배열 유지 (settings/users에서 확인 가능)
-  const members: { id: string; name: string; role: string; email: string }[] = []
+  const loadMembers = (teamId: string) => {
+    fetch(`/api/settings/users?team_id=${teamId}&active=true&limit=200`)
+      .then(r => r.json())
+      .then(json => setMembers((json.data?.data ?? []) as Member[]))
+      .catch(() => {})
+  }
+
+  useEffect(() => {
+    if (selectedTeam) loadMembers(selectedTeam)
+    else setMembers([])
+  }, [selectedTeam])  // eslint-disable-line react-hooks/exhaustive-deps
+
   const team = teams.find(t => t.id === selectedTeam)
 
   const handleAdd = async (name: string) => {
@@ -144,9 +232,19 @@ export default function TeamsSettingsPage() {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
     })
-    setEditing(null)
+    setEditing(null); setShowModal(false)
     load()
   }
+  const handleRemoveMember = async (userId: string) => {
+    await fetch(`/api/settings/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team_id: null }),
+    })
+    setMembers(prev => prev.filter(m => m.id !== userId))
+    load()
+  }
+
   const handleDelete = async (id: string) => {
     if (!confirm('팀을 삭제하면 소속 멤버의 팀 정보가 해제됩니다. 계속할까요?')) return
     await fetch(`/api/settings/teams/${id}`, { method: 'DELETE' })
@@ -195,7 +293,9 @@ export default function TeamsSettingsPage() {
                   <h3 className="text-sm font-semibold text-dk-text">{team.name}</h3>
                   <p className="text-xs text-dk-muted mt-0.5">멤버 {team.member_count}명</p>
                 </div>
-                <button className="flex items-center gap-1 text-xs text-dk-blue px-2.5 py-1.5 border border-dk-blue/30 rounded-lg hover:bg-dk-blue/10">
+                <button
+                  onClick={() => setAddMember(true)}
+                  className="flex items-center gap-1 text-xs text-dk-blue px-2.5 py-1.5 border border-dk-blue/30 rounded-lg hover:bg-dk-blue/10">
                   <Plus className="w-3.5 h-3.5" /> 멤버 추가
                 </button>
               </div>
@@ -215,7 +315,9 @@ export default function TeamsSettingsPage() {
                     )}>
                       {ROLE_LABEL[m.role]}
                     </span>
-                    <button className="p-1 text-dk-dim hover:text-dk-red rounded-lg hover:bg-dk-red/10 transition-colors">
+                    <button
+                      onClick={() => handleRemoveMember(m.id)}
+                      className="p-1 text-dk-dim hover:text-dk-red rounded-lg hover:bg-dk-red/10 transition-colors">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -236,6 +338,14 @@ export default function TeamsSettingsPage() {
         <TeamModal team={editingTeam}
           onClose={() => { setShowModal(false); setEditing(null) }}
           onSave={editingTeam ? handleEdit : handleAdd} />
+      )}
+      {showAddMember && selectedTeam && (
+        <AddMemberModal
+          teamId={selectedTeam}
+          currentMemberIds={members.map(m => m.id)}
+          onClose={() => setAddMember(false)}
+          onAdded={() => { loadMembers(selectedTeam); load() }}
+        />
       )}
     </div>
   )

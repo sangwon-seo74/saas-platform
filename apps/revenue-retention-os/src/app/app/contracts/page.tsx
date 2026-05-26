@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
-  FileText, Plus, Search, ChevronRight, Calendar,
-  DollarSign, AlertCircle, CheckCircle2, Loader2, X,
+  FileText, Plus, Search, Calendar,
+  AlertCircle, CheckCircle2, Loader2, X,
 } from 'lucide-react'
 import { cn, formatAmount, formatDate, calcDday, getDdayClass } from '@/lib/utils'
 import type { ContractStatus } from '@/types/domain'
@@ -308,12 +308,6 @@ function ContractRowItem({ contract }: { contract: ContractRow }) {
           : <AlertCircle className="w-4 h-4 text-dk-orange" />
         }
       </td>
-      <td className="px-4 py-3.5">
-        <Link href={`/app/contracts/${contract.id}`}
-          className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          보기 <ChevronRight className="w-3 h-3" />
-        </Link>
-      </td>
     </tr>
   )
 }
@@ -370,7 +364,7 @@ export default function ContractsPage() {
       <div className="grid grid-cols-3 gap-3 shrink-0">
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-3.5 h-3.5 text-dk-blue" />
+            <span className="w-3.5 h-3.5 text-xs font-bold text-dk-blue flex items-center justify-center">₩</span>
             <span className="text-xs text-dk-muted">활성 계약 총액</span>
           </div>
           <p className="text-xl font-bold text-dk-text font-mono">{formatAmount(totalAmount)}</p>

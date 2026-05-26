@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Phone, AlertTriangle, CheckSquare, TrendingUp,
-  RefreshCw, Building2, ArrowRight, Plus,
+  RefreshCw, ArrowRight,
   ChevronRight, Clock, Loader2, Target
 } from 'lucide-react'
 import { cn, formatAmount, formatDate, calcDday } from '@/lib/utils'
@@ -84,23 +84,11 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-dk-text">대시보드</h1>
-          <p className="text-sm text-dk-dim mt-0.5">
-            {new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/app/activities"
-            className="flex items-center gap-1.5 text-sm bg-dk-accent text-white px-3.5 py-2 rounded-lg hover:bg-dk-accentHover transition-colors">
-            <Plus className="w-4 h-4" /> 활동이력
-          </Link>
-          <Link href="/app/companies/new"
-            className="flex items-center gap-1.5 text-sm border border-dk-border text-dk-muted px-3.5 py-2 rounded-lg hover:bg-dk-surface2 hover:text-dk-text transition-colors">
-            <Building2 className="w-4 h-4" /> 고객사 등록
-          </Link>
-        </div>
+      <div>
+        <h1 className="text-lg font-bold text-dk-text">대시보드</h1>
+        <p className="text-sm text-dk-dim mt-0.5">
+          {new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })}
+        </p>
       </div>
 
       <div className="grid grid-cols-4 gap-3 items-stretch">

@@ -47,11 +47,9 @@ export interface Company {
   employee_count: number | null
   revenue_range: string | null
   revenue_amount: number | null
+  address_zip: string | null
   address_road: string | null
   address_detail: string | null
-  address_city: string | null
-  address_district: string | null
-  address_zip: string | null
   lat: number | null
   lng: number | null
   status: CompanyStatus

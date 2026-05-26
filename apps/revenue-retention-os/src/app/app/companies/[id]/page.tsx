@@ -1,26 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import Script from 'next/script'
 import {
   ArrowLeft, Phone, Mail, Users, CheckSquare,
   AlertTriangle, AlertCircle, CheckCircle2,
   Plus, ChevronRight, MoreHorizontal, Loader2, X,
-  Pencil, Trash2,
+  Pencil, Trash2, MapPin,
 } from 'lucide-react'
 import { cn, formatAmount, formatDate, formatDateTime, calcDday, getDdayClass } from '@/lib/utils'
+import { KakaoMap } from '@/components/KakaoMap'
 import type { RiskLevel, ContractStatus, ActivityType } from '@/types/domain'
 
 // ─── Types ───────────────────────────────────────────────
 type Company = {
   id: string; name: string; biz_no: string | null; industry: string | null
   website: string | null; company_size: string | null
-  address_city: string | null; address_road: string | null
+  address_zip: string | null; address_road: string | null; address_detail: string | null
   status: string; grade: string | null; renewal_risk: RiskLevel | null
   assigned_user: { id: string; name: string; phone?: string; email?: string } | null
   team: { id: string; name: string } | null
   memo: string | null; created_at: string; updated_at: string
+  lat: number | null; lng: number | null
 }
 type Contact = {
   id: string; name: string; title: string | null; department: string | null
@@ -1028,8 +1031,275 @@ function UnifiedActivityModal({
   )
 }
 
+const INDUSTRY_OPTIONS = [
+  'IT서비스', '자동차IT', '금융IT', '통신', '제조', '유통/물류', '의료/바이오', '건설/부동산', '교육', '기타',
+]
+
+// ─── Edit Company Modal ───────────────────────────────────
+function EditCompanyModal({ company, onClose, onSaved }: {
+  company: Company; onClose: () => void; onSaved: (updated: Partial<Company>) => void
+}) {
+  const [form, setForm] = useState({
+    name:           company.name,
+    biz_no:         company.biz_no         ?? '',
+    industry:       company.industry       ?? '',
+    company_size:   company.company_size   ?? '',
+    website:        company.website        ?? '',
+    address_zip:    company.address_zip    ?? '',
+    address_road:   company.address_road   ?? '',
+    address_detail: company.address_detail ?? '',
+    memo:           company.memo           ?? '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState<string | null>(null)
+  const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
+
+  const handleSave = async () => {
+    if (!form.name.trim()) { setError('회사명은 필수입니다'); return }
+    setSaving(true); setError(null)
+    const res = await fetch(`/api/companies/${company.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:           form.name.trim(),
+        biz_no:         form.biz_no.trim()         || null,
+        industry:       form.industry              || null,
+        company_size:   form.company_size          || null,
+        website:        form.website.trim()        || null,
+        address_zip:    form.address_zip           || null,
+        address_road:   form.address_road          || null,
+        address_detail: form.address_detail.trim() || null,
+        memo:           form.memo.trim()           || null,
+      }),
+    })
+    const json = await res.json().catch(() => null)
+    if (!res.ok) { setError(json?.error?.message ?? '저장 실패'); setSaving(false); return }
+    onSaved({
+      name:           form.name.trim(),
+      biz_no:         form.biz_no.trim()         || null,
+      industry:       form.industry              || null,
+      company_size:   form.company_size          || null,
+      website:        form.website.trim()        || null,
+      address_zip:    form.address_zip           || null,
+      address_road:   form.address_road          || null,
+      address_detail: form.address_detail.trim() || null,
+      memo:           form.memo.trim()           || null,
+    })
+    onClose()
+  }
+
+  const IC = 'w-full px-3 py-2 border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-dk-blue'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="lazyOnload" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-dk-surface border border-dk-border rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-base font-semibold text-dk-text">기업 정보 수정</h3>
+          <button onClick={onClose} className="text-dk-muted hover:text-dk-text"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">회사명 <span className="text-dk-red">*</span></label>
+            <input autoFocus value={form.name} onChange={e => set('name', e.target.value)} placeholder="(주)회사명" className={IC} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">사업자등록번호</label>
+            <input value={form.biz_no} onChange={e => set('biz_no', e.target.value)} placeholder="000-00-00000" className={IC} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">업종</label>
+              <select value={form.industry} onChange={e => set('industry', e.target.value)} className={IC}>
+                <option value="">선택</option>
+                {INDUSTRY_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">기업 규모</label>
+              <select value={form.company_size} onChange={e => set('company_size', e.target.value)} className={IC}>
+                <option value="">선택</option>
+                <option value="large">대기업</option>
+                <option value="medium">중견기업</option>
+                <option value="small">중소기업</option>
+                <option value="startup">스타트업</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">주소</label>
+            <div className="flex gap-2 mb-2">
+              <input readOnly value={form.address_zip} placeholder="우편번호"
+                className={cn(IC, 'w-24 bg-dk-surface cursor-default')} />
+              <button type="button"
+                onClick={() => new window.daum.Postcode({
+                  oncomplete: (d: DaumAddr) => {
+                    set('address_zip', d.zonecode)
+                    set('address_road', d.userSelectedType === 'J' ? d.jibunAddress : d.roadAddress)
+                  }
+                }).open()}
+                className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover shrink-0">
+                <MapPin className="w-3.5 h-3.5" /> 주소 검색
+              </button>
+            </div>
+            <input readOnly value={form.address_road} placeholder="도로명주소 (검색 후 자동 입력)"
+              className={cn(IC, 'mb-2 bg-dk-surface cursor-default')} />
+            <input value={form.address_detail} onChange={e => set('address_detail', e.target.value)}
+              placeholder="상세주소 (동/호수, 층 등)" className={IC} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">웹사이트</label>
+            <input value={form.website} onChange={e => set('website', e.target.value)} placeholder="https://example.com" className={IC} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">메모</label>
+            <textarea value={form.memo} onChange={e => set('memo', e.target.value)}
+              rows={3} placeholder="특이사항, 영업 배경..." className={IC + ' resize-none'} />
+          </div>
+          {error && <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>}
+          <div className="flex gap-2 pt-1">
+            <button onClick={onClose}
+              className="flex-1 py-2 text-sm text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors">
+              취소
+            </button>
+            <button onClick={handleSave} disabled={saving}
+              className="flex-1 py-2 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-1 transition-colors">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              {saving ? '저장 중...' : '저장'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Edit Address Modal ───────────────────────────────────
+declare global {
+  interface Window {
+    daum: { Postcode: new (opts: { oncomplete: (d: DaumAddr) => void }) => { open: () => void } }
+  }
+}
+type DaumAddr = { zonecode: string; roadAddress: string; jibunAddress: string; userSelectedType: 'R' | 'J' }
+
+function EditAddressModal({ company, onClose, onSaved }: {
+  company: Company; onClose: () => void; onSaved: (updated: Partial<Company>) => void
+}) {
+  const [zip, setZip]       = useState(company.address_zip    ?? '')
+  const [road, setRoad]     = useState(company.address_road   ?? '')
+  const [detail, setDetail] = useState(company.address_detail ?? '')
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState<string | null>(null)
+
+  const searchAddress = () => {
+    new window.daum.Postcode({
+      oncomplete: (d: DaumAddr) => {
+        setZip(d.zonecode)
+        setRoad(d.userSelectedType === 'J' ? d.jibunAddress : d.roadAddress)
+      },
+    }).open()
+  }
+
+  const handleSave = async () => {
+    setSaving(true); setError(null)
+    const res = await fetch(`/api/companies/${company.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address_zip: zip || null, address_road: road || null, address_detail: detail || null }),
+    })
+    const json = await res.json().catch(() => null)
+    if (!res.ok) { setError(json?.error?.message ?? '저장 실패'); setSaving(false); return }
+    onSaved({ address_zip: zip || null, address_road: road || null, address_detail: detail || null })
+    onClose()
+  }
+
+  const INPUT_CLS = 'w-full px-3 py-2 border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-dk-blue'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="lazyOnload" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-dk-surface border border-dk-border rounded-2xl shadow-2xl w-full max-w-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-base font-semibold text-dk-text">주소 수정</h3>
+          <button onClick={onClose} className="text-dk-muted hover:text-dk-text"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">우편번호 · 도로명주소</label>
+            <div className="flex gap-2 mb-2">
+              <input readOnly value={zip} placeholder="우편번호" className={cn(INPUT_CLS, 'w-24 bg-dk-surface cursor-default')} />
+              <button type="button" onClick={searchAddress}
+                className="px-3 py-2 text-xs font-medium text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover flex items-center gap-1 shrink-0">
+                <MapPin className="w-3.5 h-3.5" /> 주소 검색
+              </button>
+            </div>
+            <input readOnly value={road} placeholder="도로명주소" className={cn(INPUT_CLS, 'bg-dk-surface cursor-default')} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">상세주소</label>
+            <input value={detail} onChange={e => setDetail(e.target.value)}
+              placeholder="동/호수, 층 등" className={INPUT_CLS} />
+          </div>
+          {error && <p className="text-xs text-dk-red bg-tint-red border border-tint-red-border rounded-lg px-3 py-2">{error}</p>}
+          <div className="flex gap-2 pt-1">
+            <button onClick={onClose}
+              className="flex-1 py-2 text-sm text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors">
+              취소
+            </button>
+            <button onClick={handleSave} disabled={saving}
+              className="flex-1 py-2 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-1 transition-colors">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              {saving ? '저장 중...' : '저장'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Tab: 개요 ────────────────────────────────────────────
-function TabOverview({ company, contracts }: { company: Company; contracts: Contract[] }) {
+function TabOverview({ company: initialCompany, contracts }: { company: Company; contracts: Contract[] }) {
+  const [company, setCompany] = useState(initialCompany)
+  const [showEditCompany, setShowEditCompany] = useState(false)
+  const [markerPos, setMarkerPos] = useState<{ lat: number; lng: number } | null>(null)
+  const [locSaving, setLocSaving] = useState(false)
+
+  const handleMarkerChange = useCallback((lat: number, lng: number) => {
+    setMarkerPos({ lat, lng })
+  }, [])
+
+  const saveCoords = async () => {
+    if (!markerPos) return
+    setLocSaving(true)
+    const res = await fetch(`/api/companies/${company.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: markerPos.lat, lng: markerPos.lng }),
+    })
+    setLocSaving(false)
+    if (res.ok) {
+      setCompany(prev => ({ ...prev, lat: markerPos.lat, lng: markerPos.lng }))
+      setMarkerPos(null)
+    }
+  }
+
+  const clearCoords = async () => {
+    setLocSaving(true)
+    const res = await fetch(`/api/companies/${company.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: null, lng: null }),
+    })
+    setLocSaving(false)
+    if (res.ok) {
+      setCompany(prev => ({ ...prev, lat: null, lng: null }))
+      setMarkerPos(null)
+    }
+  }
+
   const activeContract = contracts.find(co => co.status === 'active')
   const dday = activeContract ? calcDday(activeContract.expires_at) : null
   const risk = company.renewal_risk ? RISK_CFG[company.renewal_risk] : null
@@ -1038,7 +1308,12 @@ function TabOverview({ company, contracts }: { company: Company; contracts: Cont
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <Section title="기업 정보">
+        <Section title="기업 정보" action={
+          <button onClick={() => setShowEditCompany(true)}
+            className="flex items-center gap-1.5 text-xs text-dk-blue border border-tint-blue-border px-3 py-1.5 rounded-lg hover:bg-tint-blue transition-colors">
+            <Pencil className="w-3.5 h-3.5" /> 정보수정
+          </button>
+        }>
           <div className="space-y-3">
             {[
               { label: '사업자번호', value: company.biz_no },
@@ -1060,18 +1335,24 @@ function TabOverview({ company, contracts }: { company: Company; contracts: Cont
                 </a>
               </div>
             )}
-            {company.address_road && (
-              <div className="flex justify-between">
-                <span className="text-xs text-dk-dim">주소</span>
-                <span className="text-xs text-dk-text text-right max-w-[150px]">{company.address_road}</span>
-              </div>
-            )}
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-xs text-dk-dim shrink-0">주소</span>
+              {(company.address_zip || company.address_road) ? (
+                <span className="text-xs text-dk-text text-right">
+                  {company.address_zip && <span className="text-dk-dim mr-1">[{company.address_zip}]</span>}
+                  {company.address_road}
+                  {company.address_detail && <span className="text-dk-muted"> {company.address_detail}</span>}
+                </span>
+              ) : (
+                <span className="text-xs text-dk-dim">—</span>
+              )}
+            </div>
           </div>
         </Section>
 
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3 h-full">
           <div className={cn(
-            'border rounded-xl p-4',
+            'flex-1 border rounded-xl p-4',
             !activeContract
               ? 'bg-dk-surface border-dk-border'
               : dday !== null && dday <= 14
@@ -1096,17 +1377,24 @@ function TabOverview({ company, contracts }: { company: Company; contracts: Cont
                 </Link>
               </>
             ) : (
-              <p className="text-sm text-dk-dim mt-1">계약 내용 없음</p>
+              <>
+                <p className="text-xl font-bold text-dk-dim font-mono">—</p>
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-xs text-dk-dim">등록된 계약 없음</p>
+                  <span className="text-sm font-bold font-mono text-dk-dim">—</span>
+                </div>
+                <span className="mt-2 text-xs invisible flex items-center gap-0.5">계약 상세</span>
+              </>
             )}
           </div>
-          {risk && RiskIcon && (
-            <div className={cn('border rounded-xl p-4', risk.cls)}>
-              <div className="flex items-center gap-2">
-                <RiskIcon className="w-4 h-4" />
-                <span className="text-sm font-semibold">{risk.label} 위험도</span>
-              </div>
+          <div className={cn('border rounded-xl p-4', risk ? risk.cls : 'bg-dk-surface border-dk-border')}>
+            <div className="flex items-center gap-2">
+              {risk && RiskIcon
+                ? <><RiskIcon className="w-4 h-4" /><span className="text-sm font-semibold">{risk.label} 위험도</span></>
+                : <><AlertCircle className="w-4 h-4 text-dk-dim" /><span className="text-sm font-semibold text-dk-dim">위험도 미산정</span></>
+              }
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -1114,6 +1402,43 @@ function TabOverview({ company, contracts }: { company: Company; contracts: Cont
         <Section title="메모">
           <p className="text-sm text-dk-muted leading-relaxed">{company.memo}</p>
         </Section>
+      )}
+
+      {company.address_road && (
+        <Section title="회사 위치" action={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={saveCoords}
+              disabled={!markerPos || locSaving}
+              className="flex items-center gap-1.5 text-xs text-dk-blue border border-tint-blue-border px-3 py-1.5 rounded-lg hover:bg-tint-blue transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {locSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              변경위치 저장
+            </button>
+            <button
+              onClick={clearCoords}
+              disabled={locSaving || (company.lat === null && company.lng === null)}
+              className="flex items-center gap-1.5 text-xs text-dk-blue border border-tint-blue-border px-3 py-1.5 rounded-lg hover:bg-tint-blue transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              주소로 표기
+            </button>
+          </div>
+        }>
+          <KakaoMap
+            address={company.address_detail ? `${company.address_road} ${company.address_detail}` : company.address_road}
+            savedLat={company.lat}
+            savedLng={company.lng}
+            onMarkerChange={handleMarkerChange}
+          />
+        </Section>
+      )}
+
+      {showEditCompany && (
+        <EditCompanyModal
+          company={company}
+          onClose={() => setShowEditCompany(false)}
+          onSaved={updated => setCompany(prev => ({ ...prev, ...updated }))}
+        />
       )}
     </div>
   )
@@ -1667,9 +1992,11 @@ function TabActivityHistory({
   const [actMenuPos, setActMenuPos]   = useState<{ top: number; right: number } | null>(null)
   const [editActivity, setEditActivity] = useState<Activity | null>(null)
 
-  const [from, setFrom]             = useState('')
-  const [to, setTo]                 = useState('')
-  const [isSearch, setIsSearch]     = useState(false)
+  const fmtDate = (d: Date) => d.toISOString().slice(0, 10)
+  const todayStr = fmtDate(new Date())
+  const weekAgo  = fmtDate(new Date(Date.now() - 6 * 864e5))
+  const [from, setFrom] = useState(weekAgo)
+  const [to,   setTo]   = useState(todayStr)
 
   const handleUnifiedSuccess = (activity: Activity | null, task: TaskItem | null) => {
     if (activity) setLocalActivities(prev => [activity, ...prev])
@@ -1690,12 +2017,24 @@ function TabActivityHistory({
   }
 
   const allItems = buildMixed()
-  const displayItems = isSearch && from && to
+  const displayItems = (from && to)
     ? allItems.filter(item => {
         const d = new Date(item.date).getTime()
         return d >= new Date(from).getTime() && d <= new Date(to + 'T23:59:59').getTime()
       })
     : allItems
+
+  const callCnt  = displayItems.filter(i => i.kind === 'activity' && (i.data as Activity).type === 'call').length
+  const visitCnt = displayItems.filter(i => i.kind === 'activity' && (i.data as Activity).type === 'visit').length
+  const emailCnt = displayItems.filter(i => i.kind === 'activity' && (i.data as Activity).type === 'email').length
+  const taskCnt  = displayItems.filter(i => i.kind === 'task').length
+
+  const activeMenuTask = openMenu && menuPos
+    ? (tasks.find(x => x.id === openMenu) ?? null)
+    : null
+  const activeActMenuActivity = openActMenu && actMenuPos
+    ? (localActivities.find(x => x.id === openActMenu) ?? null)
+    : null
 
   const ACTIVITY_TYPE_LABEL: Record<string, string> = { call: '통화', visit: '방문', email: '이메일', sms: 'SMS', kakao: '카카오' }
 
@@ -1709,14 +2048,9 @@ function TabActivityHistory({
         <input type="date" value={to} onChange={e => setTo(e.target.value)}
           className="text-xs bg-dk-surface2 border border-dk-border rounded-lg px-2 py-1.5 text-dk-text focus:outline-none focus:border-dk-blue" />
         <button
-          onClick={() => { if (from && to) setIsSearch(true) }}
-          disabled={!from || !to}
-          className="text-xs px-3 py-1.5 rounded-lg border border-dk-border text-dk-text hover:bg-dk-surface2 disabled:opacity-40 transition-colors"
-        >조회</button>
-        {isSearch && (
-          <button onClick={() => { setFrom(''); setTo(''); setIsSearch(false) }}
-            className="text-xs text-dk-muted hover:text-dk-text transition-colors">초기화</button>
-        )}
+          onClick={() => { setFrom(weekAgo); setTo(todayStr) }}
+          className="text-xs text-dk-muted hover:text-dk-text border border-dk-border px-2 py-1.5 rounded-lg hover:bg-dk-surface2 transition-colors"
+        >최근 7일</button>
         <div className="flex-1" />
         <button onClick={() => setShowUnified(true)}
           className="flex items-center gap-1.5 text-xs text-dk-blue border border-tint-blue-border px-3 py-1.5 rounded-lg hover:bg-tint-blue transition-colors">
@@ -1724,16 +2058,21 @@ function TabActivityHistory({
         </button>
       </div>
 
-      {isSearch && (
-        <p className="shrink-0 text-[10px] text-dk-muted">{from} ~ {to} · {displayItems.length}건</p>
-      )}
+      {/* 집계 */}
+      <div className="shrink-0 flex items-center gap-3 px-1 py-1.5 bg-dk-surface2 border border-dk-border rounded-lg text-xs">
+        <span className="text-dk-dim pl-1">{from} ~ {to}</span>
+        <span className="text-dk-border">|</span>
+        <span className="text-dk-muted">통화 <strong className="text-dk-text">{callCnt}</strong></span>
+        <span className="text-dk-muted">방문 <strong className="text-dk-text">{visitCnt}</strong></span>
+        <span className="text-dk-muted">이메일 <strong className="text-dk-text">{emailCnt}</strong></span>
+        <span className="text-dk-muted">업무 <strong className="text-dk-text">{taskCnt}</strong></span>
+        <span className="text-dk-dim ml-auto pr-1">총 {displayItems.length}건</span>
+      </div>
 
       {/* 통합 목록 — 스크롤 */}
       <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pb-20">
         {displayItems.length === 0 && (
-          <p className="text-sm text-dk-dim text-center py-8">
-            {isSearch ? '해당 기간에 이력이 없습니다' : '활동 이력이 없습니다'}
-          </p>
+          <p className="text-sm text-dk-dim text-center py-8">해당 기간에 이력이 없습니다</p>
         )}
 
         {displayItems.map(item => {
@@ -1846,38 +2185,30 @@ function TabActivityHistory({
       </div>
 
       {/* ··· 드롭다운 — fixed */}
-      {openMenu && menuPos && (() => {
-        const t = tasks.find(x => x.id === openMenu)
-        if (!t) return null
-        return (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => { setOpenMenu(null); setMenuPos(null) }} />
-            <div className="fixed z-50 w-24 bg-dk-surface border border-dk-border rounded-lg shadow-xl overflow-hidden"
-              style={{ top: menuPos.top, right: menuPos.right }}>
-              <button onClick={() => { setEditTask(t); setOpenMenu(null); setMenuPos(null) }}
-                className="w-full text-left px-3 py-2 text-xs text-dk-text hover:bg-dk-surface2 transition-colors">수정</button>
-              <button onClick={() => { setDeleteTask(t); setOpenMenu(null); setMenuPos(null) }}
-                className="w-full text-left px-3 py-2 text-xs text-dk-red hover:bg-dk-surface2 transition-colors">삭제</button>
-            </div>
-          </>
-        )
-      })()}
+      {activeMenuTask && menuPos && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => { setOpenMenu(null); setMenuPos(null) }} />
+          <div className="fixed z-50 w-24 bg-dk-surface border border-dk-border rounded-lg shadow-xl overflow-hidden"
+            style={{ top: menuPos.top, right: menuPos.right }}>
+            <button onClick={() => { setEditTask(activeMenuTask); setOpenMenu(null); setMenuPos(null) }}
+              className="w-full text-left px-3 py-2 text-xs text-dk-text hover:bg-dk-surface2 transition-colors">수정</button>
+            <button onClick={() => { setDeleteTask(activeMenuTask); setOpenMenu(null); setMenuPos(null) }}
+              className="w-full text-left px-3 py-2 text-xs text-dk-red hover:bg-dk-surface2 transition-colors">삭제</button>
+          </div>
+        </>
+      )}
 
       {/* 활동 ··· 드롭다운 — fixed */}
-      {openActMenu && actMenuPos && (() => {
-        const a = localActivities.find(x => x.id === openActMenu)
-        if (!a) return null
-        return (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => { setOpenActMenu(null); setActMenuPos(null) }} />
-            <div className="fixed z-50 w-20 bg-dk-surface border border-dk-border rounded-lg shadow-xl overflow-hidden"
-              style={{ top: actMenuPos.top, right: actMenuPos.right }}>
-              <button onClick={() => { setEditActivity(a); setOpenActMenu(null); setActMenuPos(null) }}
-                className="w-full text-left px-3 py-2 text-xs text-dk-text hover:bg-dk-surface2 transition-colors">수정</button>
-            </div>
-          </>
-        )
-      })()}
+      {activeActMenuActivity && actMenuPos && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => { setOpenActMenu(null); setActMenuPos(null) }} />
+          <div className="fixed z-50 w-20 bg-dk-surface border border-dk-border rounded-lg shadow-xl overflow-hidden"
+            style={{ top: actMenuPos.top, right: actMenuPos.right }}>
+            <button onClick={() => { setEditActivity(activeActMenuActivity); setOpenActMenu(null); setActMenuPos(null) }}
+              className="w-full text-left px-3 py-2 text-xs text-dk-text hover:bg-dk-surface2 transition-colors">수정</button>
+          </div>
+        </>
+      )}
 
       {showUnified && <UnifiedActivityModal companyId={companyId} companyName={companyName} onClose={() => setShowUnified(false)} onSuccess={handleUnifiedSuccess} />}
       {editTask && <EditTaskModal task={editTask} onClose={() => setEditTask(null)} onSuccess={handleTaskEdit} />}
@@ -1998,7 +2329,7 @@ export default function CompanyDetailPage() {
               )}
             </div>
             <p className="text-xs text-dk-dim mt-0.5">
-              {[company.biz_no, company.address_city, company.industry].filter(Boolean).join(' · ')}
+              {[company.biz_no, company.industry].filter(Boolean).join(' · ')}
             </p>
           </div>
         </div>

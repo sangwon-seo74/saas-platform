@@ -1,24 +1,35 @@
 'use client'
 
-import { useState } from 'react'
-import { CheckCircle, XCircle, RefreshCw, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { CheckCircle, XCircle, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react'
 
 type Provider = 'kakao' | 'sms' | 'email' | 'naver_map'
 
-interface Integration {
+interface FieldDef {
+  key: string
+  label: string
+  type: 'text' | 'password'
+  placeholder: string
+}
+
+interface IntegrationDef {
   provider: Provider
   label: string
   description: string
-  is_active: boolean
-  tested_at: string | null
-  fields: { key: string; label: string; type: string; placeholder: string }[]
+  fields: FieldDef[]
 }
 
-const INTEGRATIONS: Integration[] = [
+interface IntegrationRow {
+  provider: string
+  config: Record<string, string>
+  is_active: boolean
+  tested_at: string | null
+}
+
+const INTEGRATIONS: IntegrationDef[] = [
   {
     provider: 'kakao', label: '카카오 알림톡',
     description: '카카오 비즈니스 채널을 통한 알림톡 발송',
-    is_active: true, tested_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     fields: [
       { key: 'sender_key', label: '발신프로필 키', type: 'password', placeholder: 'sender_key...' },
       { key: 'pfid',       label: '플러스친구 ID', type: 'text',     placeholder: '@채널명' },
@@ -27,7 +38,6 @@ const INTEGRATIONS: Integration[] = [
   {
     provider: 'sms', label: '솔라피 (문자)',
     description: 'Solapi API를 통한 SMS/LMS 발송',
-    is_active: false, tested_at: null,
     fields: [
       { key: 'api_key',      label: 'API Key',    type: 'password', placeholder: 'NCSOL...' },
       { key: 'api_secret',   label: 'API Secret', type: 'password', placeholder: '' },
@@ -37,7 +47,6 @@ const INTEGRATIONS: Integration[] = [
   {
     provider: 'email', label: '이메일 (SMTP)',
     description: '자체 SMTP 서버를 통한 이메일 발송',
-    is_active: true, tested_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     fields: [
       { key: 'smtp_host', label: 'SMTP 호스트', type: 'text',     placeholder: 'smtp.gmail.com' },
       { key: 'smtp_port', label: '포트',        type: 'text',     placeholder: '587' },
@@ -48,7 +57,6 @@ const INTEGRATIONS: Integration[] = [
   {
     provider: 'naver_map', label: '네이버 지도',
     description: '고객사 주소 지도 표시에 사용',
-    is_active: false, tested_at: null,
     fields: [
       { key: 'client_id',     label: 'Client ID',     type: 'text',     placeholder: '' },
       { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: '' },
@@ -60,37 +68,100 @@ const PROVIDER_ICON: Record<Provider, string> = {
   kakao: '💬', sms: '📱', email: '📧', naver_map: '🗺️',
 }
 
-function IntegrationCard({ integration }: { integration: Integration }) {
-  const [expanded, setExpanded]     = useState(integration.is_active)
+function formatTested(at: string): string {
+  const d = Math.floor((Date.now() - new Date(at).getTime()) / (1000 * 60 * 60 * 24))
+  return d === 0 ? '오늘' : `${d}일 전`
+}
+
+function IntegrationCard({
+  def,
+  row,
+  onSaved,
+}: {
+  def: IntegrationDef
+  row: IntegrationRow | null
+  onSaved: (updated: IntegrationRow) => void
+}) {
+  const [expanded,    setExpanded]    = useState(!!(row?.is_active))
   const [showSecrets, setShowSecrets] = useState(false)
-  const [testing, setTesting]       = useState(false)
+  const [saving,      setSaving]      = useState(false)
+  const [saveError,   setSaveError]   = useState<string | null>(null)
 
-  const handleTest = () => { setTesting(true); setTimeout(() => setTesting(false), 2000) }
+  // config 값 상태 (비밀 필드는 '__set__' 또는 실제 입력값)
+  const [values, setValues] = useState<Record<string, string>>(() => {
+    const saved = row?.config ?? {}
+    return Object.fromEntries(def.fields.map(f => [f.key, saved[f.key] ?? '']))
+  })
+  const [isActive, setIsActive] = useState(row?.is_active ?? false)
 
-  const formatTested = (at: string) => {
-    const d = Math.floor((Date.now() - new Date(at).getTime()) / (1000 * 60 * 60 * 24))
-    return d === 0 ? '오늘' : `${d}일 전`
+  // DB 값이 로드되면 동기화
+  useEffect(() => {
+    const saved = row?.config ?? {}
+    setValues(Object.fromEntries(def.fields.map(f => [f.key, saved[f.key] ?? ''])))
+    setIsActive(row?.is_active ?? false)
+  }, [row, def.fields])
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const res = await fetch('/api/settings/integrations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: def.provider, config: values, is_active: isActive }),
+      })
+      const json = await res.json()
+      if (!res.ok || json.error) {
+        setSaveError(json.error?.message ?? '저장 실패')
+        return
+      }
+      onSaved({ provider: def.provider, config: values, is_active: isActive, tested_at: row?.tested_at ?? null })
+    } catch {
+      setSaveError('네트워크 오류')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDisable = async () => {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const res = await fetch('/api/settings/integrations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: def.provider, config: values, is_active: false }),
+      })
+      const json = await res.json()
+      if (!res.ok || json.error) { setSaveError(json.error?.message ?? '해제 실패'); return }
+      setIsActive(false)
+      onSaved({ provider: def.provider, config: values, is_active: false, tested_at: null })
+    } catch {
+      setSaveError('네트워크 오류')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <div className="bg-dk-surface border border-dk-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-3 p-4">
         <div className="w-10 h-10 rounded-xl bg-dk-surface2 flex items-center justify-center text-xl">
-          {PROVIDER_ICON[integration.provider]}
+          {PROVIDER_ICON[def.provider as Provider]}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-dk-text">{integration.label}</span>
-            {integration.is_active
+            <span className="text-sm font-semibold text-dk-text">{def.label}</span>
+            {isActive
               ? <CheckCircle className="w-4 h-4 text-dk-green" />
               : <XCircle className="w-4 h-4 text-dk-dim" />
             }
           </div>
-          <p className="text-xs text-dk-muted mt-0.5">{integration.description}</p>
+          <p className="text-xs text-dk-muted mt-0.5">{def.description}</p>
         </div>
         <div className="flex items-center gap-2">
-          {integration.tested_at && (
-            <span className="text-xs text-dk-dim">테스트: {formatTested(integration.tested_at)}</span>
+          {row?.tested_at && (
+            <span className="text-xs text-dk-dim">테스트: {formatTested(row.tested_at)}</span>
           )}
           <button onClick={() => setExpanded(!expanded)}
             className="px-3 py-1.5 text-xs font-medium text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface2">
@@ -111,31 +182,55 @@ function IntegrationCard({ integration }: { integration: Integration }) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {integration.fields.map(field => (
-              <div key={field.key}>
-                <label className="text-xs font-medium text-dk-muted mb-1.5 block">{field.label}</label>
-                <input
-                  type={field.type === 'password' && !showSecrets ? 'password' : 'text'}
-                  placeholder={field.placeholder}
-                  className="w-full px-3 py-2 text-sm border border-dk-border rounded-lg bg-dk-surface text-dk-text placeholder:text-dk-dim focus:outline-none focus:ring-2 focus:ring-dk-blue font-mono" />
-              </div>
-            ))}
+            {def.fields.map(field => {
+              const isSet = values[field.key] === '__set__'
+              return (
+                <div key={field.key}>
+                  <label className="text-xs font-medium text-dk-muted mb-1.5 block">{field.label}</label>
+                  <input
+                    type={field.type === 'password' && !showSecrets ? 'password' : 'text'}
+                    value={isSet ? '' : (values[field.key] ?? '')}
+                    onChange={e => setValues(prev => ({ ...prev, [field.key]: e.target.value }))}
+                    placeholder={isSet ? '(설정됨 — 변경 시 입력)' : field.placeholder}
+                    className="w-full px-3 py-2 text-sm border border-dk-border rounded-lg bg-dk-surface text-dk-text placeholder:text-dk-dim focus:outline-none focus:ring-2 focus:ring-dk-blue font-mono"
+                  />
+                </div>
+              )
+            })}
           </div>
 
+          {saveError && (
+            <p className="mt-3 text-xs text-dk-red">{saveError}</p>
+          )}
+
           <div className="flex items-center gap-2 mt-4">
-            <button onClick={handleTest} disabled={testing}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface disabled:opacity-50">
-              <RefreshCw className={`w-3.5 h-3.5 ${testing ? 'animate-spin' : ''}`} />
-              {testing ? '테스트 중...' : '연결 테스트'}
+            <label className="flex items-center gap-1.5 text-xs text-dk-muted cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={e => setIsActive(e.target.checked)}
+                className="rounded"
+              />
+              활성화
+            </label>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-dk-blue rounded-lg hover:bg-dk-blue/80 disabled:opacity-50">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              {saving ? '저장 중...' : '저장'}
             </button>
-            <button className="px-3 py-1.5 text-xs font-medium text-white bg-dk-blue rounded-lg hover:bg-dk-blue/80">
-              저장
-            </button>
-            {integration.is_active && (
-              <button className="ml-auto px-3 py-1.5 text-xs font-medium text-dk-red border border-dk-red/30 rounded-lg hover:bg-dk-red/10">
+            {isActive && (
+              <button
+                onClick={handleDisable}
+                disabled={saving}
+                className="ml-auto px-3 py-1.5 text-xs font-medium text-dk-red border border-dk-red/30 rounded-lg hover:bg-dk-red/10 disabled:opacity-50">
                 연동 해제
               </button>
             )}
+            <span className="text-xs text-dk-dim ml-1">
+              연결 테스트는 발송 연동 구현 후 지원됩니다
+            </span>
           </div>
         </div>
       )}
@@ -144,6 +239,27 @@ function IntegrationCard({ integration }: { integration: Integration }) {
 }
 
 export default function IntegrationsSettingPage() {
+  const [loading, setLoading] = useState(true)
+  const [rows,    setRows]    = useState<IntegrationRow[]>([])
+
+  useEffect(() => {
+    fetch('/api/settings/integrations')
+      .then(r => r.json())
+      .then(json => { if (json.data) setRows(json.data) })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const getRow = (provider: string) => rows.find(r => r.provider === provider) ?? null
+
+  const handleSaved = (updated: IntegrationRow) => {
+    setRows(prev => {
+      const exists = prev.some(r => r.provider === updated.provider)
+      return exists
+        ? prev.map(r => r.provider === updated.provider ? updated : r)
+        : [...prev, updated]
+    })
+  }
+
   return (
     <div className="space-y-5 max-w-3xl">
       <div>
@@ -158,11 +274,22 @@ export default function IntegrationsSettingPage() {
         </p>
       </div>
 
-      <div className="space-y-3">
-        {INTEGRATIONS.map(integration => (
-          <IntegrationCard key={integration.provider} integration={integration} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="w-5 h-5 animate-spin text-dk-dim" />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {INTEGRATIONS.map(def => (
+            <IntegrationCard
+              key={def.provider}
+              def={def}
+              row={getRow(def.provider)}
+              onSaved={handleSaved}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

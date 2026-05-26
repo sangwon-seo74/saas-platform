@@ -30,7 +30,7 @@ type ContractDetail = {
   renewal_count: number
   memo: string | null
   created_at: string
-  company:        { id: string; name: string; biz_no: string | null; address_city: string | null } | null
+  company:        { id: string; name: string; biz_no: string | null } | null
   product:        { id: string; name: string; billing_cycle: string } | null
   assigned_user:  { id: string; name: string } | null
   contract_accounts: ContractAccount[]

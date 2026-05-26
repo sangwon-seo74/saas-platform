@@ -87,6 +87,11 @@ const impersonateSchema = z.object({
   expires_in_seconds: z.number(),
   warning: z.string(),
 })
+const sendSmsSchema = z.object({
+  ok: z.boolean(),
+  message_id: z.string().nullable().optional(),
+  status_code: z.number(),
+})
 
 // ─── 인증 불필요 ────────────────────────────────────────────
 
@@ -136,4 +141,17 @@ export async function resetTenantPassword(tenantId: string, authToken: string) {
 
 export async function impersonate(userId: string, authToken: string) {
   return call('POST', '/v1/admin/impersonate', impersonateSchema, { user_id: userId }, authToken)
+}
+
+export async function sendSms(
+  params: {
+    api_key: string
+    api_secret: string
+    from_number: string
+    to_number: string
+    text: string
+  },
+  authToken: string,
+) {
+  return call('POST', '/v1/notify/sms', sendSmsSchema, params, authToken)
 }

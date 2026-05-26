@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import {
   RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, Loader2
 } from 'lucide-react'
 import { cn, formatAmount, calcDday } from '@/lib/utils'
 import type { RenewalStatus, RiskLevel } from '@/types/domain'
+
+const PAGE_SIZE = 50
 
 type RenewalCard = {
   id: string
@@ -19,6 +21,8 @@ type RenewalCard = {
   assigned_user: string
 }
 
+type User = { id: string; name: string }
+
 const BUCKETS = [
   { key: 'D-90', label: 'D-90', from: 61, to: 90, color: 'border-dk-border bg-dk-surface2/30' },
   { key: 'D-60', label: 'D-60', from: 31, to: 60, color: 'border-dk-border bg-dk-surface2/30' },
@@ -28,8 +32,8 @@ const BUCKETS = [
 ]
 
 const RISK_CFG: Record<RiskLevel, { cls: string; borderCls: string; icon: React.ElementType }> = {
-  high:   { cls: 'bg-tint-red text-dk-red border-tint-red-border',   borderCls: 'border-l-dk-red',  icon: AlertCircle },
-  medium: { cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',   borderCls: 'border-l-dk-orange',  icon: AlertTriangle },
+  high:   { cls: 'bg-tint-red text-dk-red border-tint-red-border',         borderCls: 'border-l-dk-red',    icon: AlertCircle },
+  medium: { cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',  borderCls: 'border-l-dk-orange', icon: AlertTriangle },
   low:    { cls: 'bg-tint-green text-dk-green border-tint-green-border',   borderCls: 'border-l-dk-green',  icon: CheckCircle2 },
 }
 
@@ -86,37 +90,109 @@ function RenewalKanbanCard({ renewal }: { renewal: RenewalCard }) {
         </div>
         <span className="text-[10px] text-dk-dim">{renewal.assigned_user}</span>
       </div>
-
     </Link>
   )
 }
 
+function mapRenewal(r: Record<string, unknown>): RenewalCard {
+  return {
+    id:            r.id as string,
+    company_name:  (r.company  as { name: string } | null)?.name ?? '',
+    product_name:  ((r.contract as { product?: { name: string } } | null)?.product?.name) ?? '',
+    expires_at:    r.contract_expires_at as string,
+    final_amount:  (r.contract as { final_amount: number } | null)?.final_amount ?? 0,
+    risk:          (r.risk_level as RiskLevel) ?? 'low',
+    status:        r.status as RenewalStatus,
+    assigned_user: (r.assigned_user as { name: string } | null)?.name ?? '',
+  }
+}
+
 export default function RenewalsPage() {
   const [loading, setLoading]       = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [renewals, setRenewals]     = useState<RenewalCard[]>([])
   const [totalCount, setTotalCount] = useState(0)
+  const [hasMore, setHasMore]       = useState(false)
   const [userFilter, setUserFilter] = useState<string>('all')
   const [riskFilter, setRiskFilter] = useState<RiskLevel | 'all'>('all')
+  const [users, setUsers]           = useState<User[]>([])
+
+  // IntersectionObserver 콜백 내에서 최신값을 읽기 위해 ref로 관리
+  const pageRef       = useRef(1)
+  const hasMoreRef    = useRef(false)
+  const isFetchingRef = useRef(false)
+  // 모든 컬럼 하단 sentinel 요소를 하나의 observer가 감시
+  const observerRef   = useRef<IntersectionObserver | null>(null)
 
   useEffect(() => {
-    fetch('/api/renewals?limit=100&days_to=90')
+    fetch('/api/users')
       .then(r => r.json())
-      .then(json => {
-        const mapped = ((json.data?.data ?? []) as Record<string, unknown>[]).map(r => ({
-          id:            r.id as string,
-          company_name:  (r.company  as { name: string } | null)?.name ?? '',
-          product_name:  ((r.contract as { product?: { name: string } } | null)?.product?.name) ?? '',
-          expires_at:    r.contract_expires_at as string,
-          final_amount:  (r.contract as { final_amount: number } | null)?.final_amount ?? 0,
-          risk:          (r.risk_level as RiskLevel) ?? 'low',
-          status:        r.status as RenewalStatus,
-          assigned_user: (r.assigned_user as { name: string } | null)?.name ?? '',
-        }))
-        setRenewals(mapped)
-        setTotalCount(json.data?.count ?? 0)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+      .then(json => setUsers(json.data ?? []))
+      .catch(() => {})
+  }, [])
+
+  const fetchPage = useCallback(async (pg: number, reset: boolean) => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+
+    if (reset) setLoading(true)
+    else setLoadingMore(true)
+
+    const params = new URLSearchParams({
+      limit:   String(PAGE_SIZE),
+      page:    String(pg),
+      days_to: '90',
+    })
+    if (userFilter !== 'all') params.set('user_id', userFilter)
+    if (riskFilter !== 'all') params.set('risk', riskFilter)
+
+    try {
+      const json = await fetch(`/api/renewals?${params}`).then(r => r.json())
+      const mapped = ((json.data?.data ?? []) as Record<string, unknown>[]).map(mapRenewal)
+      const total  = json.data?.count ?? 0
+
+      setTotalCount(total)
+      setRenewals(prev => reset ? mapped : [...prev, ...mapped])
+
+      const loaded = (pg - 1) * PAGE_SIZE + mapped.length
+      const more   = loaded < total
+      setHasMore(more)
+      hasMoreRef.current = more
+      pageRef.current    = pg
+    } catch {
+      // 네트워크 오류 시 기존 데이터 유지
+    } finally {
+      isFetchingRef.current = false
+      if (reset) setLoading(false)
+      else setLoadingMore(false)
+    }
+  }, [userFilter, riskFilter])
+
+  // 필터 변경 시 1페이지부터 재조회
+  useEffect(() => {
+    pageRef.current    = 1
+    hasMoreRef.current = false
+    fetchPage(1, true)
+  }, [fetchPage])
+
+  // 각 컬럼 하단 sentinel을 감시하는 공용 observer 생성
+  // fetchPage가 바뀌면(=필터 변경 시) observer도 재생성되어 sentinel을 재등록
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some(e => e.isIntersecting)
+        if (visible && hasMoreRef.current && !isFetchingRef.current) {
+          fetchPage(pageRef.current + 1, false)
+        }
+      },
+      { threshold: 0.1 }
+    )
+    return () => observerRef.current?.disconnect()
+  }, [fetchPage])
+
+  // 컬럼 하단 sentinel 요소를 observer에 등록하는 콜백 ref
+  const attachSentinel = useCallback((node: HTMLDivElement | null) => {
+    if (node && observerRef.current) observerRef.current.observe(node)
   }, [])
 
   if (loading) {
@@ -127,23 +203,15 @@ export default function RenewalsPage() {
     )
   }
 
-  const users = Array.from(new Set(renewals.map(r => r.assigned_user).filter(Boolean)))
-
-  const filtered = renewals.filter(r => {
-    const matchUser = userFilter === 'all' || r.assigned_user === userFilter
-    const matchRisk = riskFilter === 'all' || r.risk === riskFilter
-    return matchUser && matchRisk
-  })
-
   const bucketData = BUCKETS.map(b => ({
     ...b,
-    cards: filtered.filter(r => {
+    cards: renewals.filter(r => {
       const d = calcDday(r.expires_at)
       return d >= b.from && d <= b.to
     }),
   }))
 
-  const totalAmount = filtered.reduce((s, r) => s + r.final_amount, 0)
+  const totalAmount = renewals.reduce((s, r) => s + r.final_amount, 0)
 
   return (
     <div className="flex flex-col h-full p-6 gap-4 min-h-0">
@@ -153,41 +221,40 @@ export default function RenewalsPage() {
             <RefreshCw className="w-5 h-5 text-dk-blue" /> 갱신 관리
           </h1>
           <p className="text-sm text-dk-dim mt-0.5">
-            진행 중 {filtered.length}건 · 예상 ARR {formatAmount(totalAmount)}
+            진행 중 {renewals.length}건
+            {hasMore && ` (전체 ${totalCount}건 중)`}
+            {' · '}예상 ARR {formatAmount(totalAmount)}
           </p>
         </div>
+        {loadingMore && (
+          <Loader2 className="w-4 h-4 animate-spin text-dk-muted shrink-0" />
+        )}
       </div>
-
-      {totalCount > renewals.length && (
-        <div className="bg-amber-500/10 border border-tint-amber-border text-dk-orange text-xs rounded-lg px-4 py-2.5 shrink-0">
-          전체 {totalCount}건 중 상위 100건만 표시됩니다. 나머지 {totalCount - renewals.length}건은 필터를 좁혀 확인하세요.
-        </div>
-      )}
 
       <div className="flex items-center gap-3 flex-wrap shrink-0">
         <div className="flex gap-1.5">
           {(['all', 'high', 'medium', 'low'] as const).map(r => (
             <button key={r} onClick={() => setRiskFilter(r)}
               className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',
-                riskFilter === r ? 'bg-dk-text text-dk-bg border-dk-text' : 'text-dk-muted border-dk-border bg-dk-surface hover:border-dk-border2')}>
+                riskFilter === r
+                  ? 'bg-dk-text text-dk-bg border-dk-text'
+                  : 'text-dk-muted border-dk-border bg-dk-surface hover:border-dk-border2')}>
               {r === 'all' ? '위험도 전체' : r === 'high' ? '⚠ 위험' : r === 'medium' ? '△ 주의' : '✓ 안전'}
             </button>
           ))}
         </div>
-        <div className="flex gap-1.5">
-          <button onClick={() => setUserFilter('all')}
-            className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',
-              userFilter === 'all' ? 'bg-dk-accent text-white border-dk-accent' : 'text-dk-muted border-dk-border bg-dk-surface')}>
-            전체
-          </button>
-          {users.map(u => (
-            <button key={u} onClick={() => setUserFilter(u)}
-              className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',
-                userFilter === u ? 'bg-dk-accent text-white border-dk-accent' : 'text-dk-muted border-dk-border bg-dk-surface')}>
-              {u}
-            </button>
-          ))}
-        </div>
+
+        {users.length > 0 && (
+          <select
+            value={userFilter}
+            onChange={e => setUserFilter(e.target.value)}
+            className="text-xs px-3 py-1.5 rounded-full border border-dk-border bg-dk-surface text-dk-muted font-medium focus:outline-none focus:border-dk-border2 cursor-pointer">
+            <option value="all">담당자 전체</option>
+            {users.map(u => (
+              <option key={u.id} value={u.id}>{u.name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="flex gap-3 flex-1 min-h-0 overflow-x-auto pb-2">
@@ -218,6 +285,8 @@ export default function RenewalsPage() {
                   <p className="text-xs text-dk-dim">없음</p>
                 </div>
               )}
+              {/* 각 컬럼 하단에 sentinel 배치 — hasMore일 때만 observer 대상 */}
+              {hasMore && <div ref={attachSentinel} className="h-1" />}
             </div>
           </div>
         ))}

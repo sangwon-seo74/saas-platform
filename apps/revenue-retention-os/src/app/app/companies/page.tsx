@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
-  Building2, Plus, Search, ChevronRight,
+  Building2, Plus, Search,
   AlertCircle, AlertTriangle, CheckCircle2,
   MapPin, Loader2, X, FileText,
   Phone, Mail, PhoneMissed, PhoneOff, CalendarClock,
+  ChevronUp, ChevronDown, ChevronsUpDown,
 } from 'lucide-react'
-import { cn, formatAmount, calcDday, getDdayClass } from '@/lib/utils'
+import { cn, calcDday, getDdayClass } from '@/lib/utils'
 import type { CompanyStatus, RiskLevel } from '@/types/domain'
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg focus:outline-none focus:ring-2 focus:ring-dk-blue'
@@ -21,7 +23,8 @@ type CompanyRow = {
   status: CompanyStatus
   grade: string | null
   renewal_risk: RiskLevel | null
-  address_city: string | null
+  address_zip: string | null
+  address_road: string | null
   assigned_user: { id: string; name: string } | null
   active_contract: { expires_at: string; final_amount: number } | null
 }
@@ -499,12 +502,19 @@ function CompanyRowItem({
   onAddContract: (company: { id: string; name: string }) => void
   onAddActivity: (company: { id: string; name: string }) => void
 }) {
+  const router = useRouter()
   const dday = company.active_contract ? calcDday(company.active_contract.expires_at) : null
   const risk = company.renewal_risk ? RISK_CFG[company.renewal_risk] : null
   const RiskIcon = risk?.icon
 
+  const address = company.address_road ?? ''
+
   return (
-    <tr className="hover:bg-dk-surface2/50 transition-colors group">
+    <tr
+      onClick={() => router.push(`/app/companies/${company.id}`)}
+      className="hover:bg-dk-surface2/50 transition-colors group cursor-pointer"
+    >
+      {/* 고객사 */}
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-tint-blue flex items-center justify-center text-dk-blue text-xs font-bold shrink-0">
@@ -512,83 +522,61 @@ function CompanyRowItem({
           </div>
           <div>
             <Link href={`/app/companies/${company.id}`}
+              onClick={e => e.stopPropagation()}
               className="text-sm font-semibold text-dk-text hover:text-dk-blue transition-colors">
               {company.name}
             </Link>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {company.address_city && (
-                <span className="text-[10px] text-dk-dim flex items-center gap-0.5">
-                  <MapPin className="w-2.5 h-2.5" />{company.address_city}
-                </span>
-              )}
-              {company.industry && (
-                <span className="text-[10px] text-dk-dim">{company.industry}</span>
-              )}
-            </div>
+            <span className={cn('ml-2 text-[10px] px-1.5 py-0.5 rounded-full border font-medium', STATUS_CFG[company.status].cls)}>
+              {STATUS_CFG[company.status].label}
+            </span>
           </div>
         </div>
       </td>
+      {/* 사업자번호 */}
       <td className="px-4 py-3.5">
-        <span className={cn('text-xs px-1.5 py-0.5 rounded-full border font-medium', STATUS_CFG[company.status].cls)}>
-          {STATUS_CFG[company.status].label}
+        <span className="text-xs text-dk-muted font-mono">{company.biz_no ?? '—'}</span>
+      </td>
+      {/* 업종 */}
+      <td className="px-4 py-3.5">
+        <span className="text-xs text-dk-muted">{company.industry ?? '—'}</span>
+      </td>
+      {/* 주소 */}
+      <td className="px-4 py-3.5 max-w-[200px]">
+        <span className="text-xs text-dk-muted truncate block" title={address || undefined}>
+          {address || '—'}
         </span>
       </td>
-      <td className="px-4 py-3.5">
-        {company.grade && (
-          <span className="text-xs font-bold text-dk-muted bg-dk-surface2 w-6 h-6 rounded-full flex items-center justify-center border border-dk-border">
-            {company.grade}
-          </span>
-        )}
-      </td>
-      <td className="px-4 py-3.5">
-        {company.assigned_user && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-full bg-tint-blue flex items-center justify-center text-[9px] text-dk-blue font-bold">
-              {company.assigned_user.name[0]}
-            </div>
-            <span className="text-xs text-dk-muted">{company.assigned_user.name}</span>
-          </div>
-        )}
-      </td>
-      <td className="px-4 py-3.5 text-right">
-        {company.active_contract ? (
-          <span className="text-sm font-bold text-dk-text font-mono">
-            {formatAmount(company.active_contract.final_amount)}
-          </span>
-        ) : <span className="text-xs text-dk-dim">—</span>}
-      </td>
+      {/* 만료일 */}
       <td className="px-4 py-3.5">
         {dday !== null ? (
           <span className={cn('text-xs font-bold font-mono', getDdayClass(dday))}>
-            {dday >= 0 ? `D-${dday}` : `만료`}
+            {dday >= 0 ? `D-${dday}` : '만료'}
           </span>
         ) : <span className="text-xs text-dk-dim">—</span>}
       </td>
+      {/* 위험도 */}
       <td className="px-4 py-3.5">
-        {risk && RiskIcon && (
+        {risk && RiskIcon ? (
           <span className={cn('inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full border font-medium', risk.cls)}>
             <RiskIcon className="w-2.5 h-2.5" />{risk.label}
           </span>
-        )}
+        ) : <span className="text-xs text-dk-dim">—</span>}
       </td>
+      {/* 액션 */}
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => onAddActivity({ id: company.id, name: company.name })}
+            onClick={e => { e.stopPropagation(); onAddActivity({ id: company.id, name: company.name }) }}
             className="text-xs text-dk-blue hover:text-dk-blueHover flex items-center gap-0.5 whitespace-nowrap"
           >
             <Plus className="w-3 h-3" /> 활동
           </button>
           <button
-            onClick={() => onAddContract({ id: company.id, name: company.name })}
+            onClick={e => { e.stopPropagation(); onAddContract({ id: company.id, name: company.name }) }}
             className="text-xs text-dk-green hover:text-dk-successBright flex items-center gap-0.5 whitespace-nowrap"
           >
             <Plus className="w-3 h-3" /> 계약
           </button>
-          <Link href={`/app/companies/${company.id}`}
-            className="text-xs text-dk-muted hover:text-dk-text flex items-center gap-0.5">
-            보기 <ChevronRight className="w-3 h-3" />
-          </Link>
         </div>
       </td>
     </tr>
@@ -596,14 +584,24 @@ function CompanyRowItem({
 }
 
 export default function CompaniesPage() {
+  type SortKey = 'name' | 'biz_no' | 'industry' | 'address_road' | 'expires_at' | 'renewal_risk'
+  const RISK_ORDER: Record<string, number> = { high: 3, medium: 2, low: 1 }
+
   const [loading, setLoading]         = useState(true)
   const [companies, setCompanies]     = useState<CompanyRow[]>([])
   const [totalCount, setTotalCount]   = useState(0)
   const [q,         setQ]             = useState('')
   const [status,    setStatus]        = useState<CompanyStatus | 'all'>('all')
   const [risk,      setRisk]          = useState<RiskLevel | 'all'>('all')
+  const [sortKey,   setSortKey]       = useState<SortKey | null>(null)
+  const [sortDir,   setSortDir]       = useState<'asc' | 'desc'>('asc')
   const [contractTarget, setContractTarget] = useState<{ id: string; name: string } | null>(null)
   const [activityTarget, setActivityTarget] = useState<{ id: string; name: string } | null>(null)
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('asc') }
+  }
 
   useEffect(() => {
     fetch('/api/companies?limit=100')
@@ -624,12 +622,31 @@ export default function CompaniesPage() {
     )
   }
 
-  const filtered = companies.filter(c => {
-    const matchQ = !q || c.name.includes(q) || (c.biz_no ?? '').includes(q)
-    const matchS = status === 'all' || c.status === status
-    const matchR = risk === 'all' || c.renewal_risk === risk
-    return matchQ && matchS && matchR
-  })
+  const filtered = companies
+    .filter(c => {
+      const matchQ = !q || c.name.includes(q) || (c.biz_no ?? '').includes(q)
+      const matchS = status === 'all' || c.status === status
+      const matchR = risk === 'all' || c.renewal_risk === risk
+      return matchQ && matchS && matchR
+    })
+    .sort((a, b) => {
+      if (!sortKey) return 0
+      const dir = sortDir === 'asc' ? 1 : -1
+      const str = (v: string | null | undefined) => (v ?? '').toLowerCase()
+      if (sortKey === 'expires_at') {
+        const da = a.active_contract?.expires_at ?? ''
+        const db = b.active_contract?.expires_at ?? ''
+        return da < db ? -dir : da > db ? dir : 0
+      }
+      if (sortKey === 'renewal_risk') {
+        const ra = RISK_ORDER[a.renewal_risk ?? ''] ?? 0
+        const rb = RISK_ORDER[b.renewal_risk ?? ''] ?? 0
+        return (ra - rb) * dir
+      }
+      const va = str(a[sortKey])
+      const vb = str(b[sortKey])
+      return va < vb ? -dir : va > vb ? dir : 0
+    })
 
   return (
     <div className="flex flex-col h-full p-6 gap-5 min-h-0">
@@ -684,8 +701,31 @@ export default function CompaniesPage() {
           <table className="w-full">
             <thead className="sticky top-0 z-10">
               <tr className="bg-dk-surface2 border-b border-dk-border">
-                {['고객사', '상태', '등급', '담당자', '계약금액', '만료일', '위험도', ''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-dk-muted">{h}</th>
+                {([
+                  { label: '고객사',    key: 'name'         },
+                  { label: '사업자번호', key: 'biz_no'       },
+                  { label: '업종',      key: 'industry'     },
+                  { label: '주소',      key: 'address_road' },
+                  { label: '만료일',    key: 'expires_at'   },
+                  { label: '위험도',    key: 'renewal_risk' },
+                  { label: '',          key: null           },
+                ] as { label: string; key: SortKey | null }[]).map(({ label, key }) => (
+                  <th key={label || '__action'} className="px-4 py-3 text-left text-xs font-semibold text-dk-muted">
+                    {key ? (
+                      <button
+                        onClick={() => handleSort(key)}
+                        className="flex items-center gap-1 hover:text-dk-text transition-colors"
+                      >
+                        {label}
+                        {sortKey === key
+                          ? sortDir === 'asc'
+                            ? <ChevronUp className="w-3 h-3" />
+                            : <ChevronDown className="w-3 h-3" />
+                          : <ChevronsUpDown className="w-3 h-3 opacity-40" />
+                        }
+                      </button>
+                    ) : label}
+                  </th>
                 ))}
               </tr>
             </thead>

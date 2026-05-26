@@ -23,7 +23,7 @@ type RenewalDetail = {
   memo: string | null
   result: string | null
   result_contract_id: string | null
-  company: { id: string; name: string; biz_no: string | null; industry: string | null; address_city: string | null; status: string | null } | null
+  company: { id: string; name: string; biz_no: string | null; industry: string | null; status: string | null } | null
   contract: {
     id: string; contract_no: string | null; started_at: string; final_amount: number; amount: number | null
     is_paid: boolean; payment_method: string | null; account_count: number; status: string
@@ -497,7 +497,7 @@ export default function RenewalDetailPage() {
                 { label: '업체명',    value: renewal.company?.name },
                 { label: '사업자번호', value: renewal.company?.biz_no, mono: true },
                 { label: '업종',      value: renewal.company?.industry },
-                { label: '소재지',    value: renewal.company?.address_city },
+
                 { label: '상태',      value: renewal.company?.status },
               ].map(({ label, value, mono }) => value ? (
                 <div key={label} className="flex items-center justify-between py-2.5 border-b border-dk-border last:border-0">

@@ -185,9 +185,7 @@ export type Database = {
       }
       companies: {
         Row: {
-          address_city: string | null
           address_detail: string | null
-          address_district: string | null
           address_road: string | null
           address_zip: string | null
           assigned_user_id: string | null
@@ -213,9 +211,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
-          address_city?: string | null
           address_detail?: string | null
-          address_district?: string | null
           address_road?: string | null
           address_zip?: string | null
           assigned_user_id?: string | null
@@ -241,9 +237,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
-          address_city?: string | null
           address_detail?: string | null
-          address_district?: string | null
           address_road?: string | null
           address_zip?: string | null
           assigned_user_id?: string | null

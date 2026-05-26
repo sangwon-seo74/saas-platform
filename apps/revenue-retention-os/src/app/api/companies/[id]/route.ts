@@ -90,8 +90,7 @@ export const PATCH = withAuth(async (req, ctx, params) => {
 
   const ALLOWED = [
     'name', 'biz_no', 'industry', 'website', 'company_size', 'employee_count',
-    'revenue_amount', 'address_road', 'address_detail', 'address_city',
-    'address_district', 'address_zip', 'lat', 'lng',
+    'revenue_amount', 'address_zip', 'address_road', 'address_detail', 'lat', 'lng',
     'status', 'grade', 'renewal_risk', 'memo',
     'assigned_user_id', 'team_id',
   ] as const

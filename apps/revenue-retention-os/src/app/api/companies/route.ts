@@ -23,7 +23,7 @@ export const GET = withAuth(async (req, ctx) => {
 
   let query = supabase
     .from('companies')
-    .select('id, name, biz_no, industry, status, grade, renewal_risk, address_city, assigned_user_id, team_id, updated_at, assigned_user:users!assigned_user_id(id, name)', { count: 'exact' })
+    .select('id, name, biz_no, industry, status, grade, renewal_risk, assigned_user_id, team_id, address_zip, address_road, updated_at, assigned_user:users!assigned_user_id(id, name)', { count: 'exact' })
     .eq('tenant_id', ctx.tenantId)
     .order(sort, { ascending: order === 'asc' })
     .range(offset, offset + limit - 1)
@@ -32,7 +32,6 @@ export const GET = withAuth(async (req, ctx) => {
   if (status)  query = query.eq('status', status)
   if (risk)    query = query.eq('renewal_risk', risk)
   if (grade)   query = query.eq('grade', grade)
-  if (city)    query = query.eq('address_city', city)
   if (user_id) query = query.eq('assigned_user_id', user_id)
   if (team_id) query = query.eq('team_id', team_id)
   if (q)       query = query.ilike('name', `%${q}%`)
@@ -67,7 +66,7 @@ export const POST = withAuth(async (req, ctx) => {
   const { supabase } = createRouteHandlerClient(req)
 
   const { name, biz_no, industry, website, company_size,
-          address_road, address_city, address_district, memo,
+          address_zip, address_road, address_detail, memo,
           assigned_user_id, team_id } = body
 
   if (!name?.trim()) return err('VALIDATION', '고객사명은 필수입니다')
@@ -90,9 +89,9 @@ export const POST = withAuth(async (req, ctx) => {
       industry: industry ?? null,
       website: website ?? null,
       company_size: company_size ?? null,
+      address_zip: address_zip ?? null,
       address_road: address_road ?? null,
-      address_city: address_city ?? null,
-      address_district: address_district ?? null,
+      address_detail: address_detail ?? null,
       memo: memo ?? null,
       assigned_user_id: assigned_user_id ?? ctx.userId,
       team_id: team_id ?? null,

@@ -15,7 +15,7 @@ export const GET = withAuth(async (req, ctx, params) => {
     .from('contracts')
     .select(`
       *,
-      company:companies!contracts_company_id_fkey(id, name, biz_no, address_city),
+      company:companies!contracts_company_id_fkey(id, name, biz_no),
       product:products!contracts_product_id_fkey(id, name, billing_cycle),
       assigned_user:users!contracts_assigned_user_id_fkey(id, name),
       contract_accounts(*),

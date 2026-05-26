@@ -278,8 +278,43 @@ function TaskDetail({ task, onClose, onToggle }: { task: Task; onClose: () => vo
 }
 
 // ─── 업무 추가 모달 ────────────────────────────────────────
-function AddTaskModal({ onClose }: { onClose: () => void }) {
+function AddTaskModal({ onClose, onSave }: { onClose: () => void; onSave: (task: Task) => void }) {
+  const [title,    setTitle]    = useState('')
+  const [type,     setType]     = useState('manual')
+  const [priority, setPriority] = useState('medium')
+  const [dueAt,    setDueAt]       = useState('')
+  const [description, setDescription] = useState('')
+  const [saving,   setSaving]   = useState(false)
+  const [error,    setError]    = useState<string | null>(null)
+
   const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg focus:outline-none focus:ring-2 focus:ring-dk-blue'
+
+  const handleSave = async () => {
+    if (!title.trim()) { setError('제목을 입력해주세요'); return }
+    setSaving(true); setError(null)
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title:       title.trim(),
+          type:        type || null,
+          priority,
+          due_at:      dueAt ? new Date(dueAt).toISOString() : null,
+          description: description.trim() || null,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) { setError(json.error?.message ?? '저장 실패'); return }
+      onSave({ ...json.data, company: null, assigned_user: null })
+      onClose()
+    } catch {
+      setError('네트워크 오류가 발생했습니다')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -291,12 +326,19 @@ function AddTaskModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-4">
           <div>
             <label className="text-xs font-medium text-dk-muted mb-1.5 block">제목 *</label>
-            <input placeholder="업무 내용..." className={INPUT_CLS} />
+            <input
+              placeholder="업무 내용..."
+              className={INPUT_CLS}
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSave()}
+              autoFocus
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-dk-muted mb-1.5 block">유형</label>
-              <select className={INPUT_CLS}>
+              <select className={INPUT_CLS} value={type} onChange={e => setType(e.target.value)}>
                 <option value="manual">일반</option>
                 <option value="call">통화</option>
                 <option value="visit">방문</option>
@@ -305,7 +347,7 @@ function AddTaskModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="text-xs font-medium text-dk-muted mb-1.5 block">우선순위</label>
-              <select className={INPUT_CLS}>
+              <select className={INPUT_CLS} value={priority} onChange={e => setPriority(e.target.value)}>
                 <option value="high">높음</option>
                 <option value="medium">보통</option>
                 <option value="low">낮음</option>
@@ -314,12 +356,29 @@ function AddTaskModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="text-xs font-medium text-dk-muted mb-1.5 block">마감일</label>
-            <input type="date" className={INPUT_CLS} />
+            <input type="date" className={INPUT_CLS} value={dueAt} onChange={e => setDueAt(e.target.value)} />
           </div>
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1.5 block">메모</label>
+            <textarea
+              placeholder="추가 내용..."
+              rows={3}
+              className={INPUT_CLS + ' resize-none'}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+            />
+          </div>
+          {error && <p className="text-xs text-dk-red">{error}</p>}
         </div>
         <div className="flex gap-2 mt-5">
           <button onClick={onClose} className="flex-1 px-4 py-2.5 text-sm font-medium text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors">취소</button>
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover transition-colors">저장</button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover transition-colors disabled:opacity-50"
+          >
+            {saving ? '저장 중...' : '저장'}
+          </button>
         </div>
       </div>
     </div>
@@ -521,7 +580,12 @@ export default function MyTasksPage() {
         </div>
       )}
 
-      {showModal && <AddTaskModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <AddTaskModal
+          onClose={() => setShowModal(false)}
+          onSave={task => setTasks(prev => [task, ...prev])}
+        />
+      )}
     </div>
   )
 }
