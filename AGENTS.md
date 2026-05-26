@@ -4,17 +4,31 @@
 > import하며, Claude 전용 보조 지침만 `CLAUDE.md`에 둔다. 같은 규칙을 두 파일에 중복 기재 금지.
 
 ## 프로젝트 개요
-여러 Micro SaaS를 단일 모노레포에서 운영. 공통 인프라(인증/알림/결제)는
-core-api에 집중, 각 제품은 apps/* 아래에 독립 Next.js 앱.
+**SaaS Platform** — 다양한 B2B SaaS 제품을 단일 모노레포에서 개발·운영하는 플랫폼.
+공통 인프라(인증/알림/결제)는 `core-api`에 집중하고 각 제품은 `apps/*` 아래 독립 Next.js 앱으로 운영한다.
+단일 모노레포를 택한 이유는 공통 인프라 재사용과 배포·의존성 관리 일원화다.
+
+### 플랫폼 구조 (앱별 배포 URL)
+
+| 앱 | 역할 | 배포 URL | Vercel 프로젝트 |
+|----|------|----------|-----------------|
+| `apps/landing` | 플랫폼 마케팅 랜딩 페이지 | saas-platform.vercel.app | saas-platform |
+| `apps/revenue-retention-os` | B2B 고객 갱신·리텐션 운영 SaaS | (별도 Vercel 프로젝트) | rros |
+| `core-api/` | 공통 백엔드 API (FastAPI) | — | — |
+| `packages/core-client/` | 공유 TypeScript 클라이언트 SDK | — | — |
+
+> 새 SaaS 앱 추가 시: 이 표를 업데이트하고 `apps/landing/src/app/page.tsx` Solutions 섹션에 제품 카드를 추가한다.
 
 ## 절대 규칙 (협의 없이 위반 금지)
 1. 공통 기능(회원가입/이메일/SMS/카카오톡/결제)은 각 SaaS 앱 안에서 재구현하지 않는다.
    반드시 core-api를 호출하거나 packages/core-client를 import한다.
 2. DB 접근:
    - core.* 스키마는 core-api를 통해서만 수정한다. 프론트나 다른 도메인 코드의
-     직접 INSERT/UPDATE 금지.
+     직접 INSERT/UPDATE 금지. *(이유: 감사 로그 단일화, 권한 집중화. 우회 시 접근 제어 구멍 발생)*
    - 각 도메인 스키마(rros 등)는 해당 앱에서만 수정한다. cross-domain import 금지.
+     *(이유: 도메인 경계 보호. 타 도메인 스키마 직접 참조 시 결합도가 높아져 독립 배포 불가)*
 3. 인증은 Supabase JWT를 신뢰의 단일 소스로 사용. core-api는 검증만 한다.
+   *(이유: 인증 로직 분산 방지. 자체 세션·토큰을 별도로 발급하면 토큰 무효화·RLS 연동이 깨진다)*
 4. 환경변수는 .env.example을 항상 동기화해서 커밋한다. 결제·외부 서비스 키
    (Stripe/Toss/PortOne/Resend 등)는 core-api 환경변수로만 두고 프론트 .env에 노출 금지.
 5. 레이어 경계:
@@ -66,6 +80,8 @@ core-api에 집중, 각 제품은 apps/* 아래에 독립 Next.js 앱.
 - DB: PostgreSQL 16 (Supabase)
 - 패키지 매니저: pnpm (workspaces: apps/*, packages/*)
 - 테스트: pytest (백엔드), Vitest + Playwright (프론트)
+- 상태 관리: 서버 상태 → TanStack Query, 클라이언트 전역 상태 → Zustand.
+  컴포넌트 로컬 상태는 useState. 셋 중 하나로 통일하고 혼용 금지.
 
 ## 코드 컨벤션
 - Python: ruff + mypy strict. 함수 시그니처에 타입 힌트 필수. `# type: ignore` 우회 금지.
