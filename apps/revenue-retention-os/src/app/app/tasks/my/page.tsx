@@ -5,10 +5,11 @@ import Link from 'next/link'
 import {
   CheckSquare, Plus, Clock, AlertCircle, Building2,
   RefreshCw, Phone, Mail, MapPin, Star, Check, Loader2,
-  ChevronRight, X, User, CalendarClock, Ban,
+  ChevronRight, X, User, CalendarClock, Ban, Send,
 } from 'lucide-react'
 import { cn, formatDate, formatDateTime } from '@/lib/utils'
 import { TASK_PRIORITY_CLASS, TASK_PRIORITY_LABEL } from '@/constants/domain'
+import { SendModal } from '@/components/SendModal'
 import type { Task } from '@/types/domain'
 
 const TASK_STATUS_CLS: Record<string, string> = {
@@ -150,8 +151,15 @@ function TaskGroup({
 // ─── 상세 패널 ─────────────────────────────────────────────
 function TaskDetail({ task, onClose, onToggle }: { task: Task; onClose: () => void; onToggle: (id: string) => void }) {
   const isDone = task.status === 'done'
+  const [showSend, setShowSend] = useState(false)
   return (
     <div className="flex flex-col h-full">
+      {showSend && (
+        <SendModal
+          onClose={() => setShowSend(false)}
+          companyId={task.company?.id}
+        />
+      )}
       <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-dk-border">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-dk-surface2 border border-dk-border flex items-center justify-center shrink-0">
@@ -163,6 +171,14 @@ function TaskDetail({ task, onClose, onToggle }: { task: Task; onClose: () => vo
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {task.company && (
+            <button
+              onClick={() => setShowSend(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-dk-blue border border-tint-blue-border rounded-lg hover:bg-tint-blue transition-colors"
+            >
+              <Send className="w-3.5 h-3.5" />메시지 발송
+            </button>
+          )}
           {task.status !== 'cancelled' && (
             <button
               onClick={() => onToggle(task.id)}
