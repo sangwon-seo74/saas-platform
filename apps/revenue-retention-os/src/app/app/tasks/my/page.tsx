@@ -467,7 +467,7 @@ export default function MyTasksPage() {
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
       {/* ── 왼쪽 ────────────────────────────────────────── */}
-      <div className={cn('flex flex-col min-h-0 transition-all duration-200', selected ? 'w-[55%]' : 'w-full')}>
+      <div className={cn('flex flex-col min-h-0 transition-all duration-200', selected ? 'hidden lg:flex lg:w-[55%]' : 'w-full')}>
 
         {/* 헤더 */}
         <div className="shrink-0 px-6 pt-5 pb-0">
@@ -589,9 +589,9 @@ export default function MyTasksPage() {
         </div>
       </div>
 
-      {/* ── 오른쪽: 상세 패널 ──────────────────────────── */}
+      {/* ── 오른쪽: 상세 패널 (모바일: full-screen overlay, 데스크탑: side panel) ── */}
       {selected && (
-        <div className="w-[45%] shrink-0 border-l border-dk-border bg-dk-surface flex flex-col min-h-0 overflow-hidden">
+        <div className="fixed inset-0 z-40 bg-dk-surface flex flex-col overflow-hidden lg:static lg:inset-auto lg:z-auto lg:w-[45%] lg:shrink-0 lg:border-l lg:border-dk-border lg:min-h-0">
           <TaskDetail task={selected} onClose={() => setSelected(null)} onToggle={toggleTask} />
         </div>
       )}

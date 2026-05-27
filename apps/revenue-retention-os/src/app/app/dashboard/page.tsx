@@ -83,7 +83,7 @@ export default function DashboardPage() {
   const recentActivities = (dashData?.recentActivities ?? []) as Record<string, unknown>[]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <div>
         <h1 className="text-lg font-bold text-dk-text">대시보드</h1>
         <p className="text-sm text-dk-dim mt-0.5">
@@ -91,7 +91,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 items-stretch">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-stretch">
         <MetricCard label="오늘 통화" value={s.calls_today} icon={Phone} color="bg-blue-500/20 text-dk-blue" href="/app/activities" />
         <MetricCard label="갱신 임박 (D-7)" value={s.renewals_d7} sub={`D-30 기준 ${s.renewals_d30}건`} icon={RefreshCw} color="bg-red-500/20 text-dk-red" href="/app/renewals" />
         <MetricCard label="기한 초과 할일" value={s.overdue_tasks} sub="미처리" icon={CheckSquare} color={s.overdue_tasks > 0 ? 'bg-amber-500/20 text-dk-orange' : 'bg-green-500/20 text-dk-green'} href="/app/tasks/my" />
@@ -188,7 +188,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-dk-surface border border-dk-border rounded-xl">
           <div className="flex items-center justify-between px-5 py-4 border-b border-dk-border">
             <h3 className="text-sm font-semibold text-dk-text flex items-center gap-2">

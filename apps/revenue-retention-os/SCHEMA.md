@@ -4,7 +4,7 @@
 > 스키마 변경은 Supabase SQL Editor에서 적용하고 이 문서를 함께 갱신한다.
 > 공통 인프라(테넌트/사용자/구독/인보이스 등)는 `core` 스키마 → [../../core-api/SCHEMA.md](../../core-api/SCHEMA.md).
 
-## 테이블 (11)
+## 테이블 (12)
 
 | 테이블 | 역할 | RLS |
 |--------|------|-----|
@@ -19,6 +19,7 @@
 | `messages` | 발송된 메시지 이력 | `messages_tenant_isolation` / `messages_sales_own` |
 | `message_templates` | 메시지 템플릿(이메일/SMS/카카오) | `message_templates_read`(전체), `write`/`update`/`delete`(admin) |
 | `api_integrations` | 테넌트별 외부 API 연동 설정 | `api_integrations_admin`(admin) |
+| `user_preferences` | 사용자별 조회 범위(`view_scope`: own\|all) | `user_preferences_admin_manage`(admin/manager 전체), `user_preferences_own_read`(본인 읽기) |
 
 ## 역할 · RLS 패턴
 - 역할: `admin` / `manager` / `sales`. (슈퍼어드민은 환경변수 화이트리스트 → service role로 RLS 우회)

@@ -122,10 +122,10 @@ function Hero() {
 // ─── Stats ───────────────────────────────────────────────────────────────────
 function Stats() {
   const items = [
-    { value: '500+',  label: '도입 기업' },
-    { value: '98%',   label: '갱신 성공률' },
-    { value: '3배',   label: '업무 효율 향상' },
-    { value: '24/7',  label: '실시간 모니터링' },
+    { value: '30%↑',  label: '평균 갱신율 향상' },
+    { value: '5분',   label: '팀 온보딩 시간' },
+    { value: '3채널', label: 'SMS·이메일·카카오 통합' },
+    { value: '무료',  label: '신용카드 없이 시작' },
   ]
   return (
     <section className="border-y border-white/[0.06] bg-white/[0.01]">
@@ -358,6 +358,103 @@ function HowItWorks() {
   )
 }
 
+// ─── Pricing ─────────────────────────────────────────────────────────────────
+function Pricing() {
+  const plans = [
+    {
+      name: 'Starter',
+      price: '무료',
+      sub: '영구 무료',
+      desc: '소규모 팀의 갱신 관리 입문에 최적',
+      features: ['고객사 50개', '사용자 3명', '갱신 파이프라인', '기본 활동 이력', '이메일 알림'],
+      cta: '무료로 시작',
+      highlight: false,
+    },
+    {
+      name: 'Pro',
+      price: '₩49,000',
+      sub: '/ 월 · 사용자당',
+      desc: '성장 중인 영업팀의 전체 기능 활용',
+      features: ['고객사 무제한', '사용자 무제한', 'SMS · 카카오 알림', 'AI 위험도 분석', '리포트 & 엑스포트', '우선 지원'],
+      cta: '14일 무료 체험',
+      highlight: true,
+    },
+    {
+      name: 'Enterprise',
+      price: '문의',
+      sub: '맞춤 견적',
+      desc: '대형 조직의 보안·통합·SLA 요구에 대응',
+      features: ['전용 인스턴스', 'SSO / SAML', '전용 CS 매니저', 'SLA 99.9%', 'API 전체 접근', '온프레미스 옵션'],
+      cta: '도입 문의',
+      highlight: false,
+    },
+  ]
+
+  return (
+    <section className="py-28 border-t border-white/[0.06]">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <p className="text-indigo-400 text-xs font-semibold uppercase tracking-widest mb-3">요금제</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            팀 규모에 맞는 요금제
+          </h2>
+          <p className="text-slate-400 text-lg max-w-xl mx-auto">
+            무료로 시작하고, 성장에 따라 업그레이드하세요
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+          {plans.map(p => (
+            <div
+              key={p.name}
+              className={`relative flex flex-col rounded-2xl p-7 border transition-all ${
+                p.highlight
+                  ? 'bg-gradient-to-b from-indigo-900/40 to-indigo-900/20 border-indigo-500/40 shadow-xl shadow-indigo-900/30'
+                  : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
+              }`}
+            >
+              {p.highlight && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 rounded-full text-[11px] font-semibold text-white">
+                  인기
+                </div>
+              )}
+              <div className="mb-6">
+                <p className="text-slate-300 font-semibold text-sm mb-2">{p.name}</p>
+                <div className="flex items-end gap-1.5 mb-1">
+                  <span className="text-3xl font-bold text-white">{p.price}</span>
+                  <span className="text-slate-500 text-sm pb-1">{p.sub}</span>
+                </div>
+                <p className="text-slate-500 text-sm">{p.desc}</p>
+              </div>
+
+              <ul className="space-y-2.5 mb-8 flex-1">
+                {p.features.map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-slate-300">
+                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${p.highlight ? 'text-indigo-400' : 'text-slate-500'}`} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href={RROS_URL}
+                className={`flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl transition-all ${
+                  p.highlight
+                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/40'
+                    : 'border border-white/10 hover:border-white/25 text-slate-300 hover:text-white'
+                }`}
+              >
+                {p.cta}
+                {p.highlight && <ArrowRight className="w-4 h-4" />}
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ─── CTA ─────────────────────────────────────────────────────────────────────
 function CTA() {
   return (
@@ -448,6 +545,7 @@ export default function LandingPage() {
       <Solutions />
       <Features />
       <HowItWorks />
+      <Pricing />
       <CTA />
       <Footer />
     </div>

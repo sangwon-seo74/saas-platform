@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from app.core.envelope import EnvelopeRoute
@@ -93,10 +95,10 @@ async def send_kakao(body: SendKakaoRequest, auth: AuthContext = Depends(get_cur
 class SendEmailRequest(BaseModel):
     to: str
     subject: str
-    html: str | None = None
-    text: str | None = None
-    from_name: str | None = None   # 테넌트 브랜딩 override (선택)
-    from_email: str | None = None  # 테넌트 브랜딩 override (선택)
+    html: Optional[str] = None
+    text: Optional[str] = None
+    from_name: Optional[str] = None   # 테넌트 브랜딩 override (선택)
+    from_email: Optional[str] = None  # 테넌트 브랜딩 override (선택)
 
 
 @router.post("/email")

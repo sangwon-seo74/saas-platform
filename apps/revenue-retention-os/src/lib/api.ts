@@ -42,6 +42,7 @@ export interface AuthContext {
   userId: string
   tenantId: string
   role: 'admin' | 'manager' | 'sales'
+  viewScope: 'own' | 'all'
 }
 
 /**
@@ -51,10 +52,11 @@ export interface AuthContext {
  */
 export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {
   // 프록시가 주입한 헤더 우선 (빠른 경로)
-  const tenantId = req.headers.get('x-tenant-id')
-  const userId   = req.headers.get('x-user-id')
-  const role     = req.headers.get('x-user-role') as AuthContext['role'] | null
-  if (tenantId && userId && role) return { userId, tenantId, role }
+  const tenantId  = req.headers.get('x-tenant-id')
+  const userId    = req.headers.get('x-user-id')
+  const role      = req.headers.get('x-user-role') as AuthContext['role'] | null
+  const viewScope = (req.headers.get('x-view-scope') ?? 'own') as AuthContext['viewScope']
+  if (tenantId && userId && role) return { userId, tenantId, role, viewScope }
 
   // 클라이언트 컴포넌트에서 직접 호출 시 쿠키 기반 인증 폴백
   const { authClient, supabase } = createRouteHandlerClient(req)
@@ -68,7 +70,14 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
     .single()
 
   if (!profile?.is_active) return null
-  return { userId: user.id, tenantId: profile.tenant_id, role: profile.role as AuthContext['role'] }
+  const { data: prefs } = await supabase
+    .from('user_preferences')
+    .select('view_scope')
+    .eq('user_id', user.id)
+    .single()
+  const fallbackScope: AuthContext['viewScope'] = prefs?.view_scope as AuthContext['viewScope']
+    ?? (profile.role === 'sales' ? 'own' : 'all')
+  return { userId: user.id, tenantId: profile.tenant_id, role: profile.role as AuthContext['role'], viewScope: fallbackScope }
 }
 
 /**

@@ -33,7 +33,7 @@ export const GET = withAuth(async (req, ctx) => {
     .range(offset, offset + limit - 1)
 
   // sales: 본인 담당만 (RLS 보조)
-  if (ctx.role === 'sales') query = query.eq('assigned_user_id', ctx.userId)
+  if (ctx.viewScope === 'own') query = query.eq('assigned_user_id', ctx.userId)
 
   if (status)     query = query.eq('status', status)
   if (company_id) query = query.eq('company_id', company_id)

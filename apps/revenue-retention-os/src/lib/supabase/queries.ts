@@ -13,6 +13,7 @@ export interface QueryOptions {
   tenantId: string
   userId?: string
   role?: string
+  viewScope?: 'own' | 'all'
 }
 
 // ─── Companies ───────────────────────────────────────────
@@ -24,7 +25,8 @@ export async function getCompanies(opts: QueryOptions & {
   limit?: number
 }) {
   const supabase = await createServerComponentClient()
-  const { tenantId, userId, role, status, risk, q, page = 1, limit = 20 } = opts
+  const { tenantId, userId, role, viewScope, status, risk, q, page = 1, limit = 20 } = opts
+  const scope = viewScope ?? (role === 'sales' ? 'own' : 'all')
 
   let query = supabase
     .from('companies')
@@ -37,8 +39,7 @@ export async function getCompanies(opts: QueryOptions & {
     .order('updated_at', { ascending: false })
     .range((page - 1) * limit, page * limit - 1)
 
-  // sales: 본인 담당만 (RLS가 처리하지만 명시적 필터 추가)
-  if (role === 'sales' && userId) {
+  if (scope === 'own' && userId) {
     query = query.eq('assigned_user_id', userId)
   }
 
@@ -85,7 +86,8 @@ export async function getRenewals(opts: QueryOptions & {
   limit?: number
 }) {
   const supabase = await createServerComponentClient()
-  const { tenantId, userId, role, status, risk, daysFrom = 0, daysTo = 90, page = 1, limit = 50 } = opts
+  const { tenantId, userId, role, viewScope, status, risk, daysFrom = 0, daysTo = 90, page = 1, limit = 50 } = opts
+  const scope = viewScope ?? (role === 'sales' ? 'own' : 'all')
 
   const today    = new Date()
   const dateFrom = new Date(today); dateFrom.setDate(today.getDate() + daysFrom)
@@ -108,9 +110,7 @@ export async function getRenewals(opts: QueryOptions & {
     .order('contract_expires_at', { ascending: true })
     .range((page - 1) * limit, page * limit - 1)
 
-  if (role === 'sales' && userId) {
-    query = query.eq('assigned_user_id', userId)
-  }
+  if (scope === 'own' && userId) query = query.eq('assigned_user_id', userId)
   if (status) query = query.eq('status', status)
   if (risk)   query = query.eq('risk_level', risk)
 
@@ -130,7 +130,8 @@ export async function getActivities(opts: QueryOptions & {
   limit?: number
 }) {
   const supabase = await createServerComponentClient()
-  const { tenantId, userId, role, companyId, type, dateFrom, dateTo, page = 1, limit = 20 } = opts
+  const { tenantId, userId, role, viewScope, companyId, type, dateFrom, dateTo, page = 1, limit = 20 } = opts
+  const scope = viewScope ?? (role === 'sales' ? 'own' : 'all')
 
   let query = supabase
     .from('activities')
@@ -144,7 +145,7 @@ export async function getActivities(opts: QueryOptions & {
     .order('activity_at', { ascending: false })
     .range((page - 1) * limit, page * limit - 1)
 
-  if (role === 'sales' && userId) query = query.eq('user_id', userId)
+  if (scope === 'own' && userId) query = query.eq('user_id', userId)
   if (companyId)  query = query.eq('company_id', companyId)
   if (type)       query = query.eq('type', type)
   if (dateFrom)   query = query.gte('activity_at', dateFrom)
@@ -193,12 +194,13 @@ export async function getTasks(opts: QueryOptions & {
 // ─── Dashboard 요약 ──────────────────────────────────────
 export async function getDashboardSummary(opts: QueryOptions) {
   const supabase = await createServerComponentClient()
-  const { tenantId, userId, role } = opts
+  const { tenantId, userId, role, viewScope } = opts
+  const scope = viewScope ?? (role === 'sales' ? 'own' : 'all')
   const today = new Date().toISOString().split('T')[0]
   const plus7  = new Date(Date.now() + 7  * 86400000).toISOString().split('T')[0]
   const plus30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
 
-  const isSales = role === 'sales' && !!userId
+  const isSales = scope === 'own' && !!userId
 
   // 오늘 통화 수
   let callsTodayQ = supabase

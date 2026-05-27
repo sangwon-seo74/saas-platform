@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { AlertCircle, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { cn, formatAmount, formatDate } from '@/lib/utils'
+
+const C = { surface2: '#1C2128', border: '#21262D', text: '#E6EDF3', dim: '#6E7681' }
+const PIE_COLORS = { high: '#FF7B72', medium: '#E3B341', low: '#3FB950' }
 
 type RiskItem = {
   id: string; company: string; amount: number
@@ -90,10 +94,49 @@ export default function RiskDashboardPage() {
         })}
       </div>
 
-      {/* 위험도 분포 바 */}
+      {/* 위험도 분포 — Pie 차트 + 바 */}
       {total.count > 0 && (
         <div className="bg-dk-surface border border-dk-border rounded-xl p-5">
           <h3 className="text-sm font-semibold text-dk-text mb-4">위험도 분포</h3>
+          <div className="flex items-center gap-6 mb-4">
+            <div style={{ width: 140, height: 140, flexShrink: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={riskKeys.map(k => ({ name: RISK_CFG[k].label, value: groups[k].count }))}
+                    cx="50%" cy="50%" innerRadius={38} outerRadius={60}
+                    dataKey="value" strokeWidth={0}>
+                    {riskKeys.map(k => <Cell key={k} fill={PIE_COLORS[k]} />)}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12 }}
+                    labelStyle={{ color: C.text }}
+                    formatter={(value, name) => {
+                    const v = typeof value === 'number' ? value : 0
+                    return [`${v}건`, String(name)] as [string, string]
+                  }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex-1 space-y-2.5">
+              {riskKeys.map(k => {
+                const pct = total.count > 0 ? Math.round(groups[k].count / total.count * 100) : 0
+                const cfg = RISK_CFG[k]
+                const Icon = cfg.icon
+                return (
+                  <div key={k} className="flex items-center gap-2">
+                    <Icon className={cn('w-3.5 h-3.5 shrink-0', cfg.text)} />
+                    <span className="text-xs text-dk-muted w-8">{cfg.label}</span>
+                    <div className="flex-1 h-1.5 bg-dk-surface2 rounded-full overflow-hidden">
+                      <div className={cn('h-full rounded-full', cfg.bar)} style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className={cn('text-xs font-mono font-semibold w-8 text-right', cfg.text)}>{pct}%</span>
+                    <span className="text-xs text-dk-dim w-8 text-right">{groups[k].count}건</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
           <div className="h-6 flex rounded-lg overflow-hidden gap-px">
             {riskKeys.map(k => {
               const pct = total.count > 0 ? groups[k].count / total.count * 100 : 0
@@ -104,16 +147,6 @@ export default function RiskDashboardPage() {
                 </div>
               ) : null
             })}
-          </div>
-          <div className="flex gap-4 mt-3">
-            {riskKeys.map(k => (
-              <div key={k} className="flex items-center gap-1.5">
-                <div className={cn('w-2.5 h-2.5 rounded-sm', RISK_CFG[k].bar)} />
-                <span className="text-xs text-dk-muted">
-                  {RISK_CFG[k].label} {groups[k].count}건 ({total.count > 0 ? Math.round(groups[k].count / total.count * 100) : 0}%)
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       )}

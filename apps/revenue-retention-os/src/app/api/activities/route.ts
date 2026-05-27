@@ -30,7 +30,7 @@ export const GET = withAuth(async (req, ctx) => {
     .order('activity_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
-  if (ctx.role === 'sales') query = query.eq('user_id', ctx.userId)
+  if (ctx.viewScope === 'own') query = query.eq('user_id', ctx.userId)
   if (type)       query = query.eq('type', type)
   if (company_id) query = query.eq('company_id', company_id)
   if (user_id)    query = query.eq('user_id', user_id)

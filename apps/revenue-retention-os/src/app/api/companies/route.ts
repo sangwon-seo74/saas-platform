@@ -28,7 +28,7 @@ export const GET = withAuth(async (req, ctx) => {
     .order(sort, { ascending: order === 'asc' })
     .range(offset, offset + limit - 1)
 
-  if (ctx.role === 'sales') query = query.eq('assigned_user_id', ctx.userId)
+  if (ctx.viewScope === 'own') query = query.eq('assigned_user_id', ctx.userId)
   if (status)  query = query.eq('status', status)
   if (risk)    query = query.eq('renewal_risk', risk)
   if (grade)   query = query.eq('grade', grade)

@@ -17,6 +17,7 @@ export const GET = withAuth(async (req, ctx) => {
   const overdue    = searchParams.get('overdue') === 'true'
   const user_id    = searchParams.get('user_id')
   const company_id = searchParams.get('company_id')
+  const renewal_id = searchParams.get('renewal_id')
   const from       = searchParams.get('from')      // created_at 범위 시작 (YYYY-MM-DD)
   const to         = searchParams.get('to')        // created_at 범위 종료 (YYYY-MM-DD)
   const done_from  = searchParams.get('done_from') // done_at 범위 시작 (YYYY-MM-DD)
@@ -33,10 +34,11 @@ export const GET = withAuth(async (req, ctx) => {
     .order('due_at', { ascending: true, nullsFirst: false })
     .range(offset, offset + limit - 1)
 
-  if (mine || ctx.role === 'sales') query = query.eq('assigned_user_id', ctx.userId)
+  if (mine || ctx.viewScope === 'own') query = query.eq('assigned_user_id', ctx.userId)
   else if (user_id)                 query = query.eq('assigned_user_id', user_id)
 
   if (company_id) query = query.eq('company_id', company_id)
+  if (renewal_id) query = query.eq('renewal_id', renewal_id)
   if (status)     query = query.eq('status', status)
   if (priority)   query = query.eq('priority', priority)
   if (overdue)    query = query.lt('due_at', new Date().toISOString()).neq('status', 'done')

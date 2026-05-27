@@ -76,6 +76,15 @@ export async function proxy(req: NextRequest) {
 
     const role = profile.role as string
 
+    // view_scope: user_preferences 테이블 조회, 없으면 역할 기반 기본값
+    let viewScope = role === 'sales' ? 'own' : 'all'
+    const { data: prefs } = await db
+      .from('user_preferences')
+      .select('view_scope')
+      .eq('user_id', user.id)
+      .single()
+    if (prefs?.view_scope) viewScope = prefs.view_scope as string
+
     if (isApp) {
       if (pathname.startsWith('/app/reports') && !['admin', 'manager'].includes(role)) {
         return NextResponse.redirect(new URL('/app/dashboard', req.url))
@@ -89,9 +98,10 @@ export async function proxy(req: NextRequest) {
     }
 
     const requestHeaders = new Headers(req.headers)
-    requestHeaders.set('x-tenant-id', profile.tenant_id)
-    requestHeaders.set('x-user-id',   user.id)
-    requestHeaders.set('x-user-role', role)
+    requestHeaders.set('x-tenant-id',   profile.tenant_id)
+    requestHeaders.set('x-user-id',     user.id)
+    requestHeaders.set('x-user-role',   role)
+    requestHeaders.set('x-view-scope',  viewScope)
 
     // getUser() 가 토큰을 갱신했을 때 res에 쌓인 Set-Cookie를 최종 응답에 전달
     const next = NextResponse.next({ request: { headers: requestHeaders } })

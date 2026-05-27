@@ -1037,23 +1037,35 @@ const INDUSTRY_OPTIONS = [
 ]
 
 // ─── Edit Company Modal ───────────────────────────────────
+type UserOption = { id: string; name: string }
+type TeamOption = { id: string; name: string }
+
 function EditCompanyModal({ company, onClose, onSaved }: {
   company: Company; onClose: () => void; onSaved: (updated: Partial<Company>) => void
 }) {
   const [form, setForm] = useState({
-    name:           company.name,
-    biz_no:         company.biz_no         ?? '',
-    industry:       company.industry       ?? '',
-    company_size:   company.company_size   ?? '',
-    website:        company.website        ?? '',
-    address_zip:    company.address_zip    ?? '',
-    address_road:   company.address_road   ?? '',
-    address_detail: company.address_detail ?? '',
-    memo:           company.memo           ?? '',
+    name:             company.name,
+    biz_no:           company.biz_no         ?? '',
+    industry:         company.industry       ?? '',
+    company_size:     company.company_size   ?? '',
+    website:          company.website        ?? '',
+    address_zip:      company.address_zip    ?? '',
+    address_road:     company.address_road   ?? '',
+    address_detail:   company.address_detail ?? '',
+    memo:             company.memo           ?? '',
+    assigned_user_id: company.assigned_user?.id ?? '',
+    team_id:          company.team?.id          ?? '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState<string | null>(null)
+  const [users, setUsers]   = useState<UserOption[]>([])
+  const [teams, setTeams]   = useState<TeamOption[]>([])
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
+
+  useEffect(() => {
+    fetch('/api/users').then(r => r.json()).then(j => setUsers(j.data ?? [])).catch(() => {})
+    fetch('/api/settings/teams').then(r => r.json()).then(j => setTeams(j.data ?? [])).catch(() => {})
+  }, [])
 
   const handleSave = async () => {
     if (!form.name.trim()) { setError('회사명은 필수입니다'); return }
@@ -1062,19 +1074,27 @@ function EditCompanyModal({ company, onClose, onSaved }: {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name:           form.name.trim(),
-        biz_no:         form.biz_no.trim()         || null,
-        industry:       form.industry              || null,
-        company_size:   form.company_size          || null,
-        website:        form.website.trim()        || null,
-        address_zip:    form.address_zip           || null,
-        address_road:   form.address_road          || null,
-        address_detail: form.address_detail.trim() || null,
-        memo:           form.memo.trim()           || null,
+        name:             form.name.trim(),
+        biz_no:           form.biz_no.trim()         || null,
+        industry:         form.industry              || null,
+        company_size:     form.company_size          || null,
+        website:          form.website.trim()        || null,
+        address_zip:      form.address_zip           || null,
+        address_road:     form.address_road          || null,
+        address_detail:   form.address_detail.trim() || null,
+        memo:             form.memo.trim()           || null,
+        assigned_user_id: form.assigned_user_id      || null,
+        team_id:          form.team_id               || null,
       }),
     })
     const json = await res.json().catch(() => null)
     if (!res.ok) { setError(json?.error?.message ?? '저장 실패'); setSaving(false); return }
+    const resolvedUser = form.assigned_user_id
+      ? (users.find(u => u.id === form.assigned_user_id) ?? null)
+      : null
+    const resolvedTeam = form.team_id
+      ? (teams.find(t => t.id === form.team_id) ?? null)
+      : null
     onSaved({
       name:           form.name.trim(),
       biz_no:         form.biz_no.trim()         || null,
@@ -1085,6 +1105,8 @@ function EditCompanyModal({ company, onClose, onSaved }: {
       address_road:   form.address_road          || null,
       address_detail: form.address_detail.trim() || null,
       memo:           form.memo.trim()           || null,
+      assigned_user:  resolvedUser,
+      team:           resolvedTeam,
     })
     onClose()
   }
@@ -1128,6 +1150,26 @@ function EditCompanyModal({ company, onClose, onSaved }: {
               </select>
             </div>
           </div>
+          {users.length > 0 && (
+            <div className={cn('grid gap-3', teams.length > 0 ? 'grid-cols-2' : 'grid-cols-1')}>
+              <div>
+                <label className="text-xs font-medium text-dk-muted mb-1 block">담당자</label>
+                <select value={form.assigned_user_id} onChange={e => set('assigned_user_id', e.target.value)} className={IC}>
+                  <option value="">없음</option>
+                  {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                </select>
+              </div>
+              {teams.length > 0 && (
+                <div>
+                  <label className="text-xs font-medium text-dk-muted mb-1 block">팀</label>
+                  <select value={form.team_id} onChange={e => set('team_id', e.target.value)} className={IC}>
+                    <option value="">없음</option>
+                    {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <label className="text-xs font-medium text-dk-muted mb-1 block">주소</label>
             <div className="flex gap-2 mb-2">

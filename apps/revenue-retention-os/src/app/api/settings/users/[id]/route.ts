@@ -24,6 +24,12 @@ export const GET = withAuth(async (req, ctx, params) => {
 
   if (error) return err('NOT_FOUND', '사용자를 찾을 수 없습니다', 404)
 
+  const { data: prefs } = await supabase
+    .from('user_preferences')
+    .select('view_scope')
+    .eq('user_id', params!.id)
+    .single()
+
   // 담당 고객사·계약 수 집계
   const [{ count: companyCount }, { count: contractCount }] = await Promise.all([
     supabase
@@ -39,7 +45,8 @@ export const GET = withAuth(async (req, ctx, params) => {
       .eq('status', 'active'),
   ])
 
-  return ok({ ...data, company_count: companyCount ?? 0, contract_count: contractCount ?? 0 })
+  const viewScope = (prefs?.view_scope ?? (data.role === 'sales' ? 'own' : 'all')) as 'own' | 'all'
+  return ok({ ...data, view_scope: viewScope, company_count: companyCount ?? 0, contract_count: contractCount ?? 0 })
 }, { roles: ['admin', 'manager'] })
 
 export const PATCH = withAuth(async (req, ctx, params) => {
@@ -54,7 +61,7 @@ export const PATCH = withAuth(async (req, ctx, params) => {
   if (!body) return err('INVALID_BODY', '요청 본문이 올바르지 않습니다')
   const { supabase } = createRouteHandlerClient(req)
 
-  const { role, team_id, is_active, name, phone } = body
+  const { role, team_id, is_active, name, phone, view_scope } = body
   const updates: Record<string, unknown> = {}
 
   if (role !== undefined) {
@@ -79,8 +86,28 @@ export const PATCH = withAuth(async (req, ctx, params) => {
     updates.is_active = Boolean(is_active)
   }
 
-  if (Object.keys(updates).length === 0) {
+  // view_scope는 user_preferences에 upsert (admin 전용)
+  let savedViewScope: 'own' | 'all' | undefined
+  if (view_scope !== undefined) {
+    if (ctx.role !== 'admin') {
+      return err('FORBIDDEN', '조회 범위 변경은 관리자만 가능합니다', 403)
+    }
+    if (!['own', 'all'].includes(view_scope)) {
+      return err('VALIDATION', 'view_scope는 own 또는 all이어야 합니다')
+    }
+    const { error: prefErr } = await supabase
+      .from('user_preferences')
+      .upsert({ user_id: params!.id, view_scope, updated_at: new Date().toISOString() })
+    if (prefErr) return err('DB_ERROR', prefErr.message, 500)
+    savedViewScope = view_scope as 'own' | 'all'
+  }
+
+  if (Object.keys(updates).length === 0 && savedViewScope === undefined) {
     return err('VALIDATION', '변경할 필드가 없습니다')
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return ok({ id: params!.id, view_scope: savedViewScope })
   }
 
   const { data, error } = await supabase
@@ -92,7 +119,7 @@ export const PATCH = withAuth(async (req, ctx, params) => {
     .single()
 
   if (error) return err('DB_ERROR', error.message, 500)
-  return ok(data)
+  return ok({ ...data, ...(savedViewScope !== undefined ? { view_scope: savedViewScope } : {}) })
 }, { roles: ['admin', 'manager'] })
 
 export const DELETE = withAuth(async (req, ctx, params) => {

@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Script from 'next/script'
 import { ArrowLeft, Loader2, MapPin } from 'lucide-react'
+
+type UserOption = { id: string; name: string }
 
 declare global { interface Window { daum: { Postcode: new (opts: { oncomplete: (d: { zonecode: string; roadAddress: string; jibunAddress: string; userSelectedType: 'R' | 'J' }) => void }) => { open: () => void } } } }
 
@@ -21,9 +23,15 @@ export default function NewCompanyPage() {
   const [form, setForm] = useState({
     name: '', biz_no: '', industry: '', company_size: '',
     website: '', address_zip: '', address_road: '', address_detail: '', memo: '',
+    assigned_user_id: '',
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [users, setUsers] = useState<UserOption[]>([])
+
+  useEffect(() => {
+    fetch('/api/users').then(r => r.json()).then(j => setUsers(j.data ?? [])).catch(() => {})
+  }, [])
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
 
@@ -38,14 +46,15 @@ export default function NewCompanyPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name:           form.name.trim(),
-        biz_no:         form.biz_no.trim()     || null,
-        industry:       form.industry          || null,
-        company_size:   form.company_size      || null,
-        website:        form.website.trim()    || null,
-        address_zip:    form.address_zip       || null,
-        address_road:   form.address_road      || null,
-        address_detail: form.address_detail.trim() || null,
-        memo:           form.memo.trim()       || null,
+        biz_no:           form.biz_no.trim()         || null,
+        industry:         form.industry              || null,
+        company_size:     form.company_size          || null,
+        website:          form.website.trim()        || null,
+        address_zip:      form.address_zip           || null,
+        address_road:     form.address_road          || null,
+        address_detail:   form.address_detail.trim() || null,
+        memo:             form.memo.trim()           || null,
+        assigned_user_id: form.assigned_user_id      || null,
       }),
     })
     const json = await res.json().catch(() => null)
@@ -128,6 +137,19 @@ export default function NewCompanyPage() {
               </select>
             </div>
           </div>
+          {users.length > 0 && (
+            <div>
+              <label className={LABEL_CLS}>담당자</label>
+              <select
+                value={form.assigned_user_id}
+                onChange={e => set('assigned_user_id', e.target.value)}
+                className={SELECT_CLS}
+              >
+                <option value="">담당자 없음</option>
+                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </div>
+          )}
           <div>
             <label className={LABEL_CLS}>주소</label>
             <div className="flex gap-2 mb-2">

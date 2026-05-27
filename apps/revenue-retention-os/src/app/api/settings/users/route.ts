@@ -32,8 +32,25 @@ export const GET = withAuth(async (req, ctx) => {
   if (team_id) query = query.eq('team_id', team_id)
   if (active)  query = query.eq('is_active', active === 'true')
 
-  const { data, count, error } = await query
+  const { data: users, count, error } = await query
   if (error) return err('DB_ERROR', error.message, 500)
+
+  // view_scope 일괄 조회 (user_preferences)
+  const userIds = (users ?? []).map(u => u.id)
+  const prefsMap: Record<string, 'own' | 'all'> = {}
+  if (userIds.length > 0) {
+    const { data: prefs } = await supabase
+      .from('user_preferences')
+      .select('user_id, view_scope')
+      .in('user_id', userIds)
+    for (const p of prefs ?? []) {
+      prefsMap[p.user_id] = p.view_scope as 'own' | 'all'
+    }
+  }
+  const data = (users ?? []).map(u => ({
+    ...u,
+    view_scope: prefsMap[u.id] ?? (u.role === 'sales' ? 'own' : 'all'),
+  }))
 
   // 플랜 한도 조회
   const { data: sub } = await supabase

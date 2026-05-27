@@ -7,12 +7,18 @@ import { cn } from '@/lib/utils'
 type User = {
   id: string; name: string; email: string; phone: string | null
   role: 'admin' | 'manager' | 'sales'
+  view_scope: 'own' | 'all'
   is_active: boolean; last_login_at: string | null; created_at: string
   team: { id: string; name: string } | null
 }
 type PlanLimit = { max_users: number | null; current_users: number }
 
 const ROLE_LABEL: Record<string, string> = { admin: '관리자', manager: '팀장', sales: '영업사원' }
+const SCOPE_LABEL: Record<string, string> = { own: '본인 담당만', all: '전체' }
+const SCOPE_CLASS: Record<string, string> = {
+  own: 'bg-dk-surface2 text-dk-muted border-dk-border',
+  all: 'bg-dk-green/10 text-dk-green border-dk-green/30',
+}
 const ROLE_CLASS: Record<string, string> = {
   admin:   'bg-dk-purple/10 text-dk-purple border-dk-purple/30',
   manager: 'bg-dk-blue/10 text-dk-blue border-dk-blue/30',
@@ -136,6 +142,16 @@ export default function UsersSettingPage() {
     loadUsers()
   }
 
+  const handleScopeChange = async (id: string, view_scope: 'own' | 'all') => {
+    setMenuOpen(null)
+    await fetch(`/api/settings/users/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ view_scope }),
+    }).catch(() => {})
+    loadUsers()
+  }
+
   const formatLastLogin = (at: string | null) => {
     if (!at) return '—'
     const diff = Date.now() - new Date(at).getTime()
@@ -185,7 +201,7 @@ export default function UsersSettingPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-dk-surface2 border-b border-dk-border">
-                {['이름', '이메일', '역할', '팀', '최근 접속', '상태', ''].map(h => (
+                {['이름', '이메일', '역할', '팀', '조회 범위', '최근 접속', '상태', ''].map(h => (
                   <th key={h} className="px-4 py-2.5 text-xs font-medium text-dk-dim text-left">{h}</th>
                 ))}
               </tr>
@@ -208,6 +224,11 @@ export default function UsersSettingPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-dk-muted">{user.team?.name ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full border', SCOPE_CLASS[user.view_scope])}>
+                      {SCOPE_LABEL[user.view_scope]}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-xs text-dk-muted">{formatLastLogin(user.last_login_at)}</td>
                   <td className="px-4 py-3">
                     {user.is_active
@@ -223,31 +244,46 @@ export default function UsersSettingPage() {
                         <MoreHorizontal className="w-4 h-4 text-dk-dim" />
                       </button>
                       {menuOpen === user.id && (
-                        <div className="absolute right-0 top-8 z-10 bg-dk-surface border border-dk-border rounded-xl shadow-lg py-1 w-32">
+                        <div className="absolute right-0 top-8 z-10 bg-dk-surface border border-dk-border rounded-xl shadow-lg py-1 w-40">
+                          {user.view_scope === 'own' ? (
+                            <button
+                              onClick={() => handleScopeChange(user.id, 'all')}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-dk-green hover:bg-dk-surface2">
+                              전체 조회로 변경
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleScopeChange(user.id, 'own')}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-dk-muted hover:bg-dk-surface2">
+                              본인 담당만으로 변경
+                            </button>
+                          )}
                           {user.is_active && (
-                            confirmId === user.id ? (
-                              <div className="px-3 py-2 space-y-1.5">
-                                <p className="text-[11px] text-dk-muted leading-tight">비활성화할까요?</p>
-                                <div className="flex gap-1.5">
-                                  <button
-                                    onClick={() => handleDeactivate(user.id)}
-                                    className="flex-1 text-[11px] font-medium text-white bg-dk-red rounded-md py-1 hover:bg-dk-red/80">
-                                    확인
-                                  </button>
-                                  <button
-                                    onClick={() => { setConfirmId(null); setMenuOpen(null) }}
-                                    className="flex-1 text-[11px] font-medium text-dk-muted border border-dk-border rounded-md py-1 hover:bg-dk-surface2">
-                                    취소
-                                  </button>
+                            <div className="border-t border-dk-border mt-1 pt-1">
+                              {confirmId === user.id ? (
+                                <div className="px-3 py-2 space-y-1.5">
+                                  <p className="text-[11px] text-dk-muted leading-tight">비활성화할까요?</p>
+                                  <div className="flex gap-1.5">
+                                    <button
+                                      onClick={() => handleDeactivate(user.id)}
+                                      className="flex-1 text-[11px] font-medium text-white bg-dk-red rounded-md py-1 hover:bg-dk-red/80">
+                                      확인
+                                    </button>
+                                    <button
+                                      onClick={() => { setConfirmId(null); setMenuOpen(null) }}
+                                      className="flex-1 text-[11px] font-medium text-dk-muted border border-dk-border rounded-md py-1 hover:bg-dk-surface2">
+                                      취소
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => setConfirmId(user.id)}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-dk-red hover:bg-dk-surface2">
-                                <XCircle className="w-3.5 h-3.5" /> 비활성화
-                              </button>
-                            )
+                              ) : (
+                                <button
+                                  onClick={() => setConfirmId(user.id)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-dk-red hover:bg-dk-surface2">
+                                  <XCircle className="w-3.5 h-3.5" /> 비활성화
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
@@ -257,7 +293,7 @@ export default function UsersSettingPage() {
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center">
+                  <td colSpan={8} className="py-16 text-center">
                     <Users className="w-8 h-8 text-dk-dim mx-auto mb-2" />
                     <p className="text-sm text-dk-muted">등록된 사용자가 없습니다</p>
                   </td>

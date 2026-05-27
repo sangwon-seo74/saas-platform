@@ -3,7 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { AlertCircle, AlertTriangle, CheckCircle2, Loader2, ChevronRight } from 'lucide-react'
+import {
+  BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
+} from 'recharts'
 import { cn, formatAmount, formatDate, calcDday } from '@/lib/utils'
+
+const C = { surface2: '#1C2128', border: '#21262D', text: '#E6EDF3', dim: '#6E7681' }
+const BUCKET_FILL: Record<string, string> = {
+  D7: '#FF7B72', D14: '#E3B341', D30: '#58A6FF', D60: '#58A6FF', D90: '#6E7681',
+}
 
 type BucketItem = {
   id: string; company: string; amount: number
@@ -105,7 +113,28 @@ export default function ForecastPage() {
         {totalAmount === 0 ? (
           <p className="text-sm text-dk-dim text-center py-4">90일 내 갱신 예정 건이 없습니다</p>
         ) : (
-          <div className="space-y-3">
+          <>
+          <ResponsiveContainer width="100%" height={pipeline.length * 44}>
+            <BarChart
+              data={pipeline.map(b => ({ label: b.label, count: b.count, amount: Math.round(b.total_amount / 10_000), key: b.key }))}
+              layout="vertical" margin={{ top: 0, right: 8, bottom: 0, left: 0 }}>
+              <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: C.dim, fontSize: 10 }} tickFormatter={v => `${v}만`} />
+              <YAxis type="category" dataKey="label" width={52} axisLine={false} tickLine={false} tick={{ fill: C.text, fontSize: 12, fontWeight: 600 }} />
+              <Tooltip
+                contentStyle={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12 }}
+                labelStyle={{ color: C.text }}
+                formatter={(value, _name, props) => {
+                const v = typeof value === 'number' ? value : 0
+                const count = (props as { payload?: { count?: number } }).payload?.count ?? 0
+                return [`${v.toLocaleString('ko-KR')}만원 · ${count}건`, '예정 금액'] as [string, string]
+              }}
+              />
+              <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+                {pipeline.map((b) => <Cell key={b.key} fill={BUCKET_FILL[b.key] ?? C.dim} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="mt-4 space-y-3">
             {pipeline.map(b => {
               const cfg = BUCKET_COLOR[b.key]
               return (
@@ -134,6 +163,7 @@ export default function ForecastPage() {
               )
             })}
           </div>
+          </>
         )}
       </div>
 

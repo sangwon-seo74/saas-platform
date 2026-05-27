@@ -28,7 +28,7 @@ export const GET = withAuth(async (req, ctx) => {
     .order('sent_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
-  if (ctx.role === 'sales') query = query.eq('user_id', ctx.userId)
+  if (ctx.viewScope === 'own') query = query.eq('user_id', ctx.userId)
   if (channel)    query = query.eq('channel', channel)
   if (status)     query = query.eq('status', status)
   if (company_id) query = query.eq('company_id', company_id)

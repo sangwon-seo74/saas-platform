@@ -232,7 +232,7 @@ export default function RenewalsPage() {
   const totalAmount = renewals.reduce((s, r) => s + r.final_amount, 0)
 
   return (
-    <div className="flex flex-col h-full p-6 gap-4 min-h-0">
+    <div className="flex flex-col h-full p-4 sm:p-6 gap-4 min-h-0">
       {activityTarget && (
         <QuickActivityModal
           company={{ id: activityTarget.company_id, name: activityTarget.company_name }}
@@ -254,7 +254,7 @@ export default function RenewalsPage() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <a href="/api/export/renewals" download
-            className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
+            className="hidden sm:flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
             <Download className="w-4 h-4" /> 내보내기
           </a>
           {loadingMore && <Loader2 className="w-4 h-4 animate-spin text-dk-muted" />}
@@ -262,7 +262,7 @@ export default function RenewalsPage() {
       </div>
 
       <div className="flex items-center gap-3 flex-wrap shrink-0">
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {(['all', 'high', 'medium', 'low'] as const).map(r => (
             <button key={r} onClick={() => setRiskFilter(r)}
               className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',

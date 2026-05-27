@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react'
+import {
+  ComposedChart, Bar, Line, Cell, XAxis, YAxis,
+  Tooltip, ResponsiveContainer,
+} from 'recharts'
 import { cn } from '@/lib/utils'
+
+const C = { green: '#3FB950', blue: '#58A6FF', orange: '#E3B341', red: '#FF7B72', text: '#E6EDF3', dim: '#6E7681', surface2: '#1C2128', border: '#21262D' }
 
 type MonthRow = {
   month: string
@@ -150,6 +156,34 @@ export default function ArrMovementPage() {
 
       {!loading && monthly.length > 0 && (
 <>
+          {/* 순변동 + NRR 차트 */}
+          <div className="bg-dk-surface border border-dk-border rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-dk-text mb-4">월별 순변동 (만원) · NRR(%)</h3>
+            <ResponsiveContainer width="100%" height={160}>
+              <ComposedChart data={monthly.map(m => ({
+                month: m.month.slice(5) + '월',
+                순변동: Math.round(m.net_change / 10_000),
+                NRR: m.nrr,
+              }))} margin={{ top: 4, right: 36, bottom: 0, left: -8 }}>
+                <XAxis dataKey="month" tick={{ fill: C.dim, fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="net" axisLine={false} tickLine={false} tick={{ fill: C.dim, fontSize: 10 }} tickFormatter={v => `${v}만`} />
+                <YAxis yAxisId="nrr" orientation="right" axisLine={false} tickLine={false} tick={{ fill: C.dim, fontSize: 10 }} tickFormatter={v => `${v}%`} domain={[0, 150]} />
+                <Tooltip
+                  contentStyle={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: C.text }}
+                  formatter={(value, name) => {
+                    const v = typeof value === 'number' ? value : 0
+                    return [name === 'NRR' ? `${v}%` : `${v}만원`, String(name)] as [string, string]
+                  }}
+                />
+                <Bar yAxisId="net" dataKey="순변동" radius={[2, 2, 0, 0]}>
+                  {monthly.map((m, i) => <Cell key={i} fill={m.net_change >= 0 ? C.green : C.red} />)}
+                </Bar>
+                <Line yAxisId="nrr" type="monotone" dataKey="NRR" stroke={C.blue} strokeWidth={1.5} dot={{ fill: C.blue, r: 2 }} connectNulls />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
           {/* 월별 ARR 변동 차트 */}
           <div className="bg-dk-surface border border-dk-border rounded-xl p-5">
             <h3 className="text-sm font-semibold text-dk-text mb-5">월별 ARR 변동 구성</h3>

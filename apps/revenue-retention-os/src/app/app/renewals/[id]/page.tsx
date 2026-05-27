@@ -1,16 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, AlertCircle, AlertTriangle,
   CheckCircle2, FileText, Building2, ChevronRight,
   TrendingUp, TrendingDown, Loader2, X, Send,
+  Plus, User, CheckSquare, Pencil, Check,
 } from 'lucide-react'
 import { SendModal } from '@/components/SendModal'
+import { QuickActivityModal } from '@/components/QuickActivityModal'
 import { cn, formatAmount, formatDate, calcDday, getDdayClass } from '@/lib/utils'
-import type { RenewalStatus, RiskLevel, ActivityType } from '@/types/domain'
+import { TASK_TYPE_LABEL } from '@/constants/domain'
+import type { RenewalStatus, RiskLevel, ActivityType, TaskStatus, TaskPriority } from '@/types/domain'
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg focus:outline-none focus:ring-2 focus:ring-dk-blue'
 
@@ -42,6 +45,18 @@ type ActivityItem = {
   user: { id: string; name: string } | null
 }
 
+type TaskItem = {
+  id: string
+  title: string
+  type: string | null
+  status: TaskStatus
+  priority: TaskPriority
+  due_at: string | null
+  assigned_user: { id: string; name: string } | null
+}
+
+type UserOption = { id: string; name: string }
+
 const RISK_CFG: Record<RiskLevel, { label: string; cls: string; icon: React.ElementType }> = {
   high:   { label: '위험', cls: 'bg-tint-red text-dk-red border-tint-red-border',   icon: AlertCircle },
   medium: { label: '주의', cls: 'bg-tint-amber text-dk-orange border-tint-amber-border',   icon: AlertTriangle },
@@ -64,6 +79,15 @@ const RESULT_CLS: Record<string, string> = {
   upsell:    'text-dk-blue',
   downgrade: 'text-dk-orange',
   churned:   'text-dk-red',
+}
+const TASK_STATUS_CFG: Record<TaskStatus, { label: string; cls: string }> = {
+  todo:        { label: '할일',   cls: 'bg-dk-surface2 text-dk-muted border-dk-border' },
+  in_progress: { label: '진행중', cls: 'bg-tint-blue text-dk-blue border-tint-blue-border' },
+  done:        { label: '완료',   cls: 'bg-tint-green text-dk-green border-tint-green-border' },
+  cancelled:   { label: '취소',   cls: 'bg-dk-surface2 text-dk-dim border-dk-border' },
+}
+const PRIORITY_DOT: Record<TaskPriority, string> = {
+  high: 'bg-dk-red', medium: 'bg-dk-orange', low: 'bg-dk-dim',
 }
 
 // ─── 재계약 등록 모달 ─────────────────────────────────────
@@ -225,30 +249,155 @@ function RenewalCompleteModal({ renewal, onClose, onSuccess }: {
   )
 }
 
+// ─── 업무 추가 미니 모달 ──────────────────────────────────
+function AddTaskModal({ renewal, users, onClose, onSaved }: {
+  renewal: RenewalDetail
+  users: UserOption[]
+  onClose: () => void
+  onSaved: (task: TaskItem) => void
+}) {
+  const [title, setTitle]         = useState('')
+  const [type, setType]           = useState('')
+  const [priority, setPriority]   = useState<TaskPriority>('medium')
+  const [dueAt, setDueAt]         = useState('')
+  const [assignedId, setAssignedId] = useState(renewal.assigned_user?.id ?? '')
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setSubmitting(true)
+    const res = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title:            title.trim(),
+        type:             type || null,
+        priority,
+        due_at:           dueAt || null,
+        assigned_user_id: assignedId || null,
+        company_id:       renewal.company?.id ?? null,
+        renewal_id:       renewal.id,
+      }),
+    })
+    const json = await res.json().catch(() => null)
+    setSubmitting(false)
+    if (res.ok && json?.data) onSaved(json.data)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-dk-surface border border-dk-border rounded-2xl shadow-2xl w-full max-w-md p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-dk-text">업무 추가</h3>
+          <button onClick={onClose} className="text-dk-muted hover:text-dk-text"><X className="w-4 h-4" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="text-xs font-medium text-dk-muted mb-1 block">제목 <span className="text-dk-red">*</span></label>
+            <input value={title} onChange={e => setTitle(e.target.value)}
+              placeholder="업무 내용을 입력하세요" className={INPUT_CLS} autoFocus />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">유형</label>
+              <select value={type} onChange={e => setType(e.target.value)} className={INPUT_CLS}>
+                <option value="">선택</option>
+                {Object.entries(TASK_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">우선순위</label>
+              <select value={priority} onChange={e => setPriority(e.target.value as TaskPriority)} className={INPUT_CLS}>
+                <option value="high">높음</option>
+                <option value="medium">보통</option>
+                <option value="low">낮음</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">마감일</label>
+              <input type="date" value={dueAt} onChange={e => setDueAt(e.target.value)} className={INPUT_CLS} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-dk-muted mb-1 block">담당자</label>
+              <select value={assignedId} onChange={e => setAssignedId(e.target.value)} className={INPUT_CLS}>
+                <option value="">미배정</option>
+                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2 text-sm text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors">
+              취소
+            </button>
+            <button type="submit" disabled={!title.trim() || submitting}
+              className="flex-1 py-2 text-sm text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-2 transition-colors">
+              {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              저장
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function RenewalDetailPage() {
   const id = useParams<{ id: string }>()?.id
-  const [loading, setLoading]             = useState(true)
-  const [renewal, setRenewal]             = useState<RenewalDetail | null>(null)
-  const [activities, setActivities]       = useState<ActivityItem[]>([])
+  const [loading, setLoading]               = useState(true)
+  const [renewal, setRenewal]               = useState<RenewalDetail | null>(null)
+  const [activities, setActivities]         = useState<ActivityItem[]>([])
+  const [tasks, setTasks]                   = useState<TaskItem[]>([])
+  const [users, setUsers]                   = useState<UserOption[]>([])
   const [showCompleteModal, setShowCompleteModal] = useState(false)
-  const [showSendModal, setShowSendModal] = useState(false)
-  const [showLostForm, setShowLostForm]   = useState(false)
-  const [showContract, setShowContract]   = useState(false)
-  const [showCompany, setShowCompany]     = useState(false)
-  const [lostReason, setLostReason]       = useState('')
-  const [processing, setProcessing]       = useState(false)
+  const [showSendModal, setShowSendModal]   = useState(false)
+  const [showLostForm, setShowLostForm]     = useState(false)
+  const [showContract, setShowContract]     = useState(false)
+  const [showCompany, setShowCompany]       = useState(false)
+  const [showActivityModal, setShowActivityModal] = useState(false)
+  const [showAddTask, setShowAddTask]       = useState(false)
+  const [lostReason, setLostReason]         = useState('')
+  const [processing, setProcessing]         = useState(false)
+
+  // 메모 편집
+  const [editingMemo, setEditingMemo]   = useState(false)
+  const [memoValue, setMemoValue]       = useState('')
+  const [savingMemo, setSavingMemo]     = useState(false)
+
+  // 담당자 변경
+  const [showUserPicker, setShowUserPicker] = useState(false)
+  const userPickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!id) return
-    fetch(`/api/renewals/${id}`)
-      .then(r => r.json())
-      .then(json => {
-        setRenewal(json.data?.renewal ?? null)
-        setActivities(json.data?.activities ?? [])
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    Promise.all([
+      fetch(`/api/renewals/${id}`).then(r => r.json()),
+      fetch(`/api/tasks?renewal_id=${id}&limit=50`).then(r => r.json()),
+      fetch('/api/users').then(r => r.json()),
+    ]).then(([renewalJson, tasksJson, usersJson]) => {
+      const r = renewalJson.data?.renewal ?? null
+      setRenewal(r)
+      setMemoValue(r?.memo ?? '')
+      setActivities(renewalJson.data?.activities ?? [])
+      setTasks(tasksJson.data?.data ?? [])
+      setUsers(usersJson.data ?? [])
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [id])
+
+  // 외부 클릭 시 담당자 드롭다운 닫기
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userPickerRef.current && !userPickerRef.current.contains(e.target as Node))
+        setShowUserPicker(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const handleStatusChange = async (status: RenewalStatus) => {
     if (!renewal) return
@@ -272,6 +421,37 @@ export default function RenewalDetailPage() {
     } finally {
       setProcessing(false)
     }
+  }
+
+  const handleSaveMemo = async () => {
+    if (!renewal) return
+    setSavingMemo(true)
+    await fetch(`/api/renewals/${renewal.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memo: memoValue.trim() || null }),
+    }).catch(console.error)
+    setRenewal(p => p ? { ...p, memo: memoValue.trim() || null } : p)
+    setSavingMemo(false)
+    setEditingMemo(false)
+  }
+
+  const handleAssignUser = async (user: UserOption) => {
+    if (!renewal) return
+    setShowUserPicker(false)
+    await fetch(`/api/renewals/${renewal.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assigned_user_id: user.id }),
+    }).catch(console.error)
+    setRenewal(p => p ? { ...p, assigned_user: user } : p)
+  }
+
+  const handleTaskStatusToggle = async (task: TaskItem) => {
+    const next: TaskStatus = task.status === 'done' ? 'todo' : 'done'
+    await fetch(`/api/tasks/${task.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: next }),
+    }).catch(console.error)
+    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: next } : t))
   }
 
   if (loading) {
@@ -299,8 +479,12 @@ export default function RenewalDetailPage() {
     ? Math.round((1 - renewal.contract.final_amount / renewal.contract.amount) * 100)
     : 0
 
+  const activeTasks = tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled')
+  const doneTasks   = tasks.filter(t => t.status === 'done')
+
   return (
     <div className="p-6 space-y-5 max-w-2xl">
+      {/* 헤더 */}
       <div className="flex items-center gap-3">
         <Link href="/app/renewals"
           className="p-1.5 rounded-lg text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
@@ -313,9 +497,34 @@ export default function RenewalDetailPage() {
               <RiskIcon className="w-3 h-3" /> {risk.label}
             </span>
           </div>
-          <p className="text-xs text-dk-dim mt-0.5">
-            {[renewal.contract?.product?.name, renewal.contract?.contract_no].filter(Boolean).join(' · ')}
-          </p>
+          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+            <p className="text-xs text-dk-dim">
+              {[renewal.contract?.product?.name, renewal.contract?.contract_no].filter(Boolean).join(' · ')}
+            </p>
+            {/* 담당자 */}
+            <div className="relative" ref={userPickerRef}>
+              <button
+                onClick={() => setShowUserPicker(v => !v)}
+                className="flex items-center gap-1 text-xs text-dk-muted hover:text-dk-text transition-colors"
+              >
+                <User className="w-3 h-3" />
+                {renewal.assigned_user?.name ?? '담당자 없음'}
+              </button>
+              {showUserPicker && (
+                <div className="absolute top-full left-0 mt-1 z-30 bg-dk-surface border border-dk-border rounded-lg shadow-xl min-w-[140px] py-1">
+                  {users.map(u => (
+                    <button key={u.id} onClick={() => handleAssignUser(u)}
+                      className={cn(
+                        'w-full text-left px-3 py-1.5 text-xs hover:bg-dk-surface2 transition-colors',
+                        renewal.assigned_user?.id === u.id ? 'text-dk-blue font-medium' : 'text-dk-text'
+                      )}>
+                      {u.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         <button
           onClick={() => setShowSendModal(true)}
@@ -324,13 +533,12 @@ export default function RenewalDetailPage() {
           <Send className="w-3.5 h-3.5" />메시지 발송
         </button>
       </div>
+
       {showSendModal && (
-        <SendModal
-          onClose={() => setShowSendModal(false)}
-          companyId={renewal.company?.id}
-        />
+        <SendModal onClose={() => setShowSendModal(false)} companyId={renewal.company?.id} />
       )}
 
+      {/* KPI 카드 */}
       <div className="grid grid-cols-3 gap-3">
         <div className={cn('border rounded-xl px-4 py-3', dday <= 7 ? 'bg-tint-red border-tint-red-border' : 'bg-dk-surface2 border-dk-border')}>
           <p className="text-xs text-dk-muted">만료까지</p>
@@ -359,6 +567,15 @@ export default function RenewalDetailPage() {
         </div>
       </div>
 
+      {/* 목표 갱신일 */}
+      {renewal.target_renewal_at && (
+        <div className="flex items-center gap-2 text-xs text-dk-muted bg-dk-surface2 border border-dk-border rounded-lg px-3 py-2">
+          <span className="text-dk-dim">목표 갱신일</span>
+          <span className="text-dk-text font-medium">{formatDate(renewal.target_renewal_at)}</span>
+        </div>
+      )}
+
+      {/* 진행 상태 스텝퍼 */}
       {renewal.status !== 'won' && renewal.status !== 'lost' && (
         <div className="bg-dk-surface border border-dk-border rounded-xl p-4">
           <p className="text-xs font-semibold text-dk-muted mb-3">진행 상태</p>
@@ -390,6 +607,7 @@ export default function RenewalDetailPage() {
         </div>
       )}
 
+      {/* 갱신완료 / 이탈처리 버튼 */}
       {renewal.status !== 'won' && renewal.status !== 'lost' && !showLostForm && (
         <div className="flex gap-2">
           <button onClick={() => setShowCompleteModal(true)}
@@ -403,6 +621,7 @@ export default function RenewalDetailPage() {
         </div>
       )}
 
+      {/* 이탈처리 폼 */}
       {showLostForm && (
         <div className="bg-tint-red border border-tint-red-border rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-dk-text">❌ 이탈 처리</p>
@@ -430,6 +649,7 @@ export default function RenewalDetailPage() {
         </div>
       )}
 
+      {/* 완료/이탈 결과 배너 */}
       {(renewal.status === 'won' || renewal.status === 'lost') && (
         <div className={cn(
           'border rounded-xl p-4',
@@ -511,7 +731,6 @@ export default function RenewalDetailPage() {
                 { label: '업체명',    value: renewal.company?.name },
                 { label: '사업자번호', value: renewal.company?.biz_no, mono: true },
                 { label: '업종',      value: renewal.company?.industry },
-
                 { label: '상태',      value: renewal.company?.status },
               ].map(({ label, value, mono }) => value ? (
                 <div key={label} className="flex items-center justify-between py-2.5 border-b border-dk-border last:border-0">
@@ -530,9 +749,75 @@ export default function RenewalDetailPage() {
         )}
       </div>
 
-      <div className="bg-dk-surface border border-dk-border rounded-xl">
-        <div className="px-5 py-3.5 border-b border-dk-border">
-          <p className="text-sm font-semibold text-dk-text">활동 이력</p>
+      {/* 업무 목록 */}
+      <div className="bg-dk-surface border border-dk-border rounded-xl overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-dk-border">
+          <CheckSquare className="w-4 h-4 text-dk-muted" />
+          <span className="text-sm font-semibold text-dk-text">업무</span>
+          {tasks.length > 0 && (
+            <span className="text-xs text-dk-dim bg-dk-surface2 border border-dk-border px-1.5 py-0.5 rounded-full">
+              {activeTasks.length}/{tasks.length}
+            </span>
+          )}
+          <button onClick={() => setShowAddTask(true)}
+            className="ml-auto flex items-center gap-1 text-xs text-dk-blue hover:text-dk-blueHover transition-colors">
+            <Plus className="w-3.5 h-3.5" /> 추가
+          </button>
+        </div>
+        <div className="divide-y divide-dk-border">
+          {tasks.length === 0 ? (
+            <p className="text-sm text-dk-dim text-center py-8">업무가 없습니다</p>
+          ) : (
+            <>
+              {activeTasks.map(t => (
+                <div key={t.id} className="flex items-center gap-3 px-5 py-3">
+                  <button onClick={() => handleTaskStatusToggle(t)}
+                    className="shrink-0 w-4 h-4 rounded border border-dk-border bg-dk-surface2 hover:border-dk-blue transition-colors flex items-center justify-center">
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-dk-text truncate">{t.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {t.type && <span className="text-[10px] text-dk-dim">{TASK_TYPE_LABEL[t.type] ?? t.type}</span>}
+                      {t.due_at && <span className="text-[10px] text-dk-dim">{formatDate(t.due_at)}</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className={cn('w-1.5 h-1.5 rounded-full', PRIORITY_DOT[t.priority])} />
+                    <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full border', TASK_STATUS_CFG[t.status].cls)}>
+                      {TASK_STATUS_CFG[t.status].label}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {doneTasks.length > 0 && (
+                <div className="px-5 py-2">
+                  <p className="text-[10px] text-dk-dim mb-1.5">완료된 업무 {doneTasks.length}개</p>
+                  {doneTasks.map(t => (
+                    <div key={t.id} className="flex items-center gap-3 py-1.5">
+                      <button onClick={() => handleTaskStatusToggle(t)}
+                        className="shrink-0 w-4 h-4 rounded border border-dk-green bg-tint-green flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-dk-green" />
+                      </button>
+                      <p className="text-xs text-dk-dim line-through truncate">{t.title}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 활동 이력 */}
+      <div className="bg-dk-surface border border-dk-border rounded-xl overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-dk-border">
+          <span className="text-sm font-semibold text-dk-text">활동 이력</span>
+          {renewal.company && (
+            <button onClick={() => setShowActivityModal(true)}
+              className="ml-auto flex items-center gap-1 text-xs text-dk-blue hover:text-dk-blueHover transition-colors">
+              <Plus className="w-3.5 h-3.5" /> 추가
+            </button>
+          )}
         </div>
         <div className="divide-y divide-dk-border">
           {activities.length === 0 ? (
@@ -554,13 +839,49 @@ export default function RenewalDetailPage() {
         </div>
       </div>
 
-      {renewal.memo && (
-        <div className="bg-tint-amber/50 border border-tint-amber-border rounded-xl px-4 py-3">
-          <p className="text-xs font-semibold text-dk-orange mb-1">메모</p>
-          <p className="text-sm text-dk-orange/80">{renewal.memo}</p>
+      {/* 메모 */}
+      <div className="bg-dk-surface border border-dk-border rounded-xl overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-dk-border">
+          <span className="text-sm font-semibold text-dk-text">메모</span>
+          {!editingMemo && (
+            <button onClick={() => { setMemoValue(renewal.memo ?? ''); setEditingMemo(true) }}
+              className="ml-auto text-dk-dim hover:text-dk-muted transition-colors">
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
-      )}
+        <div className="px-5 py-4">
+          {editingMemo ? (
+            <div className="space-y-2">
+              <textarea
+                value={memoValue}
+                onChange={e => setMemoValue(e.target.value)}
+                rows={4}
+                placeholder="메모를 입력하세요..."
+                className={cn(INPUT_CLS, 'resize-none')}
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <button onClick={() => setEditingMemo(false)}
+                  className="flex-1 py-1.5 text-xs text-dk-muted border border-dk-border rounded-lg hover:bg-dk-surface2 transition-colors">
+                  취소
+                </button>
+                <button onClick={handleSaveMemo} disabled={savingMemo}
+                  className="flex-1 py-1.5 text-xs text-white bg-dk-accent rounded-lg hover:bg-dk-accentHover disabled:opacity-40 flex items-center justify-center gap-1 transition-colors">
+                  {savingMemo && <Loader2 className="w-3 h-3 animate-spin" />}
+                  저장
+                </button>
+              </div>
+            </div>
+          ) : renewal.memo ? (
+            <p className="text-sm text-dk-text leading-relaxed whitespace-pre-wrap">{renewal.memo}</p>
+          ) : (
+            <p className="text-sm text-dk-dim">메모 없음</p>
+          )}
+        </div>
+      </div>
 
+      {/* 모달들 */}
       {showCompleteModal && (
         <RenewalCompleteModal
           renewal={renewal}
@@ -568,6 +889,33 @@ export default function RenewalDetailPage() {
           onSuccess={(result, newContractId) => {
             setRenewal(p => p ? { ...p, status: 'won', result, result_contract_id: newContractId } : p)
             setShowCompleteModal(false)
+          }}
+        />
+      )}
+
+      {showActivityModal && renewal.company && (
+        <QuickActivityModal
+          company={renewal.company}
+          renewalId={renewal.id}
+          onClose={() => setShowActivityModal(false)}
+          onSaved={() => {
+            setShowActivityModal(false)
+            fetch(`/api/renewals/${id}`)
+              .then(r => r.json())
+              .then(json => setActivities(json.data?.activities ?? []))
+              .catch(console.error)
+          }}
+        />
+      )}
+
+      {showAddTask && (
+        <AddTaskModal
+          renewal={renewal}
+          users={users}
+          onClose={() => setShowAddTask(false)}
+          onSaved={(task) => {
+            setTasks(prev => [task, ...prev])
+            setShowAddTask(false)
           }}
         />
       )}

@@ -252,15 +252,15 @@ function CompanyRowItem({
         </div>
       </td>
       {/* 사업자번호 */}
-      <td className="px-4 py-3.5">
+      <td className="hidden sm:table-cell px-4 py-3.5">
         <span className="text-xs text-dk-muted font-mono">{company.biz_no ?? '—'}</span>
       </td>
       {/* 업종 */}
-      <td className="px-4 py-3.5">
+      <td className="hidden sm:table-cell px-4 py-3.5">
         <span className="text-xs text-dk-muted">{company.industry ?? '—'}</span>
       </td>
       {/* 주소 */}
-      <td className="px-4 py-3.5 max-w-[200px]">
+      <td className="hidden sm:table-cell px-4 py-3.5 max-w-[200px]">
         <span className="text-xs text-dk-muted truncate block" title={address || undefined}>
           {address || '—'}
         </span>
@@ -282,7 +282,7 @@ function CompanyRowItem({
         ) : <span className="text-xs text-dk-dim">—</span>}
       </td>
       {/* 액션 */}
-      <td className="px-4 py-3.5">
+      <td className="hidden sm:table-cell px-4 py-3.5">
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={e => { e.stopPropagation(); onAddActivity({ id: company.id, name: company.name }) }}
@@ -378,7 +378,7 @@ export default function CompaniesPage() {
         </div>
         <div className="flex items-center gap-2">
           <a href="/api/export/companies" download
-            className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
+            className="hidden sm:flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
             <Download className="w-4 h-4" /> 내보내기
           </a>
           <Link href="/app/companies/new"
@@ -395,7 +395,7 @@ export default function CompaniesPage() {
             placeholder="회사명, 사업자번호"
             className="bg-transparent text-sm text-dk-text placeholder-dk-dim focus:outline-none flex-1" />
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {(['all', 'active', 'prospect', 'dormant', 'churned'] as const).map(s => (
             <button key={s} onClick={() => setStatus(s)}
               className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',
@@ -404,7 +404,7 @@ export default function CompaniesPage() {
             </button>
           ))}
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {(['all', 'high', 'medium', 'low'] as const).map(r => (
             <button key={r} onClick={() => setRisk(r)}
               className={cn('text-xs px-3 py-1.5 rounded-full border font-medium transition-colors',
@@ -427,15 +427,15 @@ export default function CompaniesPage() {
             <thead className="sticky top-0 z-10">
               <tr className="bg-dk-surface2 border-b border-dk-border">
                 {([
-                  { label: '고객사',    key: 'name'         },
-                  { label: '사업자번호', key: 'biz_no'       },
-                  { label: '업종',      key: 'industry'     },
-                  { label: '주소',      key: 'address_road' },
-                  { label: '만료일',    key: 'expires_at'   },
-                  { label: '위험도',    key: 'renewal_risk' },
-                  { label: '',          key: null           },
-                ] as { label: string; key: SortKey | null }[]).map(({ label, key }) => (
-                  <th key={label || '__action'} className="px-4 py-3 text-left text-xs font-semibold text-dk-muted">
+                  { label: '고객사',    key: 'name',         hideMobile: false },
+                  { label: '사업자번호', key: 'biz_no',       hideMobile: true  },
+                  { label: '업종',      key: 'industry',     hideMobile: true  },
+                  { label: '주소',      key: 'address_road', hideMobile: true  },
+                  { label: '만료일',    key: 'expires_at',   hideMobile: false },
+                  { label: '위험도',    key: 'renewal_risk', hideMobile: false },
+                  { label: '',          key: null,           hideMobile: true  },
+                ] as { label: string; key: SortKey | null; hideMobile: boolean }[]).map(({ label, key, hideMobile }) => (
+                  <th key={label || '__action'} className={cn('px-4 py-3 text-left text-xs font-semibold text-dk-muted', hideMobile && 'hidden sm:table-cell')}>
                     {key ? (
                       <button
                         onClick={() => handleSort(key)}

@@ -38,7 +38,7 @@ export const GET = withAuth(async (req, ctx) => {
 
   if (!include_closed) query = query.not('status', 'in', '("won","lost")')
 
-  if (ctx.role === 'sales') query = query.eq('assigned_user_id', ctx.userId)
+  if (ctx.viewScope === 'own') query = query.eq('assigned_user_id', ctx.userId)
   if (status)     query = query.eq('status', status)
   if (risk)       query = query.eq('risk_level', risk)
   if (company_id) query = query.eq('company_id', company_id)

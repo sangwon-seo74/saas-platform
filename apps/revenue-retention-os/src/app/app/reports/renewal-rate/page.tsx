@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, BarChart3, Loader2 } from 'lucide-react'
+import {
+  ComposedChart, Bar, Line, XAxis, YAxis,
+  Tooltip, ResponsiveContainer,
+} from 'recharts'
 import { cn, formatAmount } from '@/lib/utils'
 
 type MonthlyRow = {
@@ -12,6 +16,8 @@ type MonthlyRow = {
 }
 type ChurnReason = { reason: string; count: number; pct: number }
 
+const C = { green: '#3FB950', blue: '#58A6FF', orange: '#E3B341', red: '#FF7B72', text: '#E6EDF3', dim: '#6E7681', surface2: '#1C2128', border: '#21262D' }
+
 const RESULT_CFG = {
   renewed:   { label: '재계약',  color: 'bg-dk-green', text: 'text-dk-green' },
   upsell:    { label: '업셀',    color: 'bg-dk-blue', text: 'text-dk-blue' },
@@ -19,20 +25,33 @@ const RESULT_CFG = {
   lost:      { label: '이탈',    color: 'bg-dk-red/70', text: 'text-dk-red' },
 }
 
-function StackedBar({ row }: { row: MonthlyRow }) {
-  const total = row.total || 1
+function RenewalChart({ monthly }: { monthly: MonthlyRow[] }) {
+  const data = monthly.map(d => ({
+    month: d.month.slice(2).replace('-', '.'),
+    재계약: d.renewed, 업셀: d.upsell, 다운셀: d.downgrade, 이탈: d.lost,
+    갱신율: d.rate,
+  }))
   return (
-    <div className="flex-1 flex flex-col items-center gap-0.5">
-      <div className="w-full flex flex-col-reverse justify-start gap-px" style={{ height: 72 }}>
-        <div className="w-full bg-dk-red/70 rounded-sm" style={{ height: `${row.lost / total * 72}px` }} />
-        <div className="w-full bg-dk-orange"              style={{ height: `${row.downgrade / total * 72}px` }} />
-        <div className="w-full bg-dk-blue"              style={{ height: `${row.upsell / total * 72}px` }} />
-        <div className="w-full bg-dk-green rounded-sm"   style={{ height: `${row.renewed / total * 72}px` }} />
-      </div>
-      <span className="text-[10px] text-dk-dim font-mono mt-0.5">
-        {row.month.slice(2).replace('-', '.')}
-      </span>
-    </div>
+    <ResponsiveContainer width="100%" height={180}>
+      <ComposedChart data={data} margin={{ top: 4, right: 36, bottom: 0, left: -20 }}>
+        <XAxis dataKey="month" tick={{ fill: C.dim, fontSize: 10 }} axisLine={false} tickLine={false} />
+        <YAxis yAxisId="count" axisLine={false} tickLine={false} tick={{ fill: C.dim, fontSize: 10 }} allowDecimals={false} />
+        <YAxis yAxisId="rate" orientation="right" axisLine={false} tickLine={false} tick={{ fill: C.dim, fontSize: 10 }} tickFormatter={v => `${v}%`} domain={[0, 100]} />
+        <Tooltip
+          contentStyle={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12 }}
+          labelStyle={{ color: C.text }}
+          formatter={(value, name) => {
+            const v = typeof value === 'number' ? value : 0
+            return [name === '갱신율' ? `${v}%` : `${v}건`, String(name)] as [string, string]
+          }}
+        />
+        <Bar yAxisId="count" dataKey="재계약" stackId="a" fill={C.green} />
+        <Bar yAxisId="count" dataKey="업셀"   stackId="a" fill={C.blue} />
+        <Bar yAxisId="count" dataKey="다운셀" stackId="a" fill={C.orange} />
+        <Bar yAxisId="count" dataKey="이탈"   stackId="a" fill={C.red} radius={[2, 2, 0, 0]} />
+        <Line yAxisId="rate" type="monotone" dataKey="갱신율" stroke={C.text} strokeWidth={1.5} dot={{ fill: C.text, r: 2 }} />
+      </ComposedChart>
+    </ResponsiveContainer>
   )
 }
 
@@ -167,9 +186,7 @@ export default function RenewalRatePage() {
           <h3 className="text-sm font-semibold text-dk-text mb-4 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-dk-muted" /> 월별 갱신 현황
           </h3>
-          <div className="flex items-end gap-1">
-            {monthly.map(d => <StackedBar key={d.month} row={d} />)}
-          </div>
+          <RenewalChart monthly={monthly} />
           <div className="flex gap-3 mt-3 flex-wrap">
             {Object.entries(RESULT_CFG).map(([k, v]) => (
               <div key={k} className="flex items-center gap-1.5">
