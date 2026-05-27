@@ -2,16 +2,19 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
-  RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, Loader2, Download,
+  RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, Loader2, Download, Phone,
 } from 'lucide-react'
 import { cn, formatAmount, calcDday } from '@/lib/utils'
 import type { RenewalStatus, RiskLevel } from '@/types/domain'
+import { QuickActivityModal } from '@/components/QuickActivityModal'
 
 const PAGE_SIZE = 50
 
 type RenewalCard = {
   id: string
+  company_id: string
   company_name: string
   product_name: string
   expires_at: string
@@ -48,15 +51,23 @@ const STATUS_CLS: Record<RenewalStatus, string> = {
   lost:        'bg-tint-red text-dk-red',
 }
 
-function RenewalKanbanCard({ renewal }: { renewal: RenewalCard }) {
+function RenewalKanbanCard({
+  renewal,
+  onLogActivity,
+}: {
+  renewal: RenewalCard
+  onLogActivity: (r: RenewalCard) => void
+}) {
+  const router = useRouter()
   const dday = calcDday(renewal.expires_at)
   const risk = RISK_CFG[renewal.risk]
   const RiskIcon = risk.icon
 
   return (
-    <Link href={`/app/renewals/${renewal.id}`}
+    <div
+      onClick={() => router.push(`/app/renewals/${renewal.id}`)}
       className={cn(
-        'block bg-dk-surface rounded-xl border border-dk-border border-l-4 p-3',
+        'group bg-dk-surface rounded-xl border border-dk-border border-l-4 p-3',
         'hover:border-dk-border2 hover:scale-[1.01] transition-all cursor-pointer',
         risk.borderCls
       )}>
@@ -88,16 +99,22 @@ function RenewalKanbanCard({ renewal }: { renewal: RenewalCard }) {
             {STATUS_LABEL[renewal.status]}
           </span>
         </div>
-        <span className="text-[10px] text-dk-dim">{renewal.assigned_user}</span>
+        <button
+          onClick={e => { e.stopPropagation(); onLogActivity(renewal) }}
+          title="활동 기록"
+          className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[10px] text-dk-muted hover:text-dk-blue hover:bg-tint-blue px-1.5 py-0.5 rounded-md transition-all">
+          <Phone className="w-3 h-3" /> 활동
+        </button>
       </div>
-    </Link>
+    </div>
   )
 }
 
 function mapRenewal(r: Record<string, unknown>): RenewalCard {
   return {
     id:            r.id as string,
-    company_name:  (r.company  as { name: string } | null)?.name ?? '',
+    company_id:    (r.company as { id: string } | null)?.id ?? '',
+    company_name:  (r.company as { name: string } | null)?.name ?? '',
     product_name:  ((r.contract as { product?: { name: string } } | null)?.product?.name) ?? '',
     expires_at:    r.contract_expires_at as string,
     final_amount:  (r.contract as { final_amount: number } | null)?.final_amount ?? 0,
@@ -116,6 +133,7 @@ export default function RenewalsPage() {
   const [userFilter, setUserFilter] = useState<string>('all')
   const [riskFilter, setRiskFilter] = useState<RiskLevel | 'all'>('all')
   const [users, setUsers]           = useState<User[]>([])
+  const [activityTarget, setActivityTarget] = useState<RenewalCard | null>(null)
 
   // IntersectionObserver 콜백 내에서 최신값을 읽기 위해 ref로 관리
   const pageRef       = useRef(1)
@@ -215,6 +233,14 @@ export default function RenewalsPage() {
 
   return (
     <div className="flex flex-col h-full p-6 gap-4 min-h-0">
+      {activityTarget && (
+        <QuickActivityModal
+          company={{ id: activityTarget.company_id, name: activityTarget.company_name }}
+          renewalId={activityTarget.id}
+          onClose={() => setActivityTarget(null)}
+          onSaved={() => setActivityTarget(null)}
+        />
+      )}
       <div className="flex items-center justify-between shrink-0">
         <div>
           <h1 className="text-lg font-bold text-dk-text flex items-center gap-2">
@@ -283,7 +309,7 @@ export default function RenewalsPage() {
               )}
             </div>
             <div className={cn('flex-1 min-h-0 overflow-y-auto p-2 space-y-2 rounded-b-xl border', bucket.color)}>
-              {bucket.cards.map(r => <RenewalKanbanCard key={r.id} renewal={r} />)}
+              {bucket.cards.map(r => <RenewalKanbanCard key={r.id} renewal={r} onLogActivity={setActivityTarget} />)}
               {bucket.cards.length === 0 && (
                 <div className="py-8 text-center">
                   <p className="text-xs text-dk-dim">없음</p>
