@@ -6,19 +6,20 @@ import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import {
   Building, Users, UsersRound, Package, MessageSquare,
-  Plug, CreditCard, Receipt,
+  Plug, CreditCard, Receipt, Bell,
 } from 'lucide-react'
 
 const SETTINGS_NAV = [
-  { href: '/app/settings/tenant',       label: '테넌트 정보',    icon: Building },
-  { href: '/app/settings/users',        label: '사용자 관리',    icon: Users },
-  { href: '/app/settings/teams',        label: '팀 관리',        icon: UsersRound },
-  { href: '/app/settings/products',     label: '제품 관리',      icon: Package },
-  { href: '/app/settings/templates',    label: '메시지 템플릿',  icon: MessageSquare },
-  { href: '/app/settings/integrations', label: 'API 연동',       icon: Plug },
+  { href: '/app/settings/tenant',                label: '테넌트 정보',    icon: Building },
+  { href: '/app/settings/users',                 label: '사용자 관리',    icon: Users },
+  { href: '/app/settings/teams',                 label: '팀 관리',        icon: UsersRound },
+  { href: '/app/settings/products',              label: '제품 관리',      icon: Package },
+  { href: '/app/settings/templates',             label: '메시지 템플릿',  icon: MessageSquare },
+  { href: '/app/settings/renewal-notifications', label: '갱신 자동 알림', icon: Bell },
+  { href: '/app/settings/integrations',          label: 'API 연동',       icon: Plug },
   { hr: true as const },
-  { href: '/app/settings/subscription', label: '구독 현황',      icon: CreditCard },
-  { href: '/app/settings/invoices',     label: '결제 이력',      icon: Receipt },
+  { href: '/app/settings/subscription',          label: '구독 현황',      icon: CreditCard },
+  { href: '/app/settings/invoices',              label: '결제 이력',      icon: Receipt },
 ]
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
