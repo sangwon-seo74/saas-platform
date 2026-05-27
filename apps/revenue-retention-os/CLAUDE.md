@@ -10,8 +10,9 @@ DB 스키마: `rros` (도메인 테이블), 공통 인프라는 `core` 스키마
 - 역할·권한: admin / manager / sales.
   RLS = 테넌트 격리(`fn_my_tenant_id()`) + sales는 본인 담당 데이터만. 슈퍼어드민은 service role로 RLS 우회.
 
-## 미구현 외부 연동 (스키마만 존재)
-Resend 이메일 / SMS / 카카오알림톡 / PG 결제 — 현재 stub. 연동 추가 시 core 경유로 구현.
+## 외부 연동 현황
+- SMS / 카카오알림톡 / Resend 이메일 — 구현 완료. core-client 경유. 자격증명은 `platform_settings` DB (슈퍼어드민 관리).
+- PG 결제 — 미구현 (스키마만 존재). 연동 추가 시 core 경유로 구현.
 
 ## 스키마 (SSOT)
 - 도메인(`rros`) 테이블 / RLS / cron / 연동: [./SCHEMA.md](./SCHEMA.md)

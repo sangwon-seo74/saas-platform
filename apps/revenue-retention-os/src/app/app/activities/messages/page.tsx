@@ -1,25 +1,47 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { MessageSquare, Mail, Phone, Search, Check, Eye, Loader2, Send, X } from 'lucide-react'
+import { MessageSquare, Mail, Phone, Search, Check, Eye, Loader2, Send, X, ChevronDown, FileText } from 'lucide-react'
 import {
   MESSAGE_CHANNEL_LABEL, MESSAGE_STATUS_LABEL, MESSAGE_STATUS_CLASS,
 } from '@/constants/domain'
-import type { Message } from '@/types/domain'
+import type { Message, MessageTemplate } from '@/types/domain'
 
 type Channel = 'sms' | 'kakao' | 'email'
 
 // ─── 발송 모달 ─────────────────────────────────────────────────────────────────
 
 function SendModal({ onClose, onSent }: { onClose: () => void; onSent: () => void }) {
-  const [channel, setChannel]             = useState<Channel>('sms')
-  const [to, setTo]                       = useState('')
-  const [text, setText]                   = useState('')
-  const [emailSubject, setEmailSubject]   = useState('')
-  const [emailHtml, setEmailHtml]         = useState('')
-  const [kakaoTemplate, setKakaoTemplate] = useState('')
-  const [sending, setSending]             = useState(false)
-  const [sendError, setSendError]         = useState<string | null>(null)
+  const [channel, setChannel]                   = useState<Channel>('sms')
+  const [to, setTo]                             = useState('')
+  const [text, setText]                         = useState('')
+  const [emailSubject, setEmailSubject]         = useState('')
+  const [emailHtml, setEmailHtml]               = useState('')
+  const [kakaoTemplate, setKakaoTemplate]       = useState('')
+  const [sending, setSending]                   = useState(false)
+  const [sendError, setSendError]               = useState<string | null>(null)
+  const [templates, setTemplates]               = useState<MessageTemplate[]>([])
+  const [loadingTpl, setLoadingTpl]             = useState(false)
+  const [showTplPicker, setShowTplPicker]       = useState(false)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLoadingTpl(true)
+    setSelectedTemplateId(null)
+    fetch(`/api/settings/templates?channel=${channel}&active=true&limit=50`)
+      .then(r => r.json())
+      .then(j => setTemplates(j.data?.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingTpl(false))
+  }, [channel])
+
+  const applyTemplate = (t: MessageTemplate) => {
+    setText(t.content)
+    if (t.channel === 'email' && t.subject) setEmailSubject(t.subject)
+    setSelectedTemplateId(t.id)
+    setShowTplPicker(false)
+    setSendError(null)
+  }
 
   const handleSend = async () => {
     if (!to.trim() || !text.trim()) { setSendError('수신처와 내용을 입력하세요'); return }
@@ -32,6 +54,7 @@ function SendModal({ onClose, onSent }: { onClose: () => void; onSent: () => voi
       const body: Record<string, string> = { to, text, channel }
       if (channel === 'email')  { body.email_subject = emailSubject; if (emailHtml) body.email_html = emailHtml }
       if (channel === 'kakao')  body.kakao_template_code = kakaoTemplate
+      if (selectedTemplateId)   body.template_id = selectedTemplateId
 
       const res = await fetch('/api/messages', {
         method: 'POST',
@@ -55,6 +78,10 @@ function SendModal({ onClose, onSent }: { onClose: () => void; onSent: () => voi
     { key: 'email', label: '이메일' },
   ]
 
+  const selectedTplName = selectedTemplateId
+    ? templates.find(t => t.id === selectedTemplateId)?.name
+    : null
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -67,11 +94,11 @@ function SendModal({ onClose, onSent }: { onClose: () => void; onSent: () => voi
         </div>
 
         {/* 채널 탭 */}
-        <div className="flex gap-1 p-1 bg-dk-surface2 rounded-xl mb-5">
+        <div className="flex gap-1 p-1 bg-dk-surface2 rounded-xl mb-3">
           {CHANNEL_TABS.map(t => (
             <button
               key={t.key}
-              onClick={() => { setChannel(t.key); setSendError(null) }}
+              onClick={() => { setChannel(t.key); setSendError(null); setShowTplPicker(false) }}
               className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 channel === t.key
                   ? 'bg-dk-blue text-white'
@@ -81,6 +108,41 @@ function SendModal({ onClose, onSent }: { onClose: () => void; onSent: () => voi
               {t.label}
             </button>
           ))}
+        </div>
+
+        {/* 템플릿 선택 */}
+        <div className="relative mb-4">
+          <button
+            onClick={() => setShowTplPicker(v => !v)}
+            disabled={loadingTpl}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm border border-dk-border rounded-lg bg-dk-surface2 text-left hover:bg-dk-surface2/70 transition-colors"
+          >
+            <FileText className="w-3.5 h-3.5 text-dk-muted shrink-0" />
+            <span className={selectedTplName ? 'text-dk-text flex-1 truncate' : 'text-dk-dim flex-1 truncate'}>
+              {loadingTpl ? '로딩 중...' : selectedTplName ?? '템플릿 선택 (선택 사항)'}
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-dk-muted shrink-0" />
+          </button>
+          {showTplPicker && (
+            <div className="absolute z-10 top-full mt-1 w-full bg-dk-surface border border-dk-border rounded-xl shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+              {templates.length === 0 ? (
+                <p className="text-xs text-dk-dim px-4 py-3 text-center">
+                  이 채널의 템플릿이 없습니다. 설정 → 템플릿에서 생성하세요.
+                </p>
+              ) : (
+                templates.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => applyTemplate(t)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-dk-surface2 transition-colors"
+                  >
+                    <p className="text-sm text-dk-text font-medium truncate">{t.name}</p>
+                    <p className="text-xs text-dk-dim truncate mt-0.5">{t.content}</p>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">

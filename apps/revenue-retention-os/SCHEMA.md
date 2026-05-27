@@ -36,8 +36,9 @@
 
 > ⚠️ `pr_refresh_renewal_risk`, `pr_create_renewal_tasks`의 **본문 정의는 라이브 Supabase DB에만 존재**한다(저장소에 DDL 없음). 수정 시 DB에서 본문을 받아와 작업할 것.
 
-## 외부 연동 (현재 전부 stub/미구현 — 스키마/필드만 존재)
-- Resend 이메일 — `lib/invite.ts` 코드 주석 처리, 현재 console.log만
-- SMS / 카카오알림톡 — 메시지 채널 스키마만, 발송 코드 없음
-- PG 결제 — `pg_payment_id`/`pg_customer_id`/`pg_sub_id` 필드·인보이스 스키마만, 연동 코드 없음
+## 외부 연동 현황
+- Resend 이메일 — **구현 완료**. core-api `POST /v1/notify/email` → core-client `sendEmail()`. 자격증명은 `platform_settings` DB 및 `RESEND_API_KEY` 환경변수.
+- SMS (Solapi) — **구현 완료**. core-api `POST /v1/notify/sms` → core-client `sendSms()`. 자격증명은 `platform_settings` DB.
+- 카카오 알림톡 (Solapi ATA) — **구현 완료**. core-api `POST /v1/notify/kakao` → core-client `sendKakao()`. 자격증명은 `platform_settings` DB.
+- PG 결제 — **미구현**. `pg_payment_id`/`pg_customer_id`/`pg_sub_id` 필드·인보이스 스키마만 존재.
 - 연동 추가 시 앱에서 재구현하지 말고 core(core-client) 경유로 구현한다.
