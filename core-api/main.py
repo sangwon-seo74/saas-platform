@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import get_settings
-from app.routers import health, me, auth_log, invite, admin, notify
+from app.routers import health, me, auth_log, invite, admin, notify, business_card
 
 settings = get_settings()
 
@@ -48,3 +48,4 @@ app.include_router(auth_log.router)
 app.include_router(invite.router)
 app.include_router(admin.router)
 app.include_router(notify.router)
+app.include_router(business_card.router)

@@ -9,7 +9,7 @@
 | 테이블 | 역할 | RLS |
 |--------|------|-----|
 | `companies` | 고객사 | `companies_tenant_isolation`(admin/manager), `companies_sales_own`(sales 담당만) |
-| `contacts` | 고객사 담당자 | `contacts_tenant_isolation` / `contacts_sales_own` |
+| `contacts` | 고객사 담당자 (`business_card_url` 컬럼 포함) | `contacts_tenant_isolation` / `contacts_sales_own` |
 | `contracts` | 판매 계약 | `contracts_tenant_isolation` / `contracts_sales_own` |
 | `contract_accounts` | 계약별 계정(라이선스) | `contract_accounts_tenant`(admin/manager 또는 담당 계약의 sales) |
 | `products` | 판매 제품 | `products_read`(전체), `products_write`/`products_update`(admin) |
@@ -36,6 +36,15 @@
 | `expire-contracts` (cron) | 매일 01:00 | 만료 계약 `status='expired'` 처리 |
 
 > ⚠️ `pr_refresh_renewal_risk`, `pr_create_renewal_tasks`의 **본문 정의는 라이브 Supabase DB에만 존재**한다(저장소에 DDL 없음). 수정 시 DB에서 본문을 받아와 작업할 것.
+
+## Supabase Storage 버킷
+
+| 버킷 | 공개 여부 | 경로 패턴 | 용도 |
+|------|----------|-----------|------|
+| `rros-business-cards` | private | `{tenant_id}/{contact_id}.{ext}` | 명함 이미지 영구 보관 |
+
+> ⚠️ 버킷은 Supabase 대시보드 Storage > New bucket 에서 수동 생성 필요.
+> RLS: `(storage.foldername(name))[1] = fn_my_tenant_id()::text` 패턴으로 tenant 격리.
 
 ## 외부 연동 현황
 - Resend 이메일 — **구현 완료**. core-api `POST /v1/notify/email` → core-client `sendEmail()`. 자격증명은 `platform_settings` DB 및 `RESEND_API_KEY` 환경변수.

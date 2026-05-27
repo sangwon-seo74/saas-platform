@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     super_admin_emails: str = ""
     invite_token_secret: str
     super_admin_ip_whitelist: str = ""
+    anthropic_api_key: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",

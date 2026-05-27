@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  Building2, Plus, Search, Download,
+  Building2, Plus, Search, Download, Camera,
   AlertCircle, AlertTriangle, CheckCircle2,
   MapPin, Loader2, X, FileText,
   ChevronUp, ChevronDown, ChevronsUpDown,
@@ -12,6 +12,7 @@ import {
 import { cn, calcDday, getDdayClass } from '@/lib/utils'
 import type { CompanyStatus, RiskLevel } from '@/types/domain'
 import { QuickActivityModal } from '@/components/QuickActivityModal'
+import { BusinessCardScanDialog } from '@/components/BusinessCardScanDialog'
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-dk-border bg-dk-surface2 text-dk-text placeholder-dk-dim rounded-lg focus:outline-none focus:ring-2 focus:ring-dk-blue'
 
@@ -316,6 +317,7 @@ export default function CompaniesPage() {
   const [sortDir,   setSortDir]       = useState<'asc' | 'desc'>('asc')
   const [contractTarget, setContractTarget] = useState<{ id: string; name: string } | null>(null)
   const [activityTarget, setActivityTarget] = useState<{ id: string; name: string } | null>(null)
+  const [showCardScan, setShowCardScan]     = useState(false)
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -381,6 +383,11 @@ export default function CompaniesPage() {
             className="hidden sm:flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
             <Download className="w-4 h-4" /> 내보내기
           </a>
+          <button
+            onClick={() => setShowCardScan(true)}
+            className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
+            <Camera className="w-4 h-4" /> 명함 스캔
+          </button>
           <Link href="/app/companies/new"
             className="flex items-center gap-1.5 bg-dk-accent text-white text-sm px-3.5 py-2 rounded-lg hover:bg-dk-accentHover transition-colors">
             <Plus className="w-4 h-4" /> 고객사 등록
@@ -494,6 +501,23 @@ export default function CompaniesPage() {
           company={activityTarget}
           onClose={() => setActivityTarget(null)}
           onSaved={() => setActivityTarget(null)}
+        />
+      )}
+
+      {showCardScan && (
+        <BusinessCardScanDialog
+          onClose={() => setShowCardScan(false)}
+          onSuccess={() => {
+            setShowCardScan(false)
+            // 목록 갱신
+            fetch('/api/companies?limit=100')
+              .then(r => r.json())
+              .then(json => {
+                setCompanies((json.data?.data ?? []) as CompanyRow[])
+                setTotalCount(json.data?.count ?? 0)
+              })
+              .catch(() => {})
+          }}
         />
       )}
     </div>

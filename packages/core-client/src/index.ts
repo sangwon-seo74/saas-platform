@@ -92,6 +92,18 @@ const notifyResultSchema = z.object({
   message_id: z.string().nullable().optional(),
   status_code: z.number(),
 })
+const businessCardScanSchema = z.object({
+  company_name: z.string().nullable(),
+  contact_name: z.string().nullable(),
+  title:        z.string().nullable(),
+  department:   z.string().nullable(),
+  phone:        z.string().nullable(),
+  mobile:       z.string().nullable(),
+  email:        z.string().nullable(),
+  website:      z.string().nullable(),
+  address:      z.string().nullable(),
+  biz_no:       z.string().nullable(),
+})
 const platformSettingsSchema = z.object({
   settings: z.record(z.string()),
 })
@@ -173,6 +185,15 @@ export async function sendEmail(
   authToken: string,
 ) {
   return call('POST', '/v1/notify/email', notifyResultSchema, params, authToken)
+}
+
+export type BusinessCardExtracted = z.infer<typeof businessCardScanSchema>
+
+export async function scanBusinessCard(
+  params: { image_base64: string; media_type: string },
+  authToken: string,
+) {
+  return call('POST', '/v1/business-card/scan', businessCardScanSchema, params, authToken)
 }
 
 export async function getPlatformSettings(authToken: string) {
