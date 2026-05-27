@@ -6,8 +6,9 @@ import Link from 'next/link'
 import {
   ArrowLeft, AlertCircle, AlertTriangle,
   CheckCircle2, FileText, Building2, ChevronRight,
-  TrendingUp, TrendingDown, Loader2, X
+  TrendingUp, TrendingDown, Loader2, X, Send,
 } from 'lucide-react'
+import { SendModal } from '@/components/SendModal'
 import { cn, formatAmount, formatDate, calcDday, getDdayClass } from '@/lib/utils'
 import type { RenewalStatus, RiskLevel, ActivityType } from '@/types/domain'
 
@@ -230,6 +231,7 @@ export default function RenewalDetailPage() {
   const [renewal, setRenewal]             = useState<RenewalDetail | null>(null)
   const [activities, setActivities]       = useState<ActivityItem[]>([])
   const [showCompleteModal, setShowCompleteModal] = useState(false)
+  const [showSendModal, setShowSendModal] = useState(false)
   const [showLostForm, setShowLostForm]   = useState(false)
   const [showContract, setShowContract]   = useState(false)
   const [showCompany, setShowCompany]     = useState(false)
@@ -315,7 +317,19 @@ export default function RenewalDetailPage() {
             {[renewal.contract?.product?.name, renewal.contract?.contract_no].filter(Boolean).join(' · ')}
           </p>
         </div>
+        <button
+          onClick={() => setShowSendModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-dk-blue border border-tint-blue-border rounded-lg hover:bg-tint-blue transition-colors shrink-0"
+        >
+          <Send className="w-3.5 h-3.5" />메시지 발송
+        </button>
       </div>
+      {showSendModal && (
+        <SendModal
+          onClose={() => setShowSendModal(false)}
+          companyId={renewal.company?.id}
+        />
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         <div className={cn('border rounded-xl px-4 py-3', dday <= 7 ? 'bg-tint-red border-tint-red-border' : 'bg-dk-surface2 border-dk-border')}>
