@@ -123,3 +123,42 @@ async def _audit(email: str, action: str, request: Request) -> None:
         })
     except Exception as e:
         print(f"[Audit log failed] {e}")
+
+
+# ─── 플랫폼 설정 (platform_settings 테이블) ───────────────────────────────────
+
+# 민감 키 목록 — GET 시 값 대신 __set__ 반환
+_SECRET_KEYS = {"solapi.api_key", "solapi.api_secret", "kakao.sender_key"}
+
+
+class UpdatePlatformSettingsRequest(BaseModel):
+    settings: dict[str, str]
+
+
+@router.get("/platform/settings")
+async def get_platform_settings(admin: SuperAdminContext = Depends(get_super_admin)):
+    rows = await db.db_select("platform_settings", {})
+    result: dict[str, str] = {}
+    for row in rows:
+        key = row["key"]
+        val = row["value"]
+        result[key] = "__set__" if (key in _SECRET_KEYS and val) else val
+    return {"settings": result}
+
+
+@router.patch("/platform/settings")
+async def update_platform_settings(
+    body: UpdatePlatformSettingsRequest,
+    request: Request,
+    admin: SuperAdminContext = Depends(get_super_admin),
+):
+    for key, value in body.settings.items():
+        if value == "__set__":
+            continue
+        try:
+            await db.db_update("platform_settings", {"key": f"eq.{key}"}, {"value": value, "updated_at": "now()"})
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"설정 저장 실패 ({key}): {e}")
+
+    await _audit(admin.email, "platform-settings", request)
+    return {"ok": True}

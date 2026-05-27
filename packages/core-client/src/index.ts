@@ -87,21 +87,15 @@ const impersonateSchema = z.object({
   expires_in_seconds: z.number(),
   warning: z.string(),
 })
-const sendSmsSchema = z.object({
+const notifyResultSchema = z.object({
   ok: z.boolean(),
   message_id: z.string().nullable().optional(),
   status_code: z.number(),
 })
-const sendKakaoSchema = z.object({
-  ok: z.boolean(),
-  message_id: z.string().nullable().optional(),
-  status_code: z.number(),
+const platformSettingsSchema = z.object({
+  settings: z.record(z.string()),
 })
-const sendEmailSchema = z.object({
-  ok: z.boolean(),
-  message_id: z.string().nullable().optional(),
-  status_code: z.number(),
-})
+const platformSettingsOkSchema = z.object({ ok: z.boolean() })
 
 // ─── 인증 불필요 ────────────────────────────────────────────
 
@@ -154,30 +148,17 @@ export async function impersonate(userId: string, authToken: string) {
 }
 
 export async function sendSms(
-  params: {
-    api_key: string
-    api_secret: string
-    from_number: string
-    to_number: string
-    text: string
-  },
+  params: { to_number: string; text: string },
   authToken: string,
 ) {
-  return call('POST', '/v1/notify/sms', sendSmsSchema, params, authToken)
+  return call('POST', '/v1/notify/sms', notifyResultSchema, params, authToken)
 }
 
 export async function sendKakao(
-  params: {
-    api_key: string
-    api_secret: string
-    sender_key: string
-    template_code: string
-    to_number: string
-    text: string
-  },
+  params: { to_number: string; template_code: string; text: string },
   authToken: string,
 ) {
-  return call('POST', '/v1/notify/kakao', sendKakaoSchema, params, authToken)
+  return call('POST', '/v1/notify/kakao', notifyResultSchema, params, authToken)
 }
 
 export async function sendEmail(
@@ -191,5 +172,16 @@ export async function sendEmail(
   },
   authToken: string,
 ) {
-  return call('POST', '/v1/notify/email', sendEmailSchema, params, authToken)
+  return call('POST', '/v1/notify/email', notifyResultSchema, params, authToken)
+}
+
+export async function getPlatformSettings(authToken: string) {
+  return call('GET', '/v1/admin/platform/settings', platformSettingsSchema, undefined, authToken)
+}
+
+export async function updatePlatformSettings(
+  settings: Record<string, string>,
+  authToken: string,
+) {
+  return call('PATCH', '/v1/admin/platform/settings', platformSettingsOkSchema, { settings }, authToken)
 }

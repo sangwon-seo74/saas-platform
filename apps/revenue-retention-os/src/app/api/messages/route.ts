@@ -1,5 +1,5 @@
 // GET /api/messages  — 발송 메시지 이력 목록
-// POST /api/messages — 메시지 발송 (SMS/카카오 알림톡, Solapi via core-api)
+// POST /api/messages — 메시지 발송 (SMS/카카오 알림톡/이메일, core-api 경유)
 
 import { ok, err } from '@/lib/utils'
 import { withAuth, parsePagination } from '@/lib/api'
@@ -41,7 +41,7 @@ export const GET = withAuth(async (req, ctx) => {
   return ok({ data: data ?? [], count: count ?? 0, page, limit })
 })
 
-// POST /api/messages — SMS 또는 카카오 알림톡 발송 (Solapi via core-api adapter)
+// POST /api/messages — 채널별 발송 (자격증명은 core-api가 platform_settings에서 읽음)
 export const POST = withAuth(async (req, ctx) => {
   const body = await req.json()
   const {
@@ -77,65 +77,34 @@ export const POST = withAuth(async (req, ctx) => {
 
   const { supabase, authClient } = createRouteHandlerClient(req)
 
-  // 채널별 연동 설정 조회
-  let api_key = '', api_secret = '', sender_phone = '', sender_key = ''
+  // 테넌트별 채널 활성화 여부 확인
+  const { data: integration } = await supabase
+    .from('api_integrations')
+    .select('is_active')
+    .eq('tenant_id', ctx.tenantId)
+    .eq('provider', channel)
+    .single()
+
+  if (!integration?.is_active) {
+    const label = channel === 'kakao' ? '카카오 알림톡' : channel === 'email' ? '이메일' : 'SMS'
+    return err('NOT_CONFIGURED', `${label} 채널이 활성화되지 않았습니다`, 422)
+  }
+
+  // 이메일 테넌트 브랜딩 (선택 — 없으면 platform_settings 기본값 사용)
   let email_from_name: string | undefined, email_from_email: string | undefined
-
-  if (channel === 'sms' || channel === 'kakao') {
-    // SMS와 알림톡 모두 Solapi api_key/secret 공유
-    const { data: smsInt, error: smsIntErr } = await supabase
-      .from('api_integrations')
-      .select('config, is_active')
-      .eq('tenant_id', ctx.tenantId)
-      .eq('provider', 'sms')
-      .single()
-
-    if (smsIntErr || !smsInt) return err('NOT_CONFIGURED', 'SMS(Solapi) 연동이 설정되지 않았습니다', 422)
-    if (!smsInt.is_active)    return err('NOT_CONFIGURED', 'SMS(Solapi) 연동이 비활성화 상태입니다', 422)
-
-    const smsCfg = smsInt.config as Record<string, string>
-    api_key      = smsCfg.api_key
-    api_secret   = smsCfg.api_secret
-    sender_phone = smsCfg.sender_phone
-
-    if (!api_key || !api_secret) {
-      return err('NOT_CONFIGURED', 'Solapi 연동 설정이 불완전합니다 (api_key/api_secret 확인)', 422)
-    }
-    if (channel === 'sms' && !sender_phone) {
-      return err('NOT_CONFIGURED', 'SMS 발신번호(sender_phone)가 설정되지 않았습니다', 422)
-    }
-  }
-
-  if (channel === 'kakao') {
-    const { data: kakaoInt, error: kakaoIntErr } = await supabase
-      .from('api_integrations')
-      .select('config, is_active')
-      .eq('tenant_id', ctx.tenantId)
-      .eq('provider', 'kakao')
-      .single()
-
-    if (kakaoIntErr || !kakaoInt) return err('NOT_CONFIGURED', '카카오 알림톡 연동이 설정되지 않았습니다', 422)
-    if (!kakaoInt.is_active)      return err('NOT_CONFIGURED', '카카오 알림톡 연동이 비활성화 상태입니다', 422)
-
-    const kakaoCfg = kakaoInt.config as Record<string, string>
-    sender_key = kakaoCfg.sender_key
-    if (!sender_key) return err('NOT_CONFIGURED', '카카오 발신프로필 키(sender_key)가 설정되지 않았습니다', 422)
-  }
-
   if (channel === 'email') {
-    const { data: emailInt, error: emailIntErr } = await supabase
+    const { data: emailInt } = await supabase
       .from('api_integrations')
-      .select('config, is_active')
+      .select('config')
       .eq('tenant_id', ctx.tenantId)
       .eq('provider', 'email')
       .single()
 
-    if (emailIntErr || !emailInt) return err('NOT_CONFIGURED', '이메일 연동이 설정되지 않았습니다', 422)
-    if (!emailInt.is_active)      return err('NOT_CONFIGURED', '이메일 연동이 비활성화 상태입니다', 422)
-
-    const emailCfg     = emailInt.config as Record<string, string>
-    email_from_name    = emailCfg.from_name  || undefined
-    email_from_email   = emailCfg.from_email || undefined
+    if (emailInt?.config) {
+      const cfg = emailInt.config as Record<string, string>
+      email_from_name  = cfg.from_name  || undefined
+      email_from_email = cfg.from_email || undefined
+    }
   }
 
   // messages 행 삽입 (status=sending)
@@ -164,7 +133,7 @@ export const POST = withAuth(async (req, ctx) => {
 
   if (channel === 'kakao') {
     result = await sendKakao(
-      { api_key, api_secret, sender_key, template_code: kakao_template_code!, to_number: to, text },
+      { to_number: to, template_code: kakao_template_code!, text },
       authToken,
     )
   } else if (channel === 'email') {
@@ -173,10 +142,7 @@ export const POST = withAuth(async (req, ctx) => {
       authToken,
     )
   } else {
-    result = await sendSms(
-      { api_key, api_secret, from_number: sender_phone, to_number: to, text },
-      authToken,
-    )
+    result = await sendSms({ to_number: to, text }, authToken)
   }
 
   const finalStatus = result.ok ? 'sent' : 'failed'

@@ -26,30 +26,24 @@ interface IntegrationRow {
   tested_at: string | null
 }
 
+// 자격증명은 슈퍼어드민에서 플랫폼 공용으로 관리 — 여기서는 채널 활성화 ON/OFF만 설정
 const INTEGRATIONS: IntegrationDef[] = [
   {
     provider: 'kakao', label: '카카오 알림톡',
-    description: '카카오 비즈니스 채널을 통한 알림톡 발송',
-    fields: [
-      { key: 'sender_key', label: '발신프로필 키', type: 'password', placeholder: 'sender_key...' },
-      { key: 'pfid',       label: '플러스친구 ID', type: 'text',     placeholder: '@채널명' },
-    ],
+    description: '카카오 비즈니스 채널을 통한 알림톡 발송 (자격증명은 플랫폼 관리)',
+    fields: [],
   },
   {
-    provider: 'sms', label: '솔라피 (문자)',
-    description: 'Solapi API를 통한 SMS/LMS 발송',
-    fields: [
-      { key: 'api_key',      label: 'API Key',    type: 'password', placeholder: 'NCSOL...' },
-      { key: 'api_secret',   label: 'API Secret', type: 'password', placeholder: '' },
-      { key: 'sender_phone', label: '발신번호',    type: 'text',     placeholder: '01012345678' },
-    ],
+    provider: 'sms', label: '문자 (SMS)',
+    description: 'Solapi API를 통한 SMS/LMS 발송 (자격증명은 플랫폼 관리)',
+    fields: [],
   },
   {
     provider: 'email', label: '이메일 (Resend)',
-    description: '플랫폼 공용 이메일 서비스 — 발신자 브랜딩만 설정하면 됩니다',
+    description: '플랫폼 공용 이메일 서비스',
     fields: [
-      { key: 'from_name',  label: '발신자명',              type: 'text', placeholder: '갱신 OS' },
-      { key: 'from_email', label: '발신 이메일 (선택)',     type: 'text', placeholder: 'noreply@company.com' },
+      { key: 'from_name',  label: '발신자명 (선택)',         type: 'text', placeholder: '갱신 OS' },
+      { key: 'from_email', label: '발신 이메일 주소 (선택)', type: 'text', placeholder: 'noreply@company.com' },
     ],
   },
   {

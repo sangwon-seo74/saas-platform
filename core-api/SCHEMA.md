@@ -4,10 +4,11 @@
 > 스키마 변경은 Supabase SQL Editor에서 적용하고 이 문서를 함께 갱신한다.
 > (마이그레이션 전환 이력은 보관하지 않음 — 현재 상태만 기술)
 
-## 테이블 (11)
+## 테이블 (12)
 
 | 테이블 | 역할 | RLS |
 |--------|------|-----|
+| `platform_settings` | 플랫폼 전역 key-value 설정 (SMS/카카오/이메일 자격증명 등) | 없음 (service role 전용) |
 | `tenants` | SaaS 테넌트(회사) 단위 레코드 | 없음 (service role 전용) |
 | `plans` | SaaS 요금제 정의 | 없음 (쓰기 service role, 읽기 공개) |
 | `users` | 테넌트 소속 사용자 | `users_read`(테넌트 내 전체), `users_write`/`users_update`(admin 또는 본인) |

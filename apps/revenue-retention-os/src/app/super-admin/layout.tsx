@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Building2, CreditCard, Receipt,
   Layers, ChevronRight, Shield, LogOut,
-  Search, Activity
+  Search, Activity, Settings2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CommandPalette } from './_components/command-palette'
@@ -17,7 +17,8 @@ const NAV = [
   { href: '/super-admin/subscriptions',  icon: CreditCard,      label: '구독 관리' },
   { href: '/super-admin/invoices',       icon: Receipt,         label: '결제 관리' },
   { href: '/super-admin/plans',          icon: Layers,          label: '플랜 관리' },
-  { href: '/super-admin/system/logs',    icon: Activity,        label: '시스템 관리' },
+  { href: '/super-admin/system/logs',               icon: Activity,   label: '시스템 관리' },
+  { href: '/super-admin/system/platform-settings', icon: Settings2,  label: '플랫폼 설정' },
 ]
 
 /** 슈퍼 관리자 영역 공통 레이아웃.
