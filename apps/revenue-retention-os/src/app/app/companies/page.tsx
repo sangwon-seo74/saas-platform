@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  Building2, Plus, Search,
+  Building2, Plus, Search, Download,
   AlertCircle, AlertTriangle, CheckCircle2,
   MapPin, Loader2, X, FileText,
   Phone, Mail, PhoneMissed, PhoneOff, CalendarClock,
@@ -657,10 +657,16 @@ export default function CompaniesPage() {
             전체 {companies.length}개 · 활성 {companies.filter(c => c.status === 'active').length}개
           </p>
         </div>
-        <Link href="/app/companies/new"
-          className="flex items-center gap-1.5 bg-dk-accent text-white text-sm px-3.5 py-2 rounded-lg hover:bg-dk-accentHover transition-colors">
-          <Plus className="w-4 h-4" /> 고객사 등록
-        </Link>
+        <div className="flex items-center gap-2">
+          <a href="/api/export/companies" download
+            className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
+            <Download className="w-4 h-4" /> 내보내기
+          </a>
+          <Link href="/app/companies/new"
+            className="flex items-center gap-1.5 bg-dk-accent text-white text-sm px-3.5 py-2 rounded-lg hover:bg-dk-accentHover transition-colors">
+            <Plus className="w-4 h-4" /> 고객사 등록
+          </Link>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap shrink-0">

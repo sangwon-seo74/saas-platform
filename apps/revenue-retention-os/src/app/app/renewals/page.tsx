@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import {
-  RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, Loader2
+  RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, Loader2, Download,
 } from 'lucide-react'
 import { cn, formatAmount, calcDday } from '@/lib/utils'
 import type { RenewalStatus, RiskLevel } from '@/types/domain'
@@ -226,9 +226,13 @@ export default function RenewalsPage() {
             {' · '}예상 ARR {formatAmount(totalAmount)}
           </p>
         </div>
-        {loadingMore && (
-          <Loader2 className="w-4 h-4 animate-spin text-dk-muted shrink-0" />
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          <a href="/api/export/renewals" download
+            className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-dk-border text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
+            <Download className="w-4 h-4" /> 내보내기
+          </a>
+          {loadingMore && <Loader2 className="w-4 h-4 animate-spin text-dk-muted" />}
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap shrink-0">
