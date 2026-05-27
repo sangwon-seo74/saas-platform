@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Building2, History, FileText,
   RefreshCw, CheckSquare, BarChart2, Settings,
-  ChevronRight, Bell, Search, LogOut, Menu,
+  ChevronRight, Bell, Search, LogOut, Menu, Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut } from '@/lib/supabase/auth-client'
@@ -73,6 +73,9 @@ function NavItem({
   )
 }
 
+type NotifTask    = { id: string; title: string; due_at: string | null; company: { name: string } | null }
+type NotifRenewal = { id: string; company_name: string; expires_at: string; risk: string }
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -81,6 +84,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [showSearch, setShowSearch] = useState(false)
   const [badges, setBadges] = useState({ renewals: 0, tasks: 0 })
   const [me, setMe] = useState<{ name: string; role: string; email: string } | null>(null)
+  const [showBell, setShowBell]       = useState(false)
+  const [bellLoading, setBellLoading] = useState(false)
+  const [notifTasks, setNotifTasks]     = useState<NotifTask[]>([])
+  const [notifRenewals, setNotifRenewals] = useState<NotifRenewal[]>([])
+  const bellRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname() ?? ''
   const router   = useRouter()
 
@@ -110,6 +118,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       })
     }).catch(() => {})
   }, [pathname])
+
+  useEffect(() => {
+    if (!showBell) return
+    setBellLoading(true)
+    Promise.all([
+      fetch('/api/tasks?mine=true&overdue=true&limit=5').then(r => r.json()),
+      fetch('/api/renewals?days_to=7&limit=5').then(r => r.json()),
+    ]).then(([tasks, renewals]) => {
+      setNotifTasks(tasks.data?.data ?? [])
+      setNotifRenewals((renewals.data?.data ?? []).map((rv: { id: string; company: { name: string } | null; contract_expires_at: string; risk_level: string }) => ({
+        id: rv.id,
+        company_name: rv.company?.name ?? '',
+        expires_at: rv.contract_expires_at,
+        risk: rv.risk_level,
+      })))
+    }).catch(() => {}).finally(() => setBellLoading(false))
+  }, [showBell])
+
+  useEffect(() => {
+    if (!showBell) return
+    function handleOutside(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setShowBell(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [showBell])
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -263,10 +299,91 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <span className="hidden sm:inline">검색</span>
               <kbd className="hidden sm:inline text-[10px] opacity-60">⌘K</kbd>
             </button>
-            <button className="relative p-1.5 rounded-lg text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
-            </button>
+            <div ref={bellRef} className="relative">
+              <button
+                onClick={() => setShowBell(v => !v)}
+                className={cn(
+                  'relative p-1.5 rounded-lg transition-colors',
+                  showBell ? 'text-dk-text bg-dk-surface2' : 'text-dk-muted hover:text-dk-text hover:bg-dk-surface2'
+                )}>
+                <Bell className="w-4 h-4" />
+                {(badges.tasks > 0 || badges.renewals > 0) && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
+                )}
+              </button>
+
+              {showBell && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-dk-surface border border-dk-border rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-dk-border">
+                    <p className="text-sm font-semibold text-dk-text">알림</p>
+                    <button onClick={() => setShowBell(false)} className="text-dk-dim hover:text-dk-muted p-0.5">
+                      <Bell className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {bellLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-4 h-4 animate-spin text-dk-muted" />
+                    </div>
+                  ) : (notifTasks.length === 0 && notifRenewals.length === 0) ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-2">
+                      <Bell className="w-6 h-6 text-dk-dim" />
+                      <p className="text-xs text-dk-dim">새 알림이 없습니다</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-72 overflow-y-auto divide-y divide-dk-border">
+                      {notifTasks.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-semibold text-dk-dim uppercase tracking-wider px-4 py-2 bg-dk-surface2/50">
+                            기한 초과 업무
+                          </p>
+                          {notifTasks.map(t => (
+                            <Link key={t.id} href="/app/tasks/my" onClick={() => setShowBell(false)}
+                              className="flex items-start gap-3 px-4 py-3 hover:bg-dk-surface2 transition-colors">
+                              <CheckSquare className="w-4 h-4 text-dk-red mt-0.5 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-dk-text truncate font-medium">{t.title}</p>
+                                <p className="text-xs text-dk-dim mt-0.5">
+                                  {t.company?.name ?? '–'}{t.due_at ? ` · ${t.due_at.slice(0, 10)}` : ''}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                      {notifRenewals.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-semibold text-dk-dim uppercase tracking-wider px-4 py-2 bg-dk-surface2/50">
+                            D-7 갱신 임박
+                          </p>
+                          {notifRenewals.map(rv => (
+                            <Link key={rv.id} href={`/app/renewals/${rv.id}`} onClick={() => setShowBell(false)}
+                              className="flex items-start gap-3 px-4 py-3 hover:bg-dk-surface2 transition-colors">
+                              <RefreshCw className="w-4 h-4 text-dk-orange mt-0.5 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-dk-text truncate font-medium">{rv.company_name}</p>
+                                <p className="text-xs text-dk-dim mt-0.5">만료 {rv.expires_at.slice(0, 10)}</p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="px-4 py-2.5 border-t border-dk-border bg-dk-surface2/50 flex gap-3">
+                    <Link href="/app/tasks/my" onClick={() => setShowBell(false)}
+                      className="flex-1 text-center text-xs text-dk-muted hover:text-dk-text transition-colors">
+                      내 업무 보기
+                    </Link>
+                    <Link href="/app/renewals" onClick={() => setShowBell(false)}
+                      className="flex-1 text-center text-xs text-dk-muted hover:text-dk-text transition-colors">
+                      갱신 관리 보기
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
