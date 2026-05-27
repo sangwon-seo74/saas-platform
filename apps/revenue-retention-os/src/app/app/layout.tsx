@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -11,25 +11,15 @@ import {
 import { cn } from '@/lib/utils'
 import { signOut } from '@/lib/supabase/auth-client'
 import { AnnouncementBanner } from './_components/announcement-banner'
+import { GlobalSearch } from '@/components/GlobalSearch'
 
-const NAV_MAIN = [
-  { href: '/app/dashboard',         icon: LayoutDashboard, label: '대시보드' },
-  { href: '/app/companies',         icon: Building2,       label: '고객사' },
-  { href: '/app/activities',        icon: History,         label: '활동이력' },
-  { href: '/app/contracts',         icon: FileText,        label: '계약' },
-  {
-    href: '/app/renewals',
-    icon: RefreshCw,
-    label: '갱신 관리',
-    highlight: true,
-    badge: 5,
-  },
-  {
-    href: '/app/tasks/my',
-    icon: CheckSquare,
-    label: '내 업무',
-    badge: 3,
-  },
+const NAV_MAIN_BASE = [
+  { href: '/app/dashboard',  icon: LayoutDashboard, label: '대시보드' },
+  { href: '/app/companies',  icon: Building2,       label: '고객사' },
+  { href: '/app/activities', icon: History,         label: '활동이력' },
+  { href: '/app/contracts',  icon: FileText,        label: '계약' },
+  { href: '/app/renewals',   icon: RefreshCw,       label: '갱신 관리', highlight: true as const },
+  { href: '/app/tasks/my',   icon: CheckSquare,     label: '내 업무' },
 ]
 
 const NAV_BOTTOM = [
@@ -88,14 +78,46 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
+  const [badges, setBadges] = useState({ renewals: 0, tasks: 0 })
   const pathname = usePathname() ?? ''
   const router   = useRouter()
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setShowSearch(v => !v)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/renewals?status=pending&status=contacted&status=negotiating&days_to_expire=30&limit=1').then(r => r.json()),
+      fetch('/api/tasks?mine=true&status=todo&status=in_progress&overdue=true&limit=1').then(r => r.json()),
+    ]).then(([renewals, tasks]) => {
+      setBadges({
+        renewals: renewals.data?.count ?? 0,
+        tasks:    tasks.data?.count    ?? 0,
+      })
+    }).catch(() => {})
+  }, [pathname])
 
   async function handleSignOut() {
     setSigningOut(true)
     await signOut()
     router.push('/login')
   }
+
+  const NAV_MAIN = NAV_MAIN_BASE.map(item => ({
+    ...item,
+    badge: item.href === '/app/renewals' ? badges.renewals
+         : item.href === '/app/tasks/my' ? badges.tasks
+         : undefined,
+  }))
 
   const allNav = [...NAV_MAIN, ...NAV_BOTTOM]
   const currentNav = allNav.find(n =>
@@ -166,6 +188,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-dk-bg overflow-hidden">
+      {showSearch && <GlobalSearch onClose={() => setShowSearch(false)} />}
+
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)} />
@@ -226,8 +250,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button className="p-1.5 rounded-lg text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
-              <Search className="w-4 h-4" />
+            <button
+              onClick={() => setShowSearch(true)}
+              title="검색 (⌘K)"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors text-xs border border-dk-border">
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">검색</span>
+              <kbd className="hidden sm:inline text-[10px] opacity-60">⌘K</kbd>
             </button>
             <button className="relative p-1.5 rounded-lg text-dk-muted hover:text-dk-text hover:bg-dk-surface2 transition-colors">
               <Bell className="w-4 h-4" />
