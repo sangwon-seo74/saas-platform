@@ -80,6 +80,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [signingOut, setSigningOut] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [badges, setBadges] = useState({ renewals: 0, tasks: 0 })
+  const [me, setMe] = useState<{ name: string; role: string; email: string } | null>(null)
   const pathname = usePathname() ?? ''
   const router   = useRouter()
 
@@ -92,6 +93,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/me').then(r => r.json()).then(j => { if (j.data) setMe(j.data) }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -163,20 +168,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <button
           onClick={() => setShowLogoutConfirm(true)}
-          title="로그아웃"
+          title={me ? `${me.name} · 로그아웃` : '로그아웃'}
           className={cn(
             'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-dk-surface2 transition-colors mt-1',
             collapsed ? 'justify-center' : '',
             signingOut ? 'opacity-50 cursor-wait' : 'cursor-pointer'
           )}>
           <div className="w-7 h-7 rounded-full bg-tint-blue flex items-center justify-center text-dk-blue text-xs font-bold shrink-0">
-            K
+            {me ? me.name[0] : '?'}
           </div>
           {!collapsed && (
             <>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-xs font-medium text-dk-text truncate">김관리자</p>
-                <p className="text-[10px] text-dk-dim truncate">admin</p>
+                <p className="text-xs font-medium text-dk-text truncate">{me?.name ?? '…'}</p>
+                <p className="text-[10px] text-dk-dim truncate">{me?.role ?? ''}</p>
               </div>
               <LogOut className="w-3.5 h-3.5 text-dk-dim shrink-0" />
             </>
