@@ -8,8 +8,9 @@ import {
   ArrowLeft, Phone, Mail, Users, CheckSquare,
   AlertTriangle, AlertCircle, CheckCircle2,
   Plus, ChevronRight, MoreHorizontal, Loader2, X,
-  Pencil, Trash2, MapPin,
+  Pencil, Trash2, MapPin, Send,
 } from 'lucide-react'
+import { SendModal } from '@/components/SendModal'
 import { cn, formatAmount, formatDate, formatDateTime, calcDday, getDdayClass } from '@/lib/utils'
 import { KakaoMap } from '@/components/KakaoMap'
 import type { RiskLevel, ContractStatus, ActivityType } from '@/types/domain'
@@ -1451,6 +1452,7 @@ function TabContacts({ contacts: initialContacts, companyId }: { contacts: Conta
   const [editContact, setEditContact]     = useState<Contact | null>(null)
   const [deleteContact, setDeleteContact] = useState<Contact | null>(null)
   const [openMenu, setOpenMenu]           = useState<string | null>(null)
+  const [sendContact, setSendContact]     = useState<Contact | null>(null)
 
   const handleAddSuccess = (contact: Contact) => {
     setContacts(prev => [contact, ...prev])
@@ -1531,10 +1533,18 @@ function TabContacts({ contacts: initialContacts, companyId }: { contacts: Conta
               )}
             </div>
           </div>
-          <div className="flex gap-4 mt-3 pt-3 border-t border-dk-border flex-wrap">
+          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-dk-border flex-wrap">
             {ct.mobile && <a href={`tel:${ct.mobile}`} className="flex items-center gap-1 text-xs text-dk-muted hover:text-dk-blue"><Phone className="w-3 h-3" />{ct.mobile}</a>}
             {ct.phone  && <a href={`tel:${ct.phone}`}  className="flex items-center gap-1 text-xs text-dk-muted hover:text-dk-blue"><Phone className="w-3 h-3" />{ct.phone}<span className="text-[9px] text-dk-dim ml-0.5">유선</span></a>}
             {ct.email  && <a href={`mailto:${ct.email}`} className="flex items-center gap-1 text-xs text-dk-muted hover:text-dk-blue"><Mail className="w-3 h-3" />{ct.email}</a>}
+            {(ct.mobile || ct.email) && (
+              <button
+                onClick={() => setSendContact(ct)}
+                className="ml-auto flex items-center gap-1 text-xs text-dk-blue hover:text-dk-blue/70 transition-colors"
+              >
+                <Send className="w-3 h-3" />메시지 발송
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -1558,6 +1568,15 @@ function TabContacts({ contacts: initialContacts, companyId }: { contacts: Conta
           contact={deleteContact}
           onClose={() => setDeleteContact(null)}
           onSuccess={handleDeleteSuccess}
+        />
+      )}
+      {sendContact && (
+        <SendModal
+          onClose={() => setSendContact(null)}
+          initialChannel={sendContact.email && !sendContact.mobile ? 'email' : 'sms'}
+          initialTo={sendContact.mobile ?? sendContact.email ?? ''}
+          companyId={companyId}
+          contactId={sendContact.id}
         />
       )}
     </div>
