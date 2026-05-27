@@ -42,6 +42,7 @@ export function SendModal({ onClose, onSent, initialChannel = 'sms', initialTo =
   const applyTemplate = (t: MessageTemplate) => {
     setText(t.content)
     if (t.channel === 'email' && t.subject) setEmailSubject(t.subject)
+    if (t.channel === 'kakao' && t.kakao_template_code) setKakaoTemplate(t.kakao_template_code)
     setSelectedTemplateId(t.id)
     setShowTplPicker(false)
     setSendError(null)

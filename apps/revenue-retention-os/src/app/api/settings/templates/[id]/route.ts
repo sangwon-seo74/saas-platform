@@ -33,7 +33,7 @@ export const PATCH = withAuth(async (req, ctx, params) => {
   if (!body) return err('INVALID_BODY', '요청 본문이 올바르지 않습니다')
   const { supabase } = createRouteHandlerClient(req)
 
-  const ALLOWED = ['name', 'category', 'subject', 'content', 'is_active'] as const
+  const ALLOWED = ['name', 'category', 'subject', 'content', 'kakao_template_code', 'is_active'] as const
   const updates: Record<string, unknown> = {}
   for (const key of ALLOWED) {
     if (key in body) updates[key] = body[key]

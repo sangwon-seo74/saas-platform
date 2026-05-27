@@ -214,6 +214,7 @@ export interface MessageTemplate {
   subject: string | null
   content: string
   variables: string[] | null
+  kakao_template_code: string | null
   is_active: boolean
   created_at: string
 }

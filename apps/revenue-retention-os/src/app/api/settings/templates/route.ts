@@ -49,7 +49,7 @@ export const POST = withAuth(async (req, ctx) => {
   if (!body) return err('INVALID_BODY', '요청 본문이 올바르지 않습니다')
   const { supabase } = createRouteHandlerClient(req)
 
-  const { name, channel, category, subject, content } = body
+  const { name, channel, category, subject, content, kakao_template_code } = body
 
   if (!name?.trim())    return err('VALIDATION', '템플릿명은 필수입니다')
   if (!content?.trim()) return err('VALIDATION', '내용은 필수입니다')
@@ -65,14 +65,15 @@ export const POST = withAuth(async (req, ctx) => {
   const { data, error } = await supabase
     .from('message_templates')
     .insert({
-      tenant_id: ctx.tenantId,
-      name:      name.trim(),
+      tenant_id:           ctx.tenantId,
+      name:                name.trim(),
       channel,
-      category:  category  ?? null,
-      subject:   subject?.trim() ?? null,
-      content:   content.trim(),
-      variables: extractVars(content),
-      is_active: true,
+      category:            category ?? null,
+      subject:             subject?.trim() ?? null,
+      content:             content.trim(),
+      variables:           extractVars(content),
+      kakao_template_code: channel === 'kakao' ? (kakao_template_code?.trim() ?? null) : null,
+      is_active:           true,
     })
     .select()
     .single()

@@ -28,11 +28,12 @@ function TemplateEditor({ template, onClose, onSaved }: {
   onSaved: () => void
 }) {
   const [form, setForm] = useState({
-    name:     template?.name                               ?? '',
-    channel:  (template?.channel  ?? 'kakao')              as MessageChannel,
-    category: (template?.category ?? 'renewal')            as TemplateCategory,
-    subject:  template?.subject  ?? '',
-    content:  template?.content  ?? '',
+    name:                template?.name                               ?? '',
+    channel:             (template?.channel  ?? 'kakao')              as MessageChannel,
+    category:            (template?.category ?? 'renewal')            as TemplateCategory,
+    subject:             template?.subject  ?? '',
+    content:             template?.content  ?? '',
+    kakao_template_code: template?.kakao_template_code ?? '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
@@ -47,11 +48,12 @@ function TemplateEditor({ template, onClose, onSaved }: {
     setSaving(true); setError('')
     try {
       const payload = {
-        name:     form.name.trim(),
-        channel:  form.channel,
-        category: form.category || null,
-        subject:  form.channel === 'email' ? form.subject.trim() : null,
-        content:  form.content.trim(),
+        name:                form.name.trim(),
+        channel:             form.channel,
+        category:            form.category || null,
+        subject:             form.channel === 'email' ? form.subject.trim() : null,
+        content:             form.content.trim(),
+        kakao_template_code: form.channel === 'kakao' ? (form.kakao_template_code.trim() || null) : null,
       }
       const url    = template ? `/api/settings/templates/${template.id}` : '/api/settings/templates'
       const method = template ? 'PATCH' : 'POST'
@@ -129,6 +131,15 @@ function TemplateEditor({ template, onClose, onSaved }: {
                   onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
                   placeholder="이메일 제목..."
                   className="w-full px-3 py-2 text-sm border border-dk-border rounded-lg bg-dk-surface2 text-dk-text placeholder:text-dk-dim focus:outline-none focus:ring-2 focus:ring-dk-blue" />
+              </div>
+            )}
+            {form.channel === 'kakao' && (
+              <div>
+                <label className="text-xs font-medium text-dk-muted mb-1.5 block">Solapi 템플릿 코드</label>
+                <input value={form.kakao_template_code}
+                  onChange={e => setForm(f => ({ ...f, kakao_template_code: e.target.value }))}
+                  placeholder="KA01TP..."
+                  className="w-full px-3 py-2 text-sm border border-dk-border rounded-lg bg-dk-surface2 text-dk-text placeholder:text-dk-dim focus:outline-none focus:ring-2 focus:ring-dk-blue font-mono" />
               </div>
             )}
           </div>
