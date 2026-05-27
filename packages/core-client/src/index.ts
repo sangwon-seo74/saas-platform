@@ -92,6 +92,16 @@ const sendSmsSchema = z.object({
   message_id: z.string().nullable().optional(),
   status_code: z.number(),
 })
+const sendKakaoSchema = z.object({
+  ok: z.boolean(),
+  message_id: z.string().nullable().optional(),
+  status_code: z.number(),
+})
+const sendEmailSchema = z.object({
+  ok: z.boolean(),
+  message_id: z.string().nullable().optional(),
+  status_code: z.number(),
+})
 
 // ─── 인증 불필요 ────────────────────────────────────────────
 
@@ -154,4 +164,32 @@ export async function sendSms(
   authToken: string,
 ) {
   return call('POST', '/v1/notify/sms', sendSmsSchema, params, authToken)
+}
+
+export async function sendKakao(
+  params: {
+    api_key: string
+    api_secret: string
+    sender_key: string
+    template_code: string
+    to_number: string
+    text: string
+  },
+  authToken: string,
+) {
+  return call('POST', '/v1/notify/kakao', sendKakaoSchema, params, authToken)
+}
+
+export async function sendEmail(
+  params: {
+    to: string
+    subject: string
+    html?: string
+    text?: string
+    from_name?: string
+    from_email?: string
+  },
+  authToken: string,
+) {
+  return call('POST', '/v1/notify/email', sendEmailSchema, params, authToken)
 }

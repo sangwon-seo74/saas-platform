@@ -45,13 +45,11 @@ const INTEGRATIONS: IntegrationDef[] = [
     ],
   },
   {
-    provider: 'email', label: '이메일 (SMTP)',
-    description: '자체 SMTP 서버를 통한 이메일 발송',
+    provider: 'email', label: '이메일 (Resend)',
+    description: '플랫폼 공용 이메일 서비스 — 발신자 브랜딩만 설정하면 됩니다',
     fields: [
-      { key: 'smtp_host', label: 'SMTP 호스트', type: 'text',     placeholder: 'smtp.gmail.com' },
-      { key: 'smtp_port', label: '포트',        type: 'text',     placeholder: '587' },
-      { key: 'user',      label: '사용자명',    type: 'text',     placeholder: 'user@company.com' },
-      { key: 'password',  label: '비밀번호',    type: 'password', placeholder: '' },
+      { key: 'from_name',  label: '발신자명',              type: 'text', placeholder: '갱신 OS' },
+      { key: 'from_email', label: '발신 이메일 (선택)',     type: 'text', placeholder: 'noreply@company.com' },
     ],
   },
   {
