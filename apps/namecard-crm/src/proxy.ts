@@ -54,12 +54,16 @@ export async function proxy(req: NextRequest) {
     }
 
     const db = serviceClient ?? supabase
-    const { data: profile } = await db
+    const { data: profile, error: profileError } = await db
       .schema('core')
       .from('users')
       .select('role, tenant_id, is_active')
       .eq('id', user.id)
       .single()
+
+    if (profileError || !profile) {
+      console.error('[proxy] profile lookup failed', { userId: user.id, error: profileError?.message, code: profileError?.code })
+    }
 
     if (!profile || !profile.is_active) {
       if (isApi) return res
