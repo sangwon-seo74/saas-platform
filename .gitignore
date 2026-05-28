@@ -44,5 +44,8 @@ yarn-error.log*
 # Supabase CLI temp
 supabase/.temp
 
+# pnpm lock file — Windows 전용 native deps가 포함되어 Vercel Linux 빌드 실패 방지
+pnpm-lock.yaml
+
 # Screenshots
 screen.png
