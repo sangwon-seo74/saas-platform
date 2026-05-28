@@ -1,2 +1,5 @@
 # pnpm-lock.yaml가 있으면 Vercel이 pnpm으로 감지 → lightningcss Windows 전용 바이너리 충돌
 pnpm-lock.yaml
+# package-lock.json은 Windows에서 생성 → lightningcss-win32-x64-msvc가 고정되어 Linux 빌드 실패
+# 제외하면 npm이 Linux에서 fresh resolve하여 플랫폼 호환 바이너리를 선택
+package-lock.json
