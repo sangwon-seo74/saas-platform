@@ -63,7 +63,9 @@ export async function proxy(req: NextRequest) {
 
     if (!profile || !profile.is_active) {
       if (isApi) return res
-      return NextResponse.redirect(new URL('/login', req.url))
+      // /login으로 보내면 "로그인된 유저 → /app/dashboard → 다시 여기" 무한 루프 발생.
+      // error 파라미터를 붙여서 /login 측에서 루프를 차단한다.
+      return NextResponse.redirect(new URL('/login?error=no_access', req.url))
     }
 
     // owner만 설정 페이지 접근 가능
@@ -82,7 +84,10 @@ export async function proxy(req: NextRequest) {
   }
 
   if (pathname === '/login' && user) {
-    return NextResponse.redirect(new URL('/app/dashboard', req.url))
+    // error 파라미터가 있으면 루프 방지를 위해 리디렉션하지 않는다
+    if (!req.nextUrl.searchParams.has('error')) {
+      return NextResponse.redirect(new URL('/app/dashboard', req.url))
+    }
   }
 
   return res

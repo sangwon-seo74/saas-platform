@@ -20,7 +20,8 @@ function LoginContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const redirect = searchParams?.get('redirect') ?? '/app/dashboard'
+  const redirect  = searchParams?.get('redirect') ?? '/app/dashboard'
+  const errorCode = searchParams?.get('error')
 
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
@@ -75,6 +76,13 @@ function LoginContent() {
           <h1 className="text-2xl font-bold text-white">Namecard CRM</h1>
           <p className="text-sm text-gray-500 mt-1">로그인하여 시작하세요</p>
         </div>
+
+        {errorCode === 'no_access' && (
+          <div className="mb-4 flex items-center gap-2 px-3 py-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+            <AlertCircle className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+            <p className="text-xs text-yellow-300">계정이 등록되지 않았거나 비활성 상태입니다. 관리자에게 초대를 요청하세요.</p>
+          </div>
+        )}
 
         <div className="bg-gray-800/60 border border-gray-700/50 rounded-2xl p-6 backdrop-blur-sm shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-4">
