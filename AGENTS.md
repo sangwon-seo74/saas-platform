@@ -14,6 +14,7 @@
 |----|------|----------|-----------------|
 | `apps/landing` | 플랫폼 마케팅 랜딩 페이지 | saas-foundry.vercel.app | saas-foundry |
 | `apps/revenue-retention-os` | B2B 고객 갱신·리텐션 운영 SaaS | (별도 Vercel 프로젝트) | rros |
+| `apps/namecard-crm` | AI 명함 인식·고객 연락처·관계관리 CRM | (별도 Vercel 프로젝트) | ncm |
 | `core-api/` | 공통 백엔드 API (FastAPI) | — | — |
 | `packages/core-client/` | 공유 TypeScript 클라이언트 SDK | — | — |
 

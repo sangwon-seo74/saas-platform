@@ -10,13 +10,15 @@ from app.dependencies import AuthContext, get_current_user
 
 router = APIRouter(prefix="/v1", route_class=EnvelopeRoute)
 
-VALID_ROLES = ("admin", "manager", "sales")
+# rros: admin / manager / sales  |  ncm: owner / member
+VALID_ROLES = ("admin", "manager", "sales", "owner", "member")
 
 
 class InviteRequest(BaseModel):
     email: str
     name: str
     role: str
+    app_url: Optional[str] = None  # 앱별 초대 URL 베이스 (ncm 등)
 
 
 class AcceptInviteRequest(BaseModel):
@@ -27,16 +29,16 @@ class AcceptInviteRequest(BaseModel):
 
 @router.post("/invite")
 async def send_invite(body: InviteRequest, auth: AuthContext = Depends(get_current_user)):
-    if auth.role not in ("admin", "manager"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin 또는 manager만 초대할 수 있습니다")
+    if auth.role not in ("admin", "manager", "owner"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin, manager 또는 owner만 초대할 수 있습니다")
     if not body.email.strip():
         raise HTTPException(status_code=400, detail="이메일은 필수입니다")
     if not body.name.strip():
         raise HTTPException(status_code=400, detail="이름은 필수입니다")
     if body.role not in VALID_ROLES:
         raise HTTPException(status_code=400, detail=f"role은 {', '.join(VALID_ROLES)} 중 하나여야 합니다")
-    if body.role == "admin" and auth.role != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="관리자 계정은 관리자만 초대할 수 있습니다")
+    if body.role in ("admin", "owner") and auth.role not in ("admin", "owner"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="관리자/owner 계정은 동급 이상만 초대할 수 있습니다")
 
     rows = await db.db_select("users", {"email": f"eq.{body.email}", "tenant_id": f"eq.{auth.tenant_id}", "select": "id"})
     if rows:
@@ -51,6 +53,7 @@ async def send_invite(body: InviteRequest, auth: AuthContext = Depends(get_curre
         email=body.email, name=body.name, role=body.role,
         tenant_id=auth.tenant_id, tenant_name=tenant_name,
         user_id=auth.user_id, inviter_name=inviter_name,
+        app_url=body.app_url,
     )
 
     resp = {"message": "초대 이메일을 발송했습니다", "email": body.email, "role": body.role, "expires_at": result["expires_at"]}
@@ -109,14 +112,16 @@ async def _create_and_store_invite(
     email: str, name: str, role: str,
     tenant_id: Optional[str], tenant_name: str,
     user_id: Optional[str], inviter_name: str,
+    app_url: Optional[str] = None,
 ) -> dict:
     settings = get_settings()
+    base_url = app_url or settings.app_url
     expires_at = (datetime.now(timezone.utc) + timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     token = create_invite_token(
         email=email, tenant_id=tenant_id or "", role=role,
         invited_by=user_id or "", expires_at=expires_at,
     )
-    invite_url = f"{settings.app_url}/invite/{token}"
+    invite_url = f"{base_url}/invite/{token}"
 
     await db.db_delete("invite_tokens", {"email": f"eq.{email}", "tenant_id": f"eq.{tenant_id}"})
     await db.db_insert("invite_tokens", {

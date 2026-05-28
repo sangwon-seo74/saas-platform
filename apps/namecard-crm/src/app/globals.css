@@ -1,0 +1,70 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base:        #ffffff;
+  --bg-subtle:      #f8fafc;
+  --bg-muted:       #f1f5f9;
+  --bg-overlay:     #e2e8f0;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --text-inverse:   #ffffff;
+  --border-default: #e2e8f0;
+  --border-strong:  #cbd5e1;
+  --border-focus:   #3b82f6;
+  --interactive-default:  #3b82f6;
+  --interactive-hover:    #2563eb;
+  --interactive-active:   #1d4ed8;
+  --interactive-disabled: #94a3b8;
+}
+
+.dark {
+  --bg-base:        #0D1117;
+  --bg-subtle:      #161B22;
+  --bg-muted:       #1C2128;
+  --bg-overlay:     #30363D;
+  --text-primary:   #E6EDF3;
+  --text-secondary: #CDD9E5;
+  --text-muted:     #8B949E;
+  --text-inverse:   #0D1117;
+  --border-default: #21262D;
+  --border-strong:  #30363D;
+  --border-focus:   #58A6FF;
+  --interactive-default:  #58A6FF;
+  --interactive-hover:    #79BAFF;
+  --interactive-active:   #A8D1FF;
+  --interactive-disabled: #6E7681;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-base);
+}
+
+.font-tabular { font-variant-numeric: tabular-nums; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #30363D; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #6E7681; }
+
+:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

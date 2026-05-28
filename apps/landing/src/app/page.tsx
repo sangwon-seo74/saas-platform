@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import {
   ArrowRight, CheckCircle2, BarChart3, RefreshCw,
-  Bell, Users, Shield, Zap, Globe, Menu,
+  Bell, Users, Shield, Zap, Globe, Menu, CreditCard,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const RROS_URL = process.env.NEXT_PUBLIC_RROS_URL ?? '#'
+const NCM_URL  = process.env.NEXT_PUBLIC_NCM_URL  ?? '#'
 
 // ─── Navbar ──────────────────────────────────────────────────────────────────
 function Nav() {
@@ -171,9 +172,9 @@ function Solutions() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          {/* RROS — main card (2 columns wide on lg) */}
-          <div className="lg:col-span-2 relative group bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-indigo-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
+        <div className="grid lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+          {/* RROS card */}
+          <div className="relative group bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-indigo-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
             {/* Glow on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
 
@@ -211,6 +212,44 @@ function Solutions() {
               <Link
                 href={RROS_URL}
                 className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-colors shadow-lg shadow-indigo-900/40"
+              >
+                바로 시작하기
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+          {/* NCM card */}
+          <div className="relative group bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-teal-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-teal-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+            <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-emerald-400 text-xs font-medium">운영 중</span>
+            </div>
+            <div className="relative">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-teal-900/50">
+                  <CreditCard className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Namecard CRM</h3>
+                  <p className="text-slate-400 text-sm">AI 명함 인식 고객관리 솔루션</p>
+                </div>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                명함 촬영 한 장으로 고객 정보를 자동 등록. AI가 인식한 연락처를 즉시 CRM에 저장하고 활동 이력과 VIP 관리로 장기 고객 관계를 유지합니다.
+              </p>
+              <ul className="flex flex-col gap-2.5 mb-8">
+                {['AI 명함 자동 인식', '고객 활동 이력 기록', 'VIP 고객 관리', '실시간 연락처 검색'].map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-slate-300">
+                    <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={NCM_URL}
+                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl transition-colors shadow-lg shadow-teal-900/40"
               >
                 바로 시작하기
                 <ArrowRight className="w-4 h-4" />

@@ -135,7 +135,7 @@ export async function acceptInvite(params: {
 
 // 팀 멤버 초대 — caller의 JWT에서 tenant를 도출 (서버 라우트에서 세션 토큰 전달)
 export async function sendInvite(
-  params: { email: string; name: string; role: string },
+  params: { email: string; name: string; role: string; app_url?: string },
   authToken: string,
 ) {
   return call('POST', '/v1/invite', sendInviteSchema, params, authToken)
