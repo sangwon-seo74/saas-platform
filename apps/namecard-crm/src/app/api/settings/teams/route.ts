@@ -19,7 +19,7 @@ export const GET = withAuth(async (req, ctx) => {
   return ok(data ?? [])
 }, { roles: ['owner'] })
 
-export const POST = withAuth(async (req, ctx) => {
+export const POST = withAuth(async (req, _ctx) => {
   const body = await req.json().catch(() => null)
   if (!body?.email?.trim()) return err('VALIDATION', 'email이 필요합니다')
 
