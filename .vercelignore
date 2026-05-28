@@ -1,0 +1,2 @@
+# pnpm-lock.yaml가 있으면 Vercel이 pnpm으로 감지 → lightningcss Windows 전용 바이너리 충돌
+pnpm-lock.yaml
