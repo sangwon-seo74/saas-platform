@@ -11,7 +11,7 @@ async function logUserAction(params: {
 }): Promise<void> {
   try {
     const supabase = createServiceClient()
-    await supabase.schema('core').from('audit_logs').insert({
+    await supabase.from('audit_logs').insert({
       tenant_id:  params.tenantId,
       user_id:    params.userId,
       email:      params.email,
@@ -49,7 +49,6 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
   if (!user) return null
 
   const { data: profile } = await supabase
-    .schema('core')
     .from('users')
     .select('tenant_id, role, is_active')
     .eq('id', user.id)

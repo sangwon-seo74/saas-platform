@@ -56,9 +56,8 @@ export async function proxy(req: NextRequest) {
         `${supabaseUrl}/rest/v1/users?id=eq.${user.id}&select=role,tenant_id,is_active&limit=1`,
         {
           headers: {
-            'apikey':         authKey,
-            'Authorization':  `Bearer ${authKey}`,
-            'Accept-Profile': 'core',
+            'apikey':        authKey,
+            'Authorization': `Bearer ${authKey}`,
           },
         }
       )
