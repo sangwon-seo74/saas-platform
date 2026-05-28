@@ -56,7 +56,9 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
     .single()
 
   if (!profile?.is_active) return null
-  return { userId: user.id, tenantId: profile.tenant_id, role: profile.role as AuthContext['role'] }
+  // rros의 admin 역할을 ncm의 owner로 취급 (같은 Supabase 프로젝트 공유)
+  const role = profile.role === 'admin' ? 'owner' : profile.role as AuthContext['role']
+  return { userId: user.id, tenantId: profile.tenant_id, role }
 }
 
 export function withAuth(

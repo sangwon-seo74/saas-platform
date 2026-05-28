@@ -68,15 +68,18 @@ export async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL('/login?error=no_access', req.url))
     }
 
+    // rros의 admin 역할을 ncm의 owner로 취급 (같은 Supabase 프로젝트 공유)
+    const ncmRole = profile.role === 'admin' ? 'owner' : profile.role
+
     // owner만 설정 페이지 접근 가능
-    if (isApp && pathname.startsWith('/app/settings') && profile.role !== 'owner') {
+    if (isApp && pathname.startsWith('/app/settings') && ncmRole !== 'owner') {
       return NextResponse.redirect(new URL('/app/dashboard', req.url))
     }
 
     const requestHeaders = new Headers(req.headers)
     requestHeaders.set('x-tenant-id', profile.tenant_id)
     requestHeaders.set('x-user-id',   user.id)
-    requestHeaders.set('x-user-role', profile.role)
+    requestHeaders.set('x-user-role', ncmRole)
 
     const next = NextResponse.next({ request: { headers: requestHeaders } })
     res.cookies.getAll().forEach(cookie => next.cookies.set(cookie))
