@@ -1,16 +1,7 @@
 // namecard-crm — Proxy (미들웨어)
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { createProxyClient } from '@/lib/supabase/client'
-
-const serviceClient = process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    )
-  : null
 
 const SUPER_ADMIN_EMAILS = (
   process.env.SUPER_ADMIN_EMAILS ?? ''
@@ -53,16 +44,33 @@ export async function proxy(req: NextRequest) {
       )
     }
 
-    const db = serviceClient ?? supabase
-    const { data: profile, error: profileError } = await db
-      .schema('core')
-      .from('users')
-      .select('role, tenant_id, is_active')
-      .eq('id', user.id)
-      .single()
+    // Supabase SDK의 Edge Runtime 호환성 문제를 우회하여 fetch로 직접 PostgREST 쿼리
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY
+    const anonKey     = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const authKey     = serviceKey ?? anonKey
 
-    if (profileError || !profile) {
-      console.error('[proxy] profile lookup failed', { userId: user.id, error: profileError?.message, code: profileError?.code })
+    let profile: { role: string; tenant_id: string; is_active: boolean } | null = null
+    try {
+      const profileRes = await fetch(
+        `${supabaseUrl}/rest/v1/users?id=eq.${user.id}&select=role,tenant_id,is_active&limit=1`,
+        {
+          headers: {
+            'apikey':         authKey,
+            'Authorization':  `Bearer ${authKey}`,
+            'Accept-Profile': 'core',
+          },
+        }
+      )
+      if (profileRes.ok) {
+        const rows = await profileRes.json() as { role: string; tenant_id: string; is_active: boolean }[]
+        profile = rows[0] ?? null
+      } else {
+        const body = await profileRes.text()
+        console.error('[proxy] profile fetch error', profileRes.status, body)
+      }
+    } catch (e) {
+      console.error('[proxy] profile fetch exception', e)
     }
 
     if (!profile || !profile.is_active) {
