@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import {
   ArrowRight, CheckCircle2, BarChart3, RefreshCw,
-  Bell, Users, Shield, Zap, Globe, Menu, CreditCard,
+  Bell, Users, Shield, Zap, Globe, Menu, CreditCard, Wine,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const RROS_URL = process.env.NEXT_PUBLIC_RROS_URL ?? '#'
 const NCM_URL  = process.env.NEXT_PUBLIC_NCM_URL  ?? '#'
+const LSO_URL  = process.env.NEXT_PUBLIC_LSO_URL  ?? '#'
 
 // ─── Navbar ──────────────────────────────────────────────────────────────────
 function Nav() {
@@ -257,6 +258,44 @@ function Solutions() {
             </div>
           </div>
 
+          {/* LSO card */}
+          <div className="relative group bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-orange-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+            <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-emerald-400 text-xs font-medium">운영 중</span>
+            </div>
+            <div className="relative">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-900/50">
+                  <Wine className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">주류영업 관리</h3>
+                  <p className="text-slate-400 text-sm">영업담당자 방문·거래처 관리 솔루션</p>
+                </div>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                주류업체 영업담당자의 거래처 방문을 지도 기반으로 실시간 파악. 담당자는 모바일로 쉽게 체크인하고, 관리자는 PC에서 동선과 영업 현황을 한눈에 확인합니다.
+              </p>
+              <ul className="flex flex-col gap-2.5 mb-8">
+                {['카카오맵 기반 영업 현황', '모바일 GPS 체크인', '거래처·방문기록 관리', '담당자 동선 추적'].map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-slate-300">
+                    <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={LSO_URL}
+                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors shadow-lg shadow-orange-900/40"
+              >
+                바로 시작하기
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
           {/* Upcoming cards */}
           <div className="flex flex-col gap-5">
             {upcoming.map(u => (
@@ -442,13 +481,13 @@ function Pricing() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto pt-5">
           {plans.map(p => (
             <div
               key={p.name}
               className={`relative flex flex-col rounded-2xl p-7 border transition-all ${
                 p.highlight
-                  ? 'bg-gradient-to-b from-indigo-900/40 to-indigo-900/20 border-indigo-500/40 shadow-xl shadow-indigo-900/30'
+                  ? 'z-10 bg-gradient-to-b from-indigo-900/40 to-indigo-900/20 border-indigo-500/40 shadow-xl shadow-indigo-900/30'
                   : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
               }`}
             >
@@ -562,12 +601,9 @@ function Footer() {
           <p className="text-slate-700 text-sm">© 2025 SaaS Platform</p>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <a href="#" className="text-slate-700 hover:text-slate-400 text-xs transition-colors">이용약관</a>
-            <a href="#" className="text-slate-700 hover:text-slate-400 text-xs transition-colors">개인정보처리방침</a>
-          </div>
-          <p className="text-slate-700 text-xs">Built with Next.js · Hosted on Vercel</p>
+        <div className="mt-8 pt-8 border-t border-white/[0.04] flex items-center gap-6">
+          <Link href="/terms" className="text-slate-700 hover:text-slate-400 text-xs transition-colors">이용약관</Link>
+          <Link href="/privacy" className="text-slate-700 hover:text-slate-400 text-xs transition-colors">개인정보처리방침</Link>
         </div>
       </div>
     </footer>
