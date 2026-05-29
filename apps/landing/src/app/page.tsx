@@ -154,11 +154,6 @@ function Solutions() {
     '실시간 매출 대시보드',
   ]
 
-  const upcoming = [
-    { name: 'Billing OS', desc: '구독·인보이스 자동화' },
-    { name: 'HR OS',      desc: '인사·조직 관리' },
-  ]
-
   return (
     <section id="solutions" className="py-28">
       <div className="max-w-6xl mx-auto px-6">
@@ -173,7 +168,7 @@ function Solutions() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {/* RROS card */}
           <div className="relative group flex flex-col bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-indigo-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
             {/* Glow on hover */}
@@ -290,24 +285,6 @@ function Solutions() {
             </div>
           </div>
 
-          {/* Upcoming cards */}
-          <div className="flex flex-col gap-5">
-            {upcoming.map(u => (
-              <div
-                key={u.name}
-                className="flex-1 flex flex-col items-center justify-center bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8 text-center"
-              >
-                <div className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.03] flex items-center justify-center mb-4">
-                  <span className="text-slate-600 text-lg">✦</span>
-                </div>
-                <p className="text-slate-300 text-sm font-semibold mb-1">{u.name}</p>
-                <p className="text-slate-600 text-xs mb-3">{u.desc}</p>
-                <span className="text-[10px] font-medium text-slate-600 border border-white/[0.07] px-2.5 py-1 rounded-full">
-                  준비 중
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>
