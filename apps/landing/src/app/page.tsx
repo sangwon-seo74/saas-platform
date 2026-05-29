@@ -175,7 +175,7 @@ function Solutions() {
 
         <div className="grid lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
           {/* RROS card */}
-          <div className="relative group bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-indigo-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
+          <div className="relative group flex flex-col bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-indigo-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
             {/* Glow on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
 
@@ -185,8 +185,8 @@ function Solutions() {
               <span className="text-emerald-400 text-xs font-medium">운영 중</span>
             </div>
 
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-5">
+            <div className="relative flex flex-col flex-1">
+              <div className="flex items-center gap-4 mb-5 pr-24">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-900/50">
                   <RefreshCw className="w-6 h-6 text-white" />
                 </div>
@@ -212,7 +212,7 @@ function Solutions() {
 
               <Link
                 href={RROS_URL}
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-colors shadow-lg shadow-indigo-900/40"
+                className="mt-auto inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-colors shadow-lg shadow-indigo-900/40"
               >
                 바로 시작하기
                 <ArrowRight className="w-4 h-4" />
@@ -221,14 +221,14 @@ function Solutions() {
           </div>
 
           {/* NCM card */}
-          <div className="relative group bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-teal-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
+          <div className="relative group flex flex-col bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-teal-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-teal-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
             <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-emerald-400 text-xs font-medium">운영 중</span>
             </div>
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-5">
+            <div className="relative flex flex-col flex-1">
+              <div className="flex items-center gap-4 mb-5 pr-24">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-teal-900/50">
                   <CreditCard className="w-6 h-6 text-white" />
                 </div>
@@ -240,7 +240,7 @@ function Solutions() {
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
                 명함 촬영 한 장으로 고객 정보를 자동 등록. AI가 인식한 연락처를 즉시 CRM에 저장하고 활동 이력과 VIP 관리로 장기 고객 관계를 유지합니다.
               </p>
-              <ul className="flex flex-col gap-2.5 mb-8">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-8">
                 {['AI 명함 자동 인식', '고객 활동 이력 기록', 'VIP 고객 관리', '실시간 연락처 검색'].map(f => (
                   <li key={f} className="flex items-center gap-2.5 text-sm text-slate-300">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
@@ -250,7 +250,7 @@ function Solutions() {
               </ul>
               <Link
                 href={NCM_URL}
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl transition-colors shadow-lg shadow-teal-900/40"
+                className="mt-auto inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl transition-colors shadow-lg shadow-teal-900/40"
               >
                 바로 시작하기
                 <ArrowRight className="w-4 h-4" />
@@ -259,14 +259,14 @@ function Solutions() {
           </div>
 
           {/* LSO card */}
-          <div className="relative group bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-orange-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
+          <div className="relative group flex flex-col bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-orange-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
             <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-emerald-400 text-xs font-medium">운영 중</span>
             </div>
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-5">
+            <div className="relative flex flex-col flex-1">
+              <div className="flex items-center gap-4 mb-5 pr-24">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-900/50">
                   <Wine className="w-6 h-6 text-white" />
                 </div>
@@ -278,7 +278,7 @@ function Solutions() {
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
                 주류업체 영업담당자의 거래처 방문을 지도 기반으로 실시간 파악. 담당자는 모바일로 쉽게 체크인하고, 관리자는 PC에서 동선과 영업 현황을 한눈에 확인합니다.
               </p>
-              <ul className="flex flex-col gap-2.5 mb-8">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-8">
                 {['카카오맵 기반 영업 현황', '모바일 GPS 체크인', '거래처·방문기록 관리', '담당자 동선 추적'].map(f => (
                   <li key={f} className="flex items-center gap-2.5 text-sm text-slate-300">
                     <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
@@ -288,7 +288,7 @@ function Solutions() {
               </ul>
               <Link
                 href={LSO_URL}
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors shadow-lg shadow-orange-900/40"
+                className="mt-auto inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors shadow-lg shadow-orange-900/40"
               >
                 바로 시작하기
                 <ArrowRight className="w-4 h-4" />
