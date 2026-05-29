@@ -165,9 +165,9 @@ ALTER TABLE lso.rep_locations    ENABLE ROW LEVEL SECURITY;
 -- rep: 자기 배정 거래처만
 CREATE POLICY "clients_select" ON lso.clients
   FOR SELECT USING (
-    tenant_id = core.fn_my_tenant_id()
+    tenant_id = public.fn_my_tenant_id()
     AND (
-      core.fn_my_role() IN ('admin','manager')
+      public.fn_my_role() IN ('admin','manager')
       OR EXISTS (
         SELECT 1 FROM lso.sales_assignments sa
          WHERE sa.client_id = lso.clients.id
@@ -179,40 +179,40 @@ CREATE POLICY "clients_select" ON lso.clients
 
 CREATE POLICY "clients_write" ON lso.clients
   FOR ALL USING (
-    tenant_id = core.fn_my_tenant_id()
-    AND core.fn_my_role() IN ('admin','manager')
+    tenant_id = public.fn_my_tenant_id()
+    AND public.fn_my_role() IN ('admin','manager')
   );
 
 -- ─── RLS 정책: sales_assignments ─────────────────────────────
 CREATE POLICY "assignments_select" ON lso.sales_assignments
-  FOR SELECT USING (tenant_id = core.fn_my_tenant_id());
+  FOR SELECT USING (tenant_id = public.fn_my_tenant_id());
 
 CREATE POLICY "assignments_write" ON lso.sales_assignments
   FOR ALL USING (
-    tenant_id = core.fn_my_tenant_id()
-    AND core.fn_my_role() IN ('admin','manager')
+    tenant_id = public.fn_my_tenant_id()
+    AND public.fn_my_role() IN ('admin','manager')
   );
 
 -- ─── RLS 정책: visits ─────────────────────────────────────────
 CREATE POLICY "visits_select" ON lso.visits
   FOR SELECT USING (
-    tenant_id = core.fn_my_tenant_id()
+    tenant_id = public.fn_my_tenant_id()
     AND (
-      core.fn_my_role() IN ('admin','manager')
+      public.fn_my_role() IN ('admin','manager')
       OR rep_user_id = auth.uid()
     )
   );
 
 CREATE POLICY "visits_insert" ON lso.visits
   FOR INSERT WITH CHECK (
-    tenant_id = core.fn_my_tenant_id()
+    tenant_id = public.fn_my_tenant_id()
     AND rep_user_id = auth.uid()
   );
 
 CREATE POLICY "visits_update" ON lso.visits
   FOR UPDATE USING (
-    tenant_id = core.fn_my_tenant_id()
-    AND (core.fn_my_role() IN ('admin','manager') OR rep_user_id = auth.uid())
+    tenant_id = public.fn_my_tenant_id()
+    AND (public.fn_my_role() IN ('admin','manager') OR rep_user_id = auth.uid())
   );
 
 -- ─── RLS 정책: visit_items ───────────────────────────────────
@@ -221,8 +221,8 @@ CREATE POLICY "visit_items_select" ON lso.visit_items
     EXISTS (
       SELECT 1 FROM lso.visits v
        WHERE v.id = lso.visit_items.visit_id
-         AND v.tenant_id = core.fn_my_tenant_id()
-         AND (core.fn_my_role() IN ('admin','manager') OR v.rep_user_id = auth.uid())
+         AND v.tenant_id = public.fn_my_tenant_id()
+         AND (public.fn_my_role() IN ('admin','manager') OR v.rep_user_id = auth.uid())
     )
   );
 
@@ -231,49 +231,49 @@ CREATE POLICY "visit_items_insert" ON lso.visit_items
     EXISTS (
       SELECT 1 FROM lso.visits v
        WHERE v.id = lso.visit_items.visit_id
-         AND v.tenant_id = core.fn_my_tenant_id()
+         AND v.tenant_id = public.fn_my_tenant_id()
          AND v.rep_user_id = auth.uid()
     )
   );
 
 -- ─── RLS 정책: products ──────────────────────────────────────
 CREATE POLICY "products_select" ON lso.products
-  FOR SELECT USING (tenant_id = core.fn_my_tenant_id());
+  FOR SELECT USING (tenant_id = public.fn_my_tenant_id());
 
 CREATE POLICY "products_write" ON lso.products
   FOR ALL USING (
-    tenant_id = core.fn_my_tenant_id()
-    AND core.fn_my_role() = 'admin'
+    tenant_id = public.fn_my_tenant_id()
+    AND public.fn_my_role() = 'admin'
   );
 
 -- ─── RLS 정책: rep_locations ──────────────────────────────────
 CREATE POLICY "rep_locations_select" ON lso.rep_locations
   FOR SELECT USING (
-    tenant_id = core.fn_my_tenant_id()
-    AND (core.fn_my_role() IN ('admin','manager') OR rep_user_id = auth.uid())
+    tenant_id = public.fn_my_tenant_id()
+    AND (public.fn_my_role() IN ('admin','manager') OR rep_user_id = auth.uid())
   );
 
 CREATE POLICY "rep_locations_upsert" ON lso.rep_locations
   FOR ALL USING (
-    tenant_id = core.fn_my_tenant_id()
+    tenant_id = public.fn_my_tenant_id()
     AND rep_user_id = auth.uid()
   );
 
 -- ─── RLS 정책: orders ─────────────────────────────────────────
 CREATE POLICY "orders_select" ON lso.orders
   FOR SELECT USING (
-    tenant_id = core.fn_my_tenant_id()
-    AND (core.fn_my_role() IN ('admin','manager') OR rep_user_id = auth.uid())
+    tenant_id = public.fn_my_tenant_id()
+    AND (public.fn_my_role() IN ('admin','manager') OR rep_user_id = auth.uid())
   );
 
 CREATE POLICY "orders_insert" ON lso.orders
   FOR INSERT WITH CHECK (
-    tenant_id = core.fn_my_tenant_id()
+    tenant_id = public.fn_my_tenant_id()
     AND rep_user_id = auth.uid()
   );
 
 CREATE POLICY "orders_update" ON lso.orders
   FOR UPDATE USING (
-    tenant_id = core.fn_my_tenant_id()
-    AND core.fn_my_role() IN ('admin','manager')
+    tenant_id = public.fn_my_tenant_id()
+    AND public.fn_my_role() IN ('admin','manager')
   );
