@@ -186,14 +186,12 @@ function Solutions() {
             </div>
 
             <div className="relative flex flex-col flex-1">
-              <div className="flex items-center gap-4 mb-5 pr-24">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-900/50">
+              <div className="mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-900/50 mb-4">
                   <RefreshCw className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Revenue Retention OS</h3>
-                  <p className="text-slate-400 text-sm">B2B 고객 갱신·리텐션 운영 솔루션</p>
-                </div>
+                <h3 className="text-xl font-bold text-white">Revenue Retention OS</h3>
+                <p className="text-slate-400 text-sm mt-1">B2B 고객 갱신·리텐션 운영 솔루션</p>
               </div>
 
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
@@ -228,14 +226,12 @@ function Solutions() {
               <span className="text-emerald-400 text-xs font-medium">운영 중</span>
             </div>
             <div className="relative flex flex-col flex-1">
-              <div className="flex items-center gap-4 mb-5 pr-24">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-teal-900/50">
+              <div className="mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-teal-900/50 mb-4">
                   <CreditCard className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Namecard CRM</h3>
-                  <p className="text-slate-400 text-sm">AI 명함 인식 고객관리 솔루션</p>
-                </div>
+                <h3 className="text-xl font-bold text-white">Namecard CRM</h3>
+                <p className="text-slate-400 text-sm mt-1">AI 명함 인식 고객관리 솔루션</p>
               </div>
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
                 명함 촬영 한 장으로 고객 정보를 자동 등록. AI가 인식한 연락처를 즉시 CRM에 저장하고 활동 이력과 VIP 관리로 장기 고객 관계를 유지합니다.
@@ -266,14 +262,12 @@ function Solutions() {
               <span className="text-emerald-400 text-xs font-medium">운영 중</span>
             </div>
             <div className="relative flex flex-col flex-1">
-              <div className="flex items-center gap-4 mb-5 pr-24">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-900/50">
+              <div className="mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-900/50 mb-4">
                   <Wine className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">주류영업 관리</h3>
-                  <p className="text-slate-400 text-sm">영업담당자 방문·거래처 관리 솔루션</p>
-                </div>
+                <h3 className="text-xl font-bold text-white">주류영업 관리</h3>
+                <p className="text-slate-400 text-sm mt-1">영업담당자 방문·거래처 관리 솔루션</p>
               </div>
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
                 주류업체 영업담당자의 거래처 방문을 지도 기반으로 실시간 파악. 담당자는 모바일로 쉽게 체크인하고, 관리자는 PC에서 동선과 영업 현황을 한눈에 확인합니다.
