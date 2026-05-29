@@ -131,6 +131,32 @@
 @AGENTS.md
 ```
 
+## Supabase DB 직접 작업 (마이그레이션 실행 등)
+
+직접 DB 연결(`db.*.supabase.co:5432`)은 방화벽으로 차단돼 있다.
+아래 방법을 순서대로 사용한다.
+
+### 표준 절차 (검증된 방법)
+```bash
+# 1. CLI 인증 확인 (이미 로그인돼 있으면 skip)
+npx supabase projects list
+
+# 2. 프로젝트 링크 (처음 한 번만, .env.local의 SUPABASE_DB_PASSWORD 사용)
+npx supabase link --project-ref jmkguqqkdpnzugzdjaxq --password "<SUPABASE_DB_PASSWORD>"
+
+# 3-a. SQL 파일 실행
+npx supabase db query --linked --file db/migrations/<파일명>.sql
+
+# 3-b. 인라인 쿼리
+npx supabase db query --linked "SELECT ..."
+```
+
+### 주의사항
+- `--db-url` 직접 접속 불가 (hostname resolution 실패).
+- `supabase db execute` 서브커맨드는 존재하지 않음 (→ `db query` 사용).
+- RLS 정책에서 helper 함수 스키마: `core.fn_my_tenant_id` ❌ → `public.fn_my_tenant_id` ✓
+  (`fn_my_tenant_id`, `fn_my_role` 모두 `public` 스키마에 정의돼 있음)
+
 ## 자주 하는 실수 방지
 - 새 SaaS의 사용자 테이블을 만들지 말 것. core.users를 참조한다.
 - 이메일 발송 라이브러리를 프론트에 직접 설치하지 말 것.
