@@ -4,7 +4,6 @@ import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Eye, EyeOff, Wine, AlertCircle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { logAccess } from '@saas/core-client'
 
 type LoginState = 'idle' | 'loading' | 'error'
 
@@ -41,7 +40,6 @@ function LoginContent() {
       const { session: supaSession, error } = await signIn(email, password)
 
       if (error) {
-        logAccess({ email, action: 'login', result: 'fail' })
         const msg = error.message.includes('Invalid login credentials')
           ? '이메일 또는 비밀번호가 올바르지 않습니다'
           : error.message.includes('Email not confirmed')
@@ -52,7 +50,6 @@ function LoginContent() {
 
       if (!supaSession) throw new Error('로그인 중 오류가 발생했습니다')
 
-      logAccess({ email, action: 'login', result: 'success' })
       router.push(redirect)
       router.refresh()
     } catch (err: unknown) {
