@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { VISIT_TYPE_LABEL } from '@/lib/utils'
-import type { Client, RepUser, Visit } from '@/types/domain'
+import type { RepUser, Visit } from '@/types/domain'
 
 export const metadata: Metadata = { title: '방문 예약 수정' }
 
