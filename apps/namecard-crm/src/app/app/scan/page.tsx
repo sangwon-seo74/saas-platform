@@ -23,7 +23,7 @@ interface DuplicateContact {
 
 const EMPTY_FORM: RecognizedCardData = {
   company_name: null, contact_name: null, title: null, department: null,
-  phone: null, mobile: null, email: null, website: null, address: null, biz_no: null,
+  phone: null, mobile: null, fax: null, email: null, website: null, address: null, biz_no: null,
 }
 
 export default function ScanPage() {

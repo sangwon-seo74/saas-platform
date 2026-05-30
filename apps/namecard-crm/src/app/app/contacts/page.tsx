@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-import { Star, Phone, Mail, ScanLine, Loader2, Search, LayoutList, LayoutGrid } from 'lucide-react'
+import { Star, Phone, Mail, ScanLine, Loader2, Search, LayoutList, LayoutGrid, UserPlus } from 'lucide-react'
 import { cn, formatRelative } from '@/lib/utils'
 import type { Contact } from '@/types/domain'
 
@@ -56,9 +56,14 @@ function ContactsContent() {
           <h1 className="text-lg font-bold text-dk-text">고객목록</h1>
           <p className="text-xs text-dk-muted mt-0.5">총 {total.toLocaleString()}명</p>
         </div>
-        <Link href="/app/scan" className="flex items-center gap-1.5 px-3 py-2 bg-dk-accent text-white text-sm font-medium rounded-lg hover:bg-dk-accentHover transition-colors">
-          <ScanLine className="w-4 h-4" />명함 등록
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/app/contacts/new" className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-dk-border text-dk-muted rounded-lg hover:bg-dk-surface2 transition-colors">
+            <UserPlus className="w-4 h-4" />직접 등록
+          </Link>
+          <Link href="/app/scan" className="flex items-center gap-1.5 px-3 py-2 bg-dk-accent text-white text-sm font-medium rounded-lg hover:bg-dk-accentHover transition-colors">
+            <ScanLine className="w-4 h-4" />명함 등록
+          </Link>
+        </div>
       </div>
 
       {/* 검색 + 필터 */}

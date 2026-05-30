@@ -85,7 +85,9 @@ export const POST = withAuth(async (req, ctx) => {
       department: recognized.department ?? null,
       title:      recognized.title ?? null,
       mobile:     recognized.mobile ?? null,
+      fax:        recognized.fax ?? null,
       email:      recognized.email ?? null,
+      notes:      body.notes ?? null,
       created_by: ctx.userId,
     })
     .select('id')

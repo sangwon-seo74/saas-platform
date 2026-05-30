@@ -28,7 +28,7 @@ export interface Contact {
   created_by: string | null
   created_at: string
   updated_at: string
-  company?: Pick<Company, 'id' | 'name'>
+  company?: Pick<Company, 'id' | 'name' | 'address' | 'website' | 'main_phone'>
   tags?: Tag[]
 }
 
@@ -51,6 +51,7 @@ export interface RecognizedCardData {
   department: string | null
   phone: string | null
   mobile: string | null
+  fax: string | null
   email: string | null
   website: string | null
   address: string | null
