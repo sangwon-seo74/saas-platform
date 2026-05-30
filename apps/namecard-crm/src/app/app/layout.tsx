@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, ScanLine, Search,
-  Settings, ChevronRight, LogOut, Menu,
+  Settings, ChevronRight, LogOut, Menu, Building2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut } from '@/lib/supabase/auth-client'
@@ -13,6 +13,7 @@ import { signOut } from '@/lib/supabase/auth-client'
 const NAV_MAIN = [
   { href: '/app/dashboard', icon: LayoutDashboard, label: '대시보드' },
   { href: '/app/contacts',  icon: Users,           label: '고객목록' },
+  { href: '/app/companies', icon: Building2,       label: '회사목록' },
   { href: '/app/scan',      icon: ScanLine,        label: '명함등록', highlight: true as const },
   { href: '/app/search',    icon: Search,          label: '검색' },
 ]
