@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import Link from 'next/link'
-import { Package } from 'lucide-react'
+import { Package, Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/types/domain'
@@ -82,6 +82,9 @@ export default async function ProductsPage() {
                     </p>
                   )}
                   {!product.is_active && <span className="text-[10px] text-dk-dim shrink-0">비활성</span>}
+                  <Link href={`/app/products/${product.id}`} className="p-1.5 text-dk-dim hover:text-dk-muted hover:bg-dk-surface2 rounded transition-colors shrink-0">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               ))}
             </div>

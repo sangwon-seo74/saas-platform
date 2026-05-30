@@ -1,13 +1,47 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, MapPin, Clock, Package } from 'lucide-react'
+import { ArrowLeft, MapPin, Clock, Package, CheckCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { VISIT_STATUS_LABEL, VISIT_TYPE_LABEL, formatDateTime, cn } from '@/lib/utils'
 import type { Visit, VisitItem } from '@/types/domain'
 
 export const metadata: Metadata = { title: '방문 상세' }
+
+async function completeVisitAction(formData: FormData) {
+  'use server'
+  const headersList = await headers()
+  const tenantId = headersList.get('x-tenant-id') ?? ''
+  const userId   = headersList.get('x-user-id')   ?? ''
+  const role     = headersList.get('x-user-role') ?? 'rep'
+
+  const id = formData.get('id')?.toString()
+  if (!id || !tenantId) redirect('/app/visits')
+
+  const supabase = await createClient()
+
+  const { data: existing } = await supabase
+    .schema('lso')
+    .from('visits')
+    .select('id, rep_user_id, status')
+    .eq('id', id)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!existing) redirect('/app/visits')
+  if (role === 'rep' && existing.rep_user_id !== userId) redirect('/app/visits')
+  if (existing.status !== 'checked_in') redirect(`/app/visits/${id}`)
+
+  await supabase
+    .schema('lso')
+    .from('visits')
+    .update({ status: 'completed', check_out_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('tenant_id', tenantId)
+
+  redirect(`/app/visits/${id}`)
+}
 
 export default async function VisitDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -40,6 +74,10 @@ export default async function VisitDetailPage({ params }: { params: Promise<{ id
   const visitItems = (items ?? []) as unknown as VisitItem[]
   const clientInfo = visit.client as unknown as { id: string; name: string; address: string } | null
   const repInfo    = visit.rep    as unknown as { id: string; name: string }                  | null
+
+  const canComplete =
+    visit.status === 'checked_in' &&
+    (role !== 'rep' || visit.rep_user_id === userId)
 
   const statusColor: Record<string, string> = {
     planned:    'text-amber-300',
@@ -145,6 +183,19 @@ export default async function VisitDetailPage({ params }: { params: Promise<{ id
             ))}
           </div>
         </div>
+      )}
+
+      {canComplete && (
+        <form action={completeVisitAction}>
+          <input type="hidden" name="id" value={visit.id} />
+          <button
+            type="submit"
+            className="w-full py-3 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-dk-blue hover:bg-dk-blueHover rounded-xl transition-colors"
+          >
+            <CheckCircle className="w-4 h-4" />
+            방문 완료 처리
+          </button>
+        </form>
       )}
     </div>
   )
