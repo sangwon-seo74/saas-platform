@@ -4,7 +4,7 @@
 > 스키마 변경은 Supabase SQL Editor에서 적용하고 이 문서를 함께 갱신한다.
 > (마이그레이션 전환 이력은 보관하지 않음 — 현재 상태만 기술)
 
-## 테이블 (12)
+## 테이블 (13)
 
 | 테이블 | 역할 | RLS |
 |--------|------|-----|
@@ -19,6 +19,7 @@
 | `tenant_subscriptions` | 테넌트 구독 상태 | `tenant_subscriptions_admin`(admin 읽기) |
 | `tenant_invoices` | 테넌트 결제 인보이스 | `tenant_invoices_admin`(admin 읽기) |
 | `invite_tokens` | 초대 토큰 (사용 후 삭제) | 없음 (service role) |
+| `team_invite_links` | Slack 스타일 팀 초대 링크 (다회 사용) | `team_invite_links_tenant_isolation` |
 | `audit_logs` | 로그인 접속 감사 로그 | 없음 (service role) |
 
 ## RLS 공통 헬퍼 함수 (core + 모든 도메인 스키마 공용)
