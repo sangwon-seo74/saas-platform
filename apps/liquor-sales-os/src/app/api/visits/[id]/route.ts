@@ -3,10 +3,20 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { ok, err } from '@/lib/utils'
 
+const VisitItemSchema = z.object({
+  product_name: z.string().min(1),
+  quantity:     z.number().int().positive().default(1),
+  memo:         z.string().optional(),
+})
+
 const UpdateVisitSchema = z.object({
-  status:     z.enum(['planned', 'checked_in', 'completed', 'cancelled']).optional(),
-  result:     z.string().optional(),
+  status:       z.enum(['planned', 'checked_in', 'completed', 'cancelled']).optional(),
+  result:       z.string().optional(),
+  check_in_at:  z.string().optional(),
   check_out_at: z.string().optional(),
+  lat:          z.number().optional(),
+  lng:          z.number().optional(),
+  items:        z.array(VisitItemSchema).optional(),
 })
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +37,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { data: existing } = await supabase
     .schema('lso')
     .from('visits')
-    .select('id, rep_user_id, tenant_id')
+    .select('id, rep_user_id, tenant_id, status')
     .eq('id', id)
     .eq('tenant_id', tenantId)
     .single()
@@ -37,15 +47,40 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return err('FORBIDDEN', '본인의 방문 기록만 수정할 수 있습니다', 403)
   }
 
+  const { items, ...visitFields } = parsed.data
+
   const { data, error } = await supabase
     .schema('lso')
     .from('visits')
-    .update({ ...parsed.data, updated_at: new Date().toISOString() })
+    .update({ ...visitFields, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select('id, status')
     .single()
 
   if (error) return err('DB_ERROR', '업데이트 실패', 500)
+
+  // planned → checked_in 전환 시 위치 upsert
+  if (visitFields.lat !== undefined && visitFields.lng !== undefined) {
+    await supabase.schema('lso').from('rep_locations').upsert({
+      rep_user_id: existing.rep_user_id,
+      tenant_id:   tenantId,
+      lat:         visitFields.lat,
+      lng:         visitFields.lng,
+      updated_at:  new Date().toISOString(),
+    }, { onConflict: 'rep_user_id' })
+  }
+
+  // visit_items 추가 (체크인 시 함께 저장)
+  if (items && items.length > 0) {
+    const itemRows = items.map(item => ({
+      visit_id:     id,
+      product_name: item.product_name,
+      quantity:     item.quantity,
+      memo:         item.memo ?? null,
+    }))
+    await supabase.schema('lso').from('visit_items').insert(itemRows)
+  }
+
   return ok(data)
 }
 

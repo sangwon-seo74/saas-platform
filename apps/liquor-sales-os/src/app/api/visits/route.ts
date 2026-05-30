@@ -108,7 +108,7 @@ export async function GET(request: Request) {
   let query = supabase
     .schema('lso')
     .from('visits')
-    .select('id, status, visit_type, purpose, result, check_in_at, check_out_at, lat, lng, client:clients(id, name), rep:users(id, name)')
+    .select('id, status, visit_type, purpose, result, check_in_at, check_out_at, lat, lng, client:clients(id, name, address, client_type), rep:users(id, name)')
     .eq('tenant_id', tenantId)
     .order('check_in_at', { ascending: false })
     .limit(limit)
