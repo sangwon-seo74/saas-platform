@@ -18,6 +18,7 @@ interface DuplicateContact {
   email: string | null
   mobile: string | null
   company: { name: string } | null
+  match_type?: 'hard' | 'soft'
 }
 
 const EMPTY_FORM: RecognizedCardData = {
@@ -201,7 +202,10 @@ export default function ScanPage() {
                   <span className="font-medium">{d.name}</span>
                   <span className="text-dk-dim">·</span>
                   <span className="text-dk-muted">{d.company?.name ?? '—'}</span>
-                  <a href={`/app/contacts/${d.id}`} className="ml-auto text-dk-blue hover:underline">보기</a>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${d.match_type === 'hard' ? 'bg-red-500/15 text-dk-red' : 'bg-dk-orange/15 text-dk-orange'}`}>
+                    {d.match_type === 'hard' ? '동일 연락처' : '유사 이름'}
+                  </span>
+                  <a href={`/app/contacts/${d.id}`} className="ml-auto text-dk-blue hover:underline shrink-0">보기</a>
                 </div>
               ))}
             </div>

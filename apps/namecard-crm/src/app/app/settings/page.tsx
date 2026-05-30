@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, UserPlus, Mail, Trash2, Link2, ChevronRight } from 'lucide-react'
+import { Loader2, UserPlus, Mail, Trash2, Link2, ChevronRight, BarChart2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface TeamMember {
@@ -12,12 +12,20 @@ interface TeamMember {
   is_active: boolean
 }
 
+interface UsageStats {
+  contacts: number
+  companies: number
+  business_cards: number
+  activities: number
+}
+
 export default function SettingsPage() {
   const [members, setMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviting, setInviting]       = useState(false)
   const [inviteMsg, setInviteMsg]     = useState('')
+  const [usage, setUsage]             = useState<UsageStats | null>(null)
 
   useEffect(() => {
     fetch('/api/settings/teams')
@@ -25,6 +33,11 @@ export default function SettingsPage() {
       .then(j => { if (j.data) setMembers(j.data) })
       .catch(() => {})
       .finally(() => setLoading(false))
+
+    fetch('/api/settings/usage')
+      .then(r => r.json())
+      .then(j => { if (j.data) setUsage(j.data) })
+      .catch(() => {})
   }, [])
 
   async function invite() {
@@ -48,6 +61,31 @@ export default function SettingsPage() {
   return (
     <div className="p-6 max-w-2xl space-y-6">
       <h1 className="text-lg font-bold text-dk-text">설정</h1>
+
+      {/* 사용량 */}
+      <section className="bg-dk-surface border border-dk-border rounded-xl p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <BarChart2 className="w-4 h-4 text-dk-muted" />
+          <h2 className="text-sm font-semibold text-dk-text">사용량</h2>
+        </div>
+        {usage ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: '고객', value: usage.contacts },
+              { label: '회사', value: usage.companies },
+              { label: '명함 스캔', value: usage.business_cards },
+              { label: '활동 기록', value: usage.activities },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-dk-surface2 rounded-lg px-3 py-2.5 text-center">
+                <p className="text-lg font-bold text-dk-text tabular-nums">{value.toLocaleString()}</p>
+                <p className="text-xs text-dk-muted mt-0.5">{label}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-dk-muted" /></div>
+        )}
+      </section>
 
       {/* 팀 관리 */}
       <section className="bg-dk-surface border border-dk-border rounded-xl p-5 space-y-4">
