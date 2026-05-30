@@ -2,12 +2,55 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, MapPin, Clock, Package, CheckCircle, Pencil, X } from 'lucide-react'
+import { ArrowLeft, MapPin, Clock, Package, CheckCircle, Pencil, X, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { VISIT_STATUS_LABEL, VISIT_TYPE_LABEL, formatDateTime, cn } from '@/lib/utils'
 import type { Visit, VisitItem } from '@/types/domain'
 
 export const metadata: Metadata = { title: '방문 상세' }
+
+async function addItemAction(formData: FormData) {
+  'use server'
+  const headersList = await headers()
+  const tenantId = headersList.get('x-tenant-id') ?? ''
+  const role     = headersList.get('x-user-role') ?? 'rep'
+
+  const visitId     = formData.get('visit_id')?.toString()
+  const productName = formData.get('product_name')?.toString()?.trim()
+  const quantity    = parseInt(formData.get('quantity')?.toString() ?? '1', 10)
+  const memo        = formData.get('memo')?.toString()?.trim() || null
+
+  if (!visitId || !productName || !tenantId || (role !== 'admin' && role !== 'manager')) {
+    redirect(`/app/visits/${visitId}`)
+  }
+
+  const supabase = await createClient()
+  await supabase
+    .schema('lso')
+    .from('visit_items')
+    .insert({ visit_id: visitId, product_name: productName, quantity: isNaN(quantity) ? 1 : quantity, memo })
+
+  redirect(`/app/visits/${visitId}`)
+}
+
+async function deleteItemAction(formData: FormData) {
+  'use server'
+  const headersList = await headers()
+  const tenantId = headersList.get('x-tenant-id') ?? ''
+  const role     = headersList.get('x-user-role') ?? 'rep'
+
+  const visitId = formData.get('visit_id')?.toString()
+  const itemId  = formData.get('item_id')?.toString()
+
+  if (!visitId || !itemId || !tenantId || (role !== 'admin' && role !== 'manager')) {
+    redirect(`/app/visits/${visitId}`)
+  }
+
+  const supabase = await createClient()
+  await supabase.schema('lso').from('visit_items').delete().eq('id', itemId).eq('visit_id', visitId)
+
+  redirect(`/app/visits/${visitId}`)
+}
 
 async function cancelVisitAction(formData: FormData) {
   'use server'
@@ -111,6 +154,7 @@ export default async function VisitDetailPage({ params }: { params: Promise<{ id
     (role !== 'rep' || visit.rep_user_id === userId)
 
   const canManagePlanned = visit.status === 'planned' && (role === 'admin' || role === 'manager')
+  const canEditItems = (visit.status === 'planned' || visit.status === 'checked_in') && (role === 'admin' || role === 'manager')
 
   const statusColor: Record<string, string> = {
     planned:    'text-amber-300',
@@ -191,11 +235,12 @@ export default async function VisitDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      {visitItems.length > 0 && (
+      {(visitItems.length > 0 || canEditItems) && (
         <div className="bg-dk-surface border border-dk-border rounded-xl">
           <div className="flex items-center gap-2 px-4 py-3 border-b border-dk-border">
             <Package className="w-4 h-4 text-dk-muted" />
             <h2 className="text-sm font-semibold text-dk-text">주문 내역</h2>
+            <span className="ml-auto text-xs text-dk-dim">{visitItems.length}건</span>
           </div>
           <div className="divide-y divide-dk-border">
             {visitItems.map(item => (
@@ -205,16 +250,50 @@ export default async function VisitDetailPage({ params }: { params: Promise<{ id
                   {item.memo && <p className="text-xs text-dk-muted mt-0.5">{item.memo}</p>}
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-tabular text-dk-text">{item.quantity} {' '}개</p>
+                  <p className="text-sm font-tabular text-dk-text">{item.quantity}개</p>
                   {item.unit_price && (
                     <p className="text-xs text-dk-muted font-tabular">
                       {(item.unit_price * item.quantity).toLocaleString()}원
                     </p>
                   )}
                 </div>
+                {canEditItems && (
+                  <form action={deleteItemAction}>
+                    <input type="hidden" name="visit_id" value={id} />
+                    <input type="hidden" name="item_id" value={item.id} />
+                    <button type="submit" className="p-1 rounded text-dk-dim hover:text-dk-red transition-colors" title="삭제">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </form>
+                )}
               </div>
             ))}
           </div>
+
+          {canEditItems && (
+            <form action={addItemAction} className="flex gap-2 p-3 border-t border-dk-border">
+              <input type="hidden" name="visit_id" value={id} />
+              <input
+                name="product_name"
+                required
+                placeholder="상품명"
+                className="flex-1 min-w-0 px-2.5 py-1.5 text-sm bg-dk-surface2 border border-dk-border rounded-lg text-dk-text placeholder-dk-dim focus:outline-none focus:border-dk-border2"
+              />
+              <input
+                name="quantity"
+                type="number"
+                min="1"
+                defaultValue="1"
+                className="w-16 px-2.5 py-1.5 text-sm bg-dk-surface2 border border-dk-border rounded-lg text-dk-text text-center focus:outline-none focus:border-dk-border2"
+              />
+              <button
+                type="submit"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-dk-accent text-white rounded-lg hover:bg-dk-accentHover transition-colors shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />추가
+              </button>
+            </form>
+          )}
         </div>
       )}
 
