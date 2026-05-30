@@ -37,7 +37,7 @@ function Nav() {
             로그인
           </Link>
           <Link
-            href={RROS_URL}
+            href={`${RROS_URL}/signup`}
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors shadow-lg shadow-indigo-900/40"
           >
             무료 시작
@@ -98,7 +98,7 @@ function Hero() {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href={RROS_URL}
+            href={`${RROS_URL}/signup`}
             className="flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-lg shadow-indigo-900/50 hover:shadow-indigo-800/70 hover:-translate-y-0.5"
           >
             무료로 시작하기
@@ -171,10 +171,7 @@ function Solutions() {
         <div className="grid lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {/* RROS card */}
           <div className="relative group flex flex-col bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-indigo-500/40 rounded-2xl p-8 transition-all duration-300 overflow-hidden">
-            {/* Glow on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
-
-            {/* Live badge */}
             <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-emerald-400 text-xs font-medium">운영 중</span>
@@ -203,13 +200,21 @@ function Solutions() {
                 ))}
               </ul>
 
-              <Link
-                href={RROS_URL}
-                className="mt-auto inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-colors shadow-lg shadow-indigo-900/40"
-              >
-                바로 시작하기
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="mt-auto flex gap-3">
+                <Link
+                  href="/pricing/rros"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-colors shadow-lg shadow-indigo-900/40"
+                >
+                  플랜 보기
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href={RROS_URL}
+                  className="px-4 py-3 text-sm text-slate-400 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all"
+                >
+                  로그인
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -239,13 +244,21 @@ function Solutions() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href={NCM_URL}
-                className="mt-auto inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl transition-colors shadow-lg shadow-teal-900/40"
-              >
-                바로 시작하기
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="mt-auto flex gap-3">
+                <Link
+                  href="/pricing/ncm"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-xl transition-colors shadow-lg shadow-teal-900/40"
+                >
+                  플랜 보기
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href={NCM_URL}
+                  className="px-4 py-3 text-sm text-slate-400 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all"
+                >
+                  로그인
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -275,13 +288,21 @@ function Solutions() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href={LSO_URL}
-                className="mt-auto inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors shadow-lg shadow-orange-900/40"
-              >
-                바로 시작하기
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="mt-auto flex gap-3">
+                <Link
+                  href="/pricing/lso"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors shadow-lg shadow-orange-900/40"
+                >
+                  플랜 보기
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href={LSO_URL}
+                  className="px-4 py-3 text-sm text-slate-400 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all"
+                >
+                  로그인
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -370,10 +391,10 @@ function Features() {
 // ─── How it works ─────────────────────────────────────────────────────────────
 function HowItWorks() {
   const steps = [
-    { step: '01', title: '팀 계정 생성', desc: '회사 이메일로 5분 만에 계정을 만들고 팀원을 초대하세요.' },
-    { step: '02', title: '고객사 데이터 입력', desc: '기존 고객사, 계약, 담당자 정보를 입력하거나 가져오세요.' },
-    { step: '03', title: '갱신 파이프라인 가동', desc: '갱신 일정에 맞춰 자동으로 알림이 발송되고 업무가 배분됩니다.' },
-    { step: '04', title: '성과 분석', desc: '대시보드에서 갱신율, 이탈 위험, 팀 성과를 실시간으로 확인하세요.' },
+    { step: '01', title: '플랜 선택', desc: '솔루션별 요금제 페이지에서 팀에 맞는 플랜을 선택하세요.' },
+    { step: '02', title: '계정 생성', desc: '회사명·이메일·비밀번호 입력 후 즉시 계정이 만들어집니다.' },
+    { step: '03', title: '팀원 초대', desc: '관리자 대시보드에서 초대 링크를 공유해 팀원을 추가하세요.' },
+    { step: '04', title: '바로 시작', desc: '데이터를 입력하고 자동화된 운영 흐름을 즉시 경험하세요.' },
   ]
 
   return (
@@ -407,103 +428,6 @@ function HowItWorks() {
   )
 }
 
-// ─── Pricing ─────────────────────────────────────────────────────────────────
-function Pricing() {
-  const plans = [
-    {
-      name: 'Starter',
-      price: '무료',
-      sub: '영구 무료',
-      desc: '소규모 팀의 갱신 관리 입문에 최적',
-      features: ['고객사 50개', '사용자 3명', '갱신 파이프라인', '기본 활동 이력', '이메일 알림'],
-      cta: '무료로 시작',
-      highlight: false,
-    },
-    {
-      name: 'Pro',
-      price: '₩49,000',
-      sub: '/ 월 · 사용자당',
-      desc: '성장 중인 영업팀의 전체 기능 활용',
-      features: ['고객사 무제한', '사용자 무제한', 'SMS · 카카오 알림', 'AI 위험도 분석', '리포트 & 엑스포트', '우선 지원'],
-      cta: '14일 무료 체험',
-      highlight: true,
-    },
-    {
-      name: 'Enterprise',
-      price: '문의',
-      sub: '맞춤 견적',
-      desc: '대형 조직의 보안·통합·SLA 요구에 대응',
-      features: ['전용 인스턴스', 'SSO / SAML', '전용 CS 매니저', 'SLA 99.9%', 'API 전체 접근', '온프레미스 옵션'],
-      cta: '도입 문의',
-      highlight: false,
-    },
-  ]
-
-  return (
-    <section className="py-28 border-t border-white/[0.06]">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-indigo-400 text-xs font-semibold uppercase tracking-widest mb-3">요금제</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            팀 규모에 맞는 요금제
-          </h2>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">
-            무료로 시작하고, 성장에 따라 업그레이드하세요
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto pt-5">
-          {plans.map(p => (
-            <div
-              key={p.name}
-              className={`relative flex flex-col rounded-2xl p-7 border transition-all ${
-                p.highlight
-                  ? 'z-10 bg-gradient-to-b from-indigo-900/40 to-indigo-900/20 border-indigo-500/40 shadow-xl shadow-indigo-900/30'
-                  : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
-              }`}
-            >
-              {p.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 rounded-full text-[11px] font-semibold text-white">
-                  인기
-                </div>
-              )}
-              <div className="mb-6">
-                <p className="text-slate-300 font-semibold text-sm mb-2">{p.name}</p>
-                <div className="flex items-end gap-1.5 mb-1">
-                  <span className="text-3xl font-bold text-white">{p.price}</span>
-                  <span className="text-slate-500 text-sm pb-1">{p.sub}</span>
-                </div>
-                <p className="text-slate-500 text-sm">{p.desc}</p>
-              </div>
-
-              <ul className="space-y-2.5 mb-8 flex-1">
-                {p.features.map(f => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-slate-300">
-                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${p.highlight ? 'text-indigo-400' : 'text-slate-500'}`} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href={RROS_URL}
-                className={`flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl transition-all ${
-                  p.highlight
-                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/40'
-                    : 'border border-white/10 hover:border-white/25 text-slate-300 hover:text-white'
-                }`}
-              >
-                {p.cta}
-                {p.highlight && <ArrowRight className="w-4 h-4" />}
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 // ─── CTA ─────────────────────────────────────────────────────────────────────
 function CTA() {
   return (
@@ -526,10 +450,10 @@ function CTA() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href={RROS_URL}
+                href="/pricing/rros"
                 className="flex items-center gap-2 px-8 py-4 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-xl shadow-indigo-900/60 hover:-translate-y-0.5"
               >
-                무료로 시작하기
+                플랜 보기
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
@@ -591,7 +515,6 @@ export default function LandingPage() {
       <Solutions />
       <Features />
       <HowItWorks />
-      <Pricing />
       <CTA />
       <Footer />
     </div>

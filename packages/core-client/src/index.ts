@@ -109,6 +109,51 @@ const platformSettingsSchema = z.object({
 })
 const platformSettingsOkSchema = z.object({ ok: z.boolean() })
 
+const signupSchema = z.object({
+  message: z.string(),
+  tenant_id: z.string(),
+  user: z.object({ id: z.string(), email: z.string(), name: z.string() }),
+  subscription: z.object({ id: z.string(), plan_code: z.string(), status: z.string() }),
+})
+
+const teamInviteLinkSchema = z.object({
+  id: z.string(),
+  token: z.string(),
+  role: z.string(),
+  label: z.string().nullable().optional(),
+  max_uses: z.number().nullable().optional(),
+  use_count: z.number(),
+  expires_at: z.string().nullable().optional(),
+  is_active: z.boolean(),
+  join_url: z.string(),
+})
+
+const teamInviteLinksSchema = z.array(teamInviteLinkSchema)
+
+const verifyTeamLinkSchema = z.object({
+  tenant_name: z.string(),
+  role: z.string(),
+  label: z.string().nullable().optional(),
+})
+
+const joinTeamSchema = z.object({
+  message: z.string(),
+  user: z.object({ id: z.string(), email: z.string(), name: z.string() }),
+})
+
+const paymentReadySchema = z.object({
+  order_id: z.string(),
+  amount: z.number(),
+  order_name: z.string(),
+  client_key: z.string(),
+})
+
+const paymentConfirmSchema = z.object({
+  message: z.string(),
+  subscription_id: z.string(),
+  status: z.string(),
+})
+
 // ─── 인증 불필요 ────────────────────────────────────────────
 
 export function logAccess(params: {
@@ -206,3 +251,69 @@ export async function updatePlatformSettings(
 ) {
   return call('PATCH', '/v1/admin/platform/settings', platformSettingsOkSchema, { settings }, authToken)
 }
+
+// ─── 셀프 가입 ──────────────────────────────────────────────
+
+export async function signup(params: {
+  company_name: string
+  admin_name: string
+  email: string
+  password: string
+  plan_code: string
+  domain: string
+}) {
+  return call('POST', '/v1/signup', signupSchema, params)
+}
+
+// ─── 결제 (Toss 샌드박스) ────────────────────────────────────
+
+export async function preparePayment(params: {
+  plan_code: string
+  billing_cycle: 'monthly' | 'yearly'
+  tenant_id: string
+}, authToken: string) {
+  return call('POST', '/v1/payment/prepare', paymentReadySchema, params, authToken)
+}
+
+export async function confirmPayment(params: {
+  order_id: string
+  payment_key?: string
+  amount?: number
+}, authToken: string) {
+  return call('POST', '/v1/payment/confirm', paymentConfirmSchema, params, authToken)
+}
+
+// ─── 팀 초대 링크 ────────────────────────────────────────────
+
+export async function createTeamInviteLink(
+  params: { role: string; label?: string; max_uses?: number; expires_days?: number },
+  authToken: string,
+) {
+  return call('POST', '/v1/team-invite', teamInviteLinkSchema, params, authToken)
+}
+
+export async function listTeamInviteLinks(authToken: string) {
+  return call('GET', '/v1/team-invite', teamInviteLinksSchema, undefined, authToken)
+}
+
+export async function deactivateTeamInviteLink(id: string, authToken: string) {
+  return call('DELETE', `/v1/team-invite/${id}`, z.object({ ok: z.boolean() }), undefined, authToken)
+}
+
+export async function verifyTeamInviteLink(token: string) {
+  return call('GET', `/v1/join?token=${encodeURIComponent(token)}`, verifyTeamLinkSchema)
+}
+
+export async function joinWithTeamLink(params: {
+  token: string
+  name: string
+  email: string
+  password: string
+}) {
+  return call('POST', '/v1/join', joinTeamSchema, params)
+}
+
+export type SignupResult = import('zod').infer<typeof signupSchema>
+export type TeamInviteLink = import('zod').infer<typeof teamInviteLinkSchema>
+
+export * from './plans'

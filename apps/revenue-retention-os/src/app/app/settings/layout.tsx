@@ -6,13 +6,14 @@ import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import {
   Building, Users, UsersRound, Package, MessageSquare,
-  Plug, CreditCard, Receipt, Bell,
+  Plug, CreditCard, Receipt, Bell, Link2,
 } from 'lucide-react'
 
 const SETTINGS_NAV = [
   { href: '/app/settings/tenant',                label: '테넌트 정보',    icon: Building },
   { href: '/app/settings/users',                 label: '사용자 관리',    icon: Users },
   { href: '/app/settings/teams',                 label: '팀 관리',        icon: UsersRound },
+  { href: '/app/settings/invite-links',          label: '팀 초대 링크',   icon: Link2 },
   { href: '/app/settings/products',              label: '제품 관리',      icon: Package },
   { href: '/app/settings/templates',             label: '메시지 템플릿',  icon: MessageSquare },
   { href: '/app/settings/renewal-notifications', label: '갱신 자동 알림', icon: Bell },

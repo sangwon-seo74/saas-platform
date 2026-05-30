@@ -108,6 +108,152 @@ async def accept_invite(body: AcceptInviteRequest):
     }
 
 
+# ─── 팀 초대 링크 (Slack 스타일) ────────────────────────────────────────────
+
+class TeamInviteLinkRequest(BaseModel):
+    role: str = "sales"
+    label: Optional[str] = None
+    max_uses: Optional[int] = None
+    expires_days: Optional[int] = 30
+
+
+class JoinRequest(BaseModel):
+    token: str
+    name: str
+    email: str
+    password: str
+
+
+@router.post("/team-invite")
+async def create_team_invite_link(body: TeamInviteLinkRequest, auth: AuthContext = Depends(get_current_user)):
+    if auth.role not in ("admin", "manager", "owner"):
+        raise HTTPException(status_code=403, detail="admin 또는 manager만 초대 링크를 생성할 수 있습니다")
+    if body.role not in VALID_ROLES:
+        raise HTTPException(status_code=400, detail=f"role은 {', '.join(VALID_ROLES)} 중 하나여야 합니다")
+
+    import secrets as sec
+    token = sec.token_urlsafe(32)
+    settings = get_settings()
+
+    expires_at = None
+    if body.expires_days:
+        expires_at = (datetime.now(timezone.utc) + timedelta(days=body.expires_days)).isoformat()
+
+    row = await db.db_insert("team_invite_links", {
+        "tenant_id": auth.tenant_id,
+        "token": token,
+        "role": body.role,
+        "label": body.label,
+        "max_uses": body.max_uses,
+        "use_count": 0,
+        "created_by": auth.user_id,
+        "expires_at": expires_at,
+        "is_active": True,
+    })
+
+    join_url = f"{settings.app_url}/join?token={token}"
+    return {**row, "join_url": join_url}
+
+
+@router.get("/team-invite")
+async def list_team_invite_links(auth: AuthContext = Depends(get_current_user)):
+    if auth.role not in ("admin", "manager", "owner"):
+        raise HTTPException(status_code=403, detail="admin 또는 manager만 초대 링크를 조회할 수 있습니다")
+
+    rows = await db.db_select(
+        "team_invite_links",
+        {"tenant_id": f"eq.{auth.tenant_id}", "order": "created_at.desc"},
+    )
+    settings = get_settings()
+    return [
+        {**r, "join_url": f"{settings.app_url}/join?token={r['token']}"}
+        for r in rows
+    ]
+
+
+@router.delete("/team-invite/{link_id}")
+async def deactivate_team_invite_link(link_id: str, auth: AuthContext = Depends(get_current_user)):
+    if auth.role not in ("admin", "manager", "owner"):
+        raise HTTPException(status_code=403, detail="권한이 없습니다")
+
+    rows = await db.db_select(
+        "team_invite_links",
+        {"id": f"eq.{link_id}", "tenant_id": f"eq.{auth.tenant_id}", "select": "id"},
+    )
+    if not rows:
+        raise HTTPException(status_code=404, detail="초대 링크를 찾을 수 없습니다")
+
+    await db.db_update("team_invite_links", {"id": f"eq.{link_id}"}, {"is_active": False})
+    return {"ok": True}
+
+
+@router.get("/join")
+async def check_team_invite(token: str):
+    rows = await db.db_select(
+        "team_invite_links",
+        {"token": f"eq.{token}", "is_active": "eq.true", "select": "id,tenant_id,role,label,max_uses,use_count,expires_at"},
+    )
+    if not rows:
+        raise HTTPException(status_code=400, detail="유효하지 않거나 비활성화된 초대 링크입니다")
+
+    link = rows[0]
+    if link.get("expires_at") and datetime.fromisoformat(link["expires_at"]) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="만료된 초대 링크입니다")
+    if link.get("max_uses") and link["use_count"] >= link["max_uses"]:
+        raise HTTPException(status_code=400, detail="사용 횟수를 초과한 초대 링크입니다")
+
+    tenant_rows = await db.db_select("tenants", {"id": f"eq.{link['tenant_id']}", "select": "name"})
+    tenant_name = tenant_rows[0]["name"] if tenant_rows else ""
+
+    return {"tenant_name": tenant_name, "role": link["role"], "label": link.get("label")}
+
+
+@router.post("/join")
+async def join_with_team_link(body: JoinRequest):
+    if not body.name.strip():
+        raise HTTPException(status_code=400, detail="이름은 필수입니다")
+    if not body.email.strip():
+        raise HTTPException(status_code=400, detail="이메일은 필수입니다")
+    if len(body.password) < 8:
+        raise HTTPException(status_code=400, detail="비밀번호는 8자 이상이어야 합니다")
+
+    rows = await db.db_select(
+        "team_invite_links",
+        {"token": f"eq.{body.token}", "is_active": "eq.true", "select": "id,tenant_id,role,max_uses,use_count,expires_at"},
+    )
+    if not rows:
+        raise HTTPException(status_code=400, detail="유효하지 않거나 비활성화된 초대 링크입니다")
+
+    link = rows[0]
+    if link.get("expires_at") and datetime.fromisoformat(link["expires_at"]) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="만료된 초대 링크입니다")
+    if link.get("max_uses") and link["use_count"] >= link["max_uses"]:
+        raise HTTPException(status_code=400, detail="사용 횟수를 초과한 초대 링크입니다")
+
+    existing = await db.db_select("users", {"email": f"eq.{body.email}", "select": "id"})
+    if existing:
+        raise HTTPException(status_code=409, detail="이미 가입된 이메일입니다")
+
+    user_data = await db.auth_create_user(
+        email=body.email,
+        password=body.password,
+        name=body.name.strip(),
+        tenant_id=link["tenant_id"],
+        role=link["role"],
+    )
+
+    await db.db_update(
+        "team_invite_links",
+        {"id": f"eq.{link['id']}"},
+        {"use_count": link["use_count"] + 1},
+    )
+
+    return {
+        "message": "계정이 생성되었습니다. 로그인하세요.",
+        "user": {"id": user_data["id"], "email": body.email, "name": body.name.strip()},
+    }
+
+
 async def _create_and_store_invite(
     email: str, name: str, role: str,
     tenant_id: Optional[str], tenant_name: str,
