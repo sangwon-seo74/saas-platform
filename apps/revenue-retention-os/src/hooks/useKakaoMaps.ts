@@ -42,32 +42,44 @@ export function useKakaoMaps(): { loaded: boolean; error: boolean } {
     if (!KAKAO_MAPS_KEY) { setError(true); return }
     if (window.kakao?.maps?.services) { setLoaded(true); return }
 
+    let loadTimeout: ReturnType<typeof setTimeout>
+
+    const onLoaded = () => {
+      clearTimeout(loadTimeout)
+      setLoaded(true)
+    }
+    const callLoad = () => {
+      // 5초 안에 kakao.maps.load() 콜백이 안 오면 에러 처리
+      loadTimeout = setTimeout(() => setError(true), 5000)
+      window.kakao!.maps.load(onLoaded)
+    }
+
     const existing = document.querySelector('script[src*="dapi.kakao.com/v2/maps"]')
     if (existing) {
       if (window.kakao?.maps) {
-        window.kakao.maps.load(() => setLoaded(true))
+        callLoad()
       } else {
         const timer = setInterval(() => {
           if (window.kakao?.maps) {
             clearInterval(timer)
-            window.kakao.maps.load(() => setLoaded(true))
+            callLoad()
           }
         }, 100)
-        const timeout = setTimeout(() => { clearInterval(timer); setError(true) }, 10000)
-        return () => { clearInterval(timer); clearTimeout(timeout) }
+        const scriptTimeout = setTimeout(() => { clearInterval(timer); setError(true) }, 10000)
+        return () => { clearInterval(timer); clearTimeout(scriptTimeout); clearTimeout(loadTimeout) }
       }
-      return
+      return () => clearTimeout(loadTimeout)
     }
 
     const script = document.createElement('script')
     script.src   = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAPS_KEY}&libraries=services&autoload=false`
     script.async = true
-    script.onload  = () => window.kakao!.maps.load(() => setLoaded(true))
+    script.onload  = () => callLoad()
     script.onerror = () => setError(true)
     document.head.appendChild(script)
 
-    const timeout = setTimeout(() => setError(true), 10000)
-    return () => clearTimeout(timeout)
+    const scriptTimeout = setTimeout(() => setError(true), 10000)
+    return () => { clearTimeout(scriptTimeout); clearTimeout(loadTimeout) }
   }, [])
 
   return { loaded, error }
