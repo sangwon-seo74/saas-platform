@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@saas/core-client": [
+        "../../packages/core-client/src"
       ]
     },
     "target": "ES2017"

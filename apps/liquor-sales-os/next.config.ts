@@ -1,7 +1,13 @@
 import type { NextConfig } from 'next'
+import path from 'path'
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@saas/core-client'],
+
+  webpack(config) {
+    config.resolve.alias['@saas/core-client'] = path.resolve(__dirname, '../../packages/core-client/src')
+    return config
+  },
 
   experimental: {
     serverActions: { allowedOrigins: ['localhost:3002'] },
