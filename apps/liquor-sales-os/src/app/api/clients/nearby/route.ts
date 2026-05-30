@@ -41,18 +41,29 @@ export async function GET(request: Request) {
     return ok(data ?? [])
   }
 
-  // 관리자: 반경 ~10km 내 거래처 (위도 ±0.09° ≈ 10km)
-  const { data } = await supabase
-    .schema('lso')
-    .from('clients')
-    .select('id, name, client_type, address, lat, lng, last_visited_at')
-    .eq('tenant_id', tenantId)
-    .eq('status', 'active')
-    .gte('lat', lat - 0.09)
-    .lte('lat', lat + 0.09)
-    .gte('lng', lng - 0.11)
-    .lte('lng', lng + 0.11)
-    .limit(50)
+  // 관리자: 반경 ~10km 내 GPS 등록 거래처 + GPS 미등록 거래처(별도 조회)
+  const [nearbyRes, noGpsRes] = await Promise.all([
+    supabase
+      .schema('lso')
+      .from('clients')
+      .select('id, name, client_type, address, lat, lng, last_visited_at')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .gte('lat', lat - 0.09)
+      .lte('lat', lat + 0.09)
+      .gte('lng', lng - 0.11)
+      .lte('lng', lng + 0.11)
+      .limit(50),
 
-  return ok(data ?? [])
+    supabase
+      .schema('lso')
+      .from('clients')
+      .select('id, name, client_type, address, lat, lng, last_visited_at')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .is('lat', null)
+      .limit(20),
+  ])
+
+  return ok([...(nearbyRes.data ?? []), ...(noGpsRes.data ?? [])])
 }

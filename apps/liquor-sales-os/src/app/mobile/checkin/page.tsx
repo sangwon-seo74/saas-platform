@@ -305,7 +305,7 @@ export default function CheckinPage() {
                           {CLIENT_TYPE_LABEL[client.client_type]} · {client.address ?? '주소 없음'}
                         </p>
                       </div>
-                      {client.distance !== undefined && (
+                      {client.distance !== undefined ? (
                         <p className={cn(
                           'text-xs font-medium shrink-0',
                           client.distance < 200  ? 'text-dk-green' :
@@ -313,6 +313,10 @@ export default function CheckinPage() {
                         )}>
                           {formatDistance(client.distance)}
                         </p>
+                      ) : (
+                        <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded shrink-0">
+                          GPS 미등록
+                        </span>
                       )}
                     </button>
                   ))
