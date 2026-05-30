@@ -53,12 +53,19 @@ export default async function VisitsPage({
           <h1 className="text-lg font-bold text-dk-text">방문 내역</h1>
           <p className="text-xs text-dk-muted mt-0.5">총 {visits.length}건</p>
         </div>
-        {role === 'rep' && (
+        {role === 'rep' ? (
           <Link
             href="/mobile/checkin"
             className="px-3 py-1.5 bg-dk-accent text-white text-sm font-semibold rounded-lg hover:bg-dk-accentHover transition-colors flex items-center gap-1.5"
           >
             <MapPin className="w-3.5 h-3.5" />체크인
+          </Link>
+        ) : (
+          <Link
+            href="/app/visits/new"
+            className="px-3 py-1.5 bg-dk-accent text-white text-sm font-semibold rounded-lg hover:bg-dk-accentHover transition-colors"
+          >
+            + 방문 예약
           </Link>
         )}
       </div>
