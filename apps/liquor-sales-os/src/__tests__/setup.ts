@@ -29,17 +29,9 @@ export function makeSupabaseClient(rows: unknown[] = [], error: unknown = null) 
   chain.then        = (fn: (v: { data: unknown[]; error: unknown }) => void) =>
                         Promise.resolve({ data: rows, error }).then(fn)
 
-  const insertChain = { ...chain, select: vi.fn(() => chain) }
-  const updateChain = { ...chain, select: vi.fn(() => chain) }
-
   return {
     schema: vi.fn().mockReturnThis(),
-    from: vi.fn(() => ({
-      ...chain,
-      insert: vi.fn(() => insertChain),
-      update: vi.fn(() => updateChain),
-      delete: vi.fn(() => chain),
-      upsert: vi.fn(() => chain),
-    })),
+    from: vi.fn(),
+    chain,
   }
 }

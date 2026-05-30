@@ -42,12 +42,12 @@ export function makeMockSupabase(rows: unknown[] = [], error: unknown = null) {
     upsert:      () => chain,
     delete:      () => chain,
     update:      () => chain,
+    insert:      () => chain,
     single:      () => Promise.resolve({ data: rows[0] ?? null, error }),
     maybeSingle: () => Promise.resolve({ data: rows[0] ?? null, error }),
     then:        (fn: (v: { data: unknown[]; error: unknown; count: number }) => void) =>
                    Promise.resolve({ data: rows, error, count: rows.length }).then(fn),
   }
-  const insertChain = { select: () => chain, ...chain }
 
   const authClient = {
     auth: {
@@ -57,8 +57,9 @@ export function makeMockSupabase(rows: unknown[] = [], error: unknown = null) {
 
   return {
     supabase: {
-      from: vi.fn(() => ({ ...chain, insert: vi.fn(() => insertChain) })),
+      from: vi.fn(),
     },
     authClient,
+    chain,
   }
 }
