@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Building2, Users, MapPin, ClipboardList,
-  Settings, ChevronRight, LogOut, Menu, Wine, Package,
+  Settings, ChevronRight, LogOut, Menu, Wine, Package, BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut } from '@/lib/supabase/auth-client'
@@ -20,6 +20,7 @@ const NAV_ADMIN = [
   { href: '/app/visits',    icon: ClipboardList,    label: '방문 내역' },
   { href: '/app/reps',      icon: Users,            label: '영업담당자', roles: ['admin', 'manager'] },
   { href: '/app/products',  icon: Package,          label: '제품 관리',  roles: ['admin'] },
+  { href: '/app/reports',   icon: BarChart3,         label: '방문 리포트', roles: ['admin', 'manager'] },
 ]
 
 const NAV_BOTTOM = [

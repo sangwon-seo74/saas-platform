@@ -52,17 +52,18 @@
 - [x] `apps/landing/.env.example` — LSO_URL 추가
 
 **다음 작업 (Phase 2)**:
-- [ ] `pnpm install` 실행 후 빌드 검증
-- [ ] `apps/liquor-sales-os/src/app/app/clients/new/page.tsx` — 거래처 등록 폼
-- [ ] `apps/liquor-sales-os/src/app/app/clients/[id]/edit/page.tsx` — 거래처 수정
-- [ ] `apps/liquor-sales-os/src/app/app/reps/[id]/page.tsx` — 담당자 상세 + 동선
-- [ ] `apps/liquor-sales-os/src/app/app/settings/page.tsx` — 설정 (팀 관리)
-- [ ] 카카오맵 API 키 발급 후 지도 기능 검증
-- [ ] Vercel 프로젝트 `lso` 생성 + 환경변수 설정
-- [ ] `apps/landing/.env.local`에 `NEXT_PUBLIC_LSO_URL` 실제 URL로 설정
-- [ ] 담당자 배정 UI (`/app/clients/[id]` → 담당자 배정/해제 버튼)
-- [ ] 방문 완료 처리 (체크아웃 기능)
-- [ ] 주간/월간 방문 리포트 페이지
+- [x] `pnpm install` 실행 후 빌드 검증 (visits/[id]/edit 미사용 import 수정 포함)
+- [x] `apps/liquor-sales-os/src/app/app/clients/new/page.tsx` — 거래처 등록 폼 (스캐폴딩 시 생성됨)
+- [x] `apps/liquor-sales-os/src/app/app/clients/[id]/edit/page.tsx` — 거래처 수정 (스캐폴딩 시 생성됨)
+- [x] `apps/liquor-sales-os/src/app/app/reps/[id]/page.tsx` — 담당자 상세 (스캐폴딩 시 생성됨)
+- [x] `apps/liquor-sales-os/src/app/app/settings/page.tsx` — 설정 (스캐폴딩 시 생성됨)
+- [x] 카카오맵 API 키 발급 후 지도 기능 검증 (완료 확인됨, 건너뜀)
+- [x] Vercel 프로젝트 `lso` 생성 (프로젝트명: `liquor-sales-os`, 이미 존재)
+- [x] Vercel 환경변수 설정 (`liquor-sales-os` 프로젝트) — 이전 배포에서 이미 설정됨
+- [x] `apps/landing/.env.local`에 `NEXT_PUBLIC_LSO_URL` 설정 — `.env.production`에 https://liquor-sales-os.vercel.app로 설정. Vercel alias 확인.
+- [x] 담당자 배정 UI (`/app/clients/[id]`) — `addAssignmentAction` server action 구현됨
+- [x] 방문 완료 처리 (체크아웃 기능) — `completeVisitAction` server action 구현됨
+- [x] 주간/월간 방문 리포트 페이지 (`/app/reports`, 사이드바 메뉴 추가, admin/manager 전용)
 
 **가정/결정 사항**:
 - 지도: 카카오맵 API 사용. 키 없으면 목록 폴백으로 자동 처리됨.
