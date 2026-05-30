@@ -1,5 +1,7 @@
 'use client'
 
+const LANDING_URL = process.env.NEXT_PUBLIC_LANDING_URL || 'https://saas-foundry.vercel.app'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -80,7 +82,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col h-full">
       <div className={cn('flex items-center border-b border-dk-border shrink-0', collapsed ? 'px-3 py-4 justify-center' : 'px-4 py-4 gap-2.5')}>
         <a
-          href={process.env.NEXT_PUBLIC_LANDING_URL || 'https://saas-foundry.vercel.app'}
+          href={LANDING_URL}
+          onClick={(e) => { e.preventDefault(); window.location.href = LANDING_URL }}
           title="SaaS Platform 홈"
           className={cn('flex items-center gap-2.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity', !collapsed && 'flex-1')}
         >
