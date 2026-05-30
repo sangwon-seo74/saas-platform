@@ -2,12 +2,43 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, MapPin, Clock, Package, CheckCircle } from 'lucide-react'
+import { ArrowLeft, MapPin, Clock, Package, CheckCircle, Pencil, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { VISIT_STATUS_LABEL, VISIT_TYPE_LABEL, formatDateTime, cn } from '@/lib/utils'
 import type { Visit, VisitItem } from '@/types/domain'
 
 export const metadata: Metadata = { title: '방문 상세' }
+
+async function cancelVisitAction(formData: FormData) {
+  'use server'
+  const headersList = await headers()
+  const tenantId = headersList.get('x-tenant-id') ?? ''
+  const role     = headersList.get('x-user-role') ?? 'rep'
+
+  const id = formData.get('id')?.toString()
+  if (!id || !tenantId || (role !== 'admin' && role !== 'manager')) redirect('/app/visits')
+
+  const supabase = await createClient()
+
+  const { data: existing } = await supabase
+    .schema('lso')
+    .from('visits')
+    .select('id, status')
+    .eq('id', id)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!existing || existing.status !== 'planned') redirect(`/app/visits/${id}`)
+
+  await supabase
+    .schema('lso')
+    .from('visits')
+    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('tenant_id', tenantId)
+
+  redirect(`/app/visits/${id}`)
+}
 
 async function completeVisitAction(formData: FormData) {
   'use server'
@@ -78,6 +109,8 @@ export default async function VisitDetailPage({ params }: { params: Promise<{ id
   const canComplete =
     visit.status === 'checked_in' &&
     (role !== 'rep' || visit.rep_user_id === userId)
+
+  const canManagePlanned = visit.status === 'planned' && (role === 'admin' || role === 'manager')
 
   const statusColor: Record<string, string> = {
     planned:    'text-amber-300',
@@ -182,6 +215,28 @@ export default async function VisitDetailPage({ params }: { params: Promise<{ id
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {canManagePlanned && (
+        <div className="flex gap-3">
+          <Link
+            href={`/app/visits/${id}/edit`}
+            className="flex-1 py-3 flex items-center justify-center gap-2 text-sm font-semibold text-dk-text border border-dk-border rounded-xl hover:bg-dk-surface2 transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+            수정
+          </Link>
+          <form action={cancelVisitAction} className="flex-1">
+            <input type="hidden" name="id" value={visit.id} />
+            <button
+              type="submit"
+              className="w-full py-3 flex items-center justify-center gap-2 text-sm font-semibold text-dk-red border border-tint-red-border rounded-xl hover:bg-dk-danger/10 transition-colors"
+            >
+              <X className="w-4 h-4" />
+              방문 취소
+            </button>
+          </form>
         </div>
       )}
 
