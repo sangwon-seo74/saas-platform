@@ -36,18 +36,9 @@ describe('GET /api/renewals', () => {
 
   it('include_closed=true 시 필터 없이 조회', async () => {
     const rows = [{ id: 'r2', status: 'won', risk_level: 'low', contract_expires_at: '2025-12-01' }]
-    const rangeChain = { range: vi.fn().mockResolvedValue({ data: rows, error: null, count: 1 }) }
-    const orderChain = { order: vi.fn().mockReturnValue(rangeChain) }
     const mock = makeMockSupabase(rows, 1)
-    mock.supabase.from.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          gte: vi.fn().mockReturnValue({
-            lte: vi.fn().mockReturnValue(orderChain),
-          }),
-        }),
-      }),
-    })
+    const chain = makeQueryChain(rows, 1)
+    mock.supabase.from.mockReturnValue({ select: vi.fn(() => chain) })
     mockCreate.mockReturnValue(mock as unknown as ReturnType<typeof supabaseModule.createRouteHandlerClient>)
 
     const res = await GET(makeAuthRequest('/api/renewals?include_closed=true') as Parameters<typeof GET>[0], routeCtx)

@@ -39,7 +39,7 @@ export function useKakaoMaps(): { loaded: boolean; error: boolean } {
   const [error, setError]   = useState(false)
 
   useEffect(() => {
-    if (!KAKAO_MAPS_KEY) return
+    if (!KAKAO_MAPS_KEY) { setError(true); return }
     if (window.kakao?.maps?.services) { setLoaded(true); return }
 
     const existing = document.querySelector('script[src*="dapi.kakao.com/v2/maps"]')

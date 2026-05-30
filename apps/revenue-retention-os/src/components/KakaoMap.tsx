@@ -16,7 +16,7 @@ export function KakaoMap({
   savedLng,
   onMarkerChange,
 }: {
-  address: string
+  address: string | null
   savedLat: number | null
   savedLng: number | null
   onMarkerChange: (lat: number, lng: number) => void
@@ -45,19 +45,23 @@ export function KakaoMap({
 
     if (savedLat !== null && savedLng !== null) {
       initMap(savedLat, savedLng)
-    } else if (address) {
+    } else if (address?.trim()) {
       const geocoder = new window.kakao!.maps.services.Geocoder()
-      geocoder.addressSearch(address, (result, status) => {
+      geocoder.addressSearch(address.trim(), (result, status) => {
         if (status !== window.kakao!.maps.services.Status.OK || !el) {
           setAddrError(true)
           return
         }
         initMap(parseFloat(result[0].y), parseFloat(result[0].x))
       })
+    } else {
+      setAddrError(true)
     }
   }, [loaded, address, savedLat, savedLng])
 
-  const kakaoSearchUrl = `https://map.kakao.com/link/search/${encodeURIComponent(address)}`
+  const kakaoSearchUrl = address
+    ? `https://map.kakao.com/link/search/${encodeURIComponent(address)}`
+    : 'https://map.kakao.com'
 
   if (scriptError || addrError) return (
     <div className="flex flex-col gap-3">

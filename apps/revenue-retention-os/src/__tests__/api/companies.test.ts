@@ -21,26 +21,19 @@ describe('GET /api/companies', () => {
       { id: 'c1', name: 'ACME Corp', status: 'active', renewal_risk: 'low', assigned_user: null },
     ]
     const mock = makeMockSupabase(rows, 1)
-    // 두 번 from()이 호출됨: companies + contracts batch
-    mock.supabase.from.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq:    vi.fn().mockReturnValue({
-          eq:    vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              range: vi.fn().mockResolvedValue({ data: rows, error: null, count: 1 }),
+    const chain = makeQueryChain(rows, 1)
+    // 두 번 from()이 호출됨: companies 쿼리 + contracts batch
+    mock.supabase.from
+      .mockReturnValueOnce({ select: vi.fn(() => chain) })
+      .mockReturnValueOnce({
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: [], error: null }),
             }),
           }),
-          order: vi.fn().mockReturnValue({
-            range: vi.fn().mockResolvedValue({ data: rows, error: null, count: 1 }),
-          }),
         }),
-        in:   vi.fn().mockReturnValue({
-          eq:   vi.fn().mockReturnValue({
-            order: vi.fn().mockResolvedValue({ data: [], error: null }),
-          }),
-        }),
-      }),
-    })
+      })
     mockCreateRouteHandlerClient.mockReturnValue(mock as unknown as ReturnType<typeof supabaseModule.createRouteHandlerClient>)
 
     const req = makeAuthRequest('/api/companies')
@@ -53,15 +46,8 @@ describe('GET /api/companies', () => {
 
   it('DB 오류 시 500 반환', async () => {
     const mock = makeMockSupabase([], 0, { message: 'connection refused' })
-    mock.supabase.from.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq:    vi.fn().mockReturnValue({
-          order: vi.fn().mockReturnValue({
-            range: vi.fn().mockResolvedValue({ data: null, error: { message: 'connection refused' }, count: 0 }),
-          }),
-        }),
-      }),
-    })
+    const chain = makeQueryChain(null, 0, { message: 'connection refused' })
+    mock.supabase.from.mockReturnValue({ select: vi.fn(() => chain) })
     mockCreateRouteHandlerClient.mockReturnValue(mock as unknown as ReturnType<typeof supabaseModule.createRouteHandlerClient>)
 
     const req = makeAuthRequest('/api/companies')
