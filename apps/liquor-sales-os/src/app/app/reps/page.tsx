@@ -30,7 +30,7 @@ export default async function RepsPage() {
     supabase.schema('public').from('users')
       .select('id, name, email, role, is_active')
       .eq('tenant_id', tenantId)
-      .in('role', ['admin', 'manager', 'rep'])
+      .in('role', ['admin', 'manager', 'rep', 'sales'])
       .order('name'),
 
     supabase.schema('lso').from('rep_locations')

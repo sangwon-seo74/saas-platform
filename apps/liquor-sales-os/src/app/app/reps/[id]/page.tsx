@@ -84,7 +84,7 @@ export default async function RepDetailPage({ params }: { params: Promise<{ id: 
   const recentVisits = (recentVisitsRes.data ?? []) as unknown as Visit[]
 
   const roleLabel: Record<string, string> = {
-    admin: '관리자', manager: '매니저', rep: '영업담당자',
+    admin: '관리자', manager: '매니저', rep: '영업담당자', sales: '영업담당자',
   }
 
   return (

@@ -27,7 +27,7 @@ async function getDashboardData(tenantId: string, role: string) {
       role !== 'rep'
         ? supabase.schema('public').from('users').select('id', { count: 'exact', head: true })
             .eq('tenant_id', tenantId).eq('is_active', true)
-            .in('role', ['admin', 'manager', 'rep'])
+            .in('role', ['admin', 'manager', 'rep', 'sales'])
         : Promise.resolve({ count: 0, error: null }),
 
       supabase.schema('lso').from('visits').select('id', { count: 'exact', head: true })
