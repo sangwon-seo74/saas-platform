@@ -79,15 +79,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className={cn('flex items-center border-b border-dk-border shrink-0', collapsed ? 'px-3 py-4 justify-center' : 'px-4 py-4 gap-2.5')}>
-        <div className="w-7 h-7 rounded-lg bg-dk-accent flex items-center justify-center shrink-0">
-          <Wine className="w-4 h-4 text-white" />
-        </div>
-        {!collapsed && (
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-dk-text leading-none truncate">주류영업 관리</p>
-            <p className="text-[10px] text-dk-dim mt-0.5">LSO</p>
+        <a
+          href={process.env.NEXT_PUBLIC_LANDING_URL || 'https://saas-foundry.vercel.app'}
+          title="SaaS Platform 홈"
+          className={cn('flex items-center gap-2.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity', !collapsed && 'flex-1')}
+        >
+          <div className="w-7 h-7 rounded-lg bg-dk-accent flex items-center justify-center shrink-0">
+            <Wine className="w-4 h-4 text-white" />
           </div>
-        )}
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-dk-text leading-none truncate">주류영업 관리</p>
+              <p className="text-[10px] text-dk-dim mt-0.5">LSO</p>
+            </div>
+          )}
+        </a>
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="p-1 rounded-lg text-dk-dim hover:text-dk-muted hover:bg-dk-surface2 shrink-0 hidden lg:flex"
