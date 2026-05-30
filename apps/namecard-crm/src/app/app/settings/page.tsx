@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, UserPlus, Mail, Trash2 } from 'lucide-react'
+import { Loader2, UserPlus, Mail, Trash2, Link2, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 
 interface TeamMember {
   id: string
@@ -94,6 +95,22 @@ export default function SettingsPage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* 팀 초대 링크 */}
+      <section className="bg-dk-surface border border-dk-border rounded-xl p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-dk-text">팀 초대 링크</h2>
+        <p className="text-xs text-dk-muted">링크를 공유하면 팀원이 직접 가입할 수 있습니다. 이메일 없이 간편하게 초대하세요.</p>
+        <Link
+          href="/app/settings/invite-links"
+          className="flex items-center justify-between px-3 py-2.5 bg-dk-surface2 border border-dk-border rounded-lg hover:bg-dk-surface hover:border-dk-accent/50 transition-colors group"
+        >
+          <div className="flex items-center gap-2.5">
+            <Link2 className="w-4 h-4 text-dk-blue" />
+            <span className="text-sm text-dk-text">초대 링크 관리</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-dk-dim group-hover:text-dk-muted" />
+        </Link>
       </section>
 
       {/* 데이터 내보내기 */}
